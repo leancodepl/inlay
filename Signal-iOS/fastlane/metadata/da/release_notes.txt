@@ -1,0 +1,1 @@
+• Yderligere forbedringer af brugerfladen, herunder et opdateret layout og Liquid Glass-kontrolelementer til afspilning i mediefremviseren.

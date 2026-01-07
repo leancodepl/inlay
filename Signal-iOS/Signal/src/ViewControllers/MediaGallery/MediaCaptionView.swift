@@ -1,0 +1,469 @@
+//
+// Copyright 2018 Signal Messenger, LLC
+// SPDX-License-Identifier: AGPL-3.0-only
+//
+
+import SignalServiceKit
+import SignalUI
+
+class MediaCaptionView: UIView {
+
+    private let spoilerState: SpoilerRenderState
+
+    public enum Content: Equatable {
+        case attachmentStreamCaption(String)
+        case messageBody(HydratedMessageBody, InteractionSnapshotIdentifier)
+
+        var nilIfEmpty: Content? {
+            switch self {
+            case .attachmentStreamCaption(let string):
+                return string.isEmpty ? nil : self
+            case .messageBody(let messageBody, let identifier):
+                return messageBody.nilIfEmpty.map { .messageBody($0, identifier) }
+            }
+        }
+
+        var isEmpty: Bool {
+            switch self {
+            case .attachmentStreamCaption(let string):
+                return string.isEmpty
+            case .messageBody(let messageBody, _):
+                return messageBody.isEmpty
+            }
+        }
+
+        var interactionIdentifier: InteractionSnapshotIdentifier? {
+            switch self {
+            case .attachmentStreamCaption:
+                return nil
+            case .messageBody(_, let id):
+                return id
+            }
+        }
+    }
+
+    var content: Content? {
+        get {
+            return captionTextView.content
+        }
+        set {
+            let oldValue = captionTextView.content
+            guard oldValue != newValue else {
+                return
+            }
+            captionTextView.content = newValue
+        }
+    }
+
+    var isEmpty: Bool {
+        guard let content else { return true }
+        return content.isEmpty
+    }
+
+    var canBeExpanded: Bool {
+        captionTextView.canBeExpanded
+    }
+
+    var isExpanded: Bool {
+        get { captionTextView.isExpanded }
+        set { captionTextView.isExpanded = newValue }
+    }
+
+    // MARK: Initializers
+
+    init(
+        frame: CGRect = .zero,
+        spoilerState: SpoilerRenderState
+    ) {
+        self.spoilerState = spoilerState
+        super.init(frame: frame)
+
+        clipsToBounds = true
+
+        let selfOrVisualEffectContentView: UIView
+        if #available(iOS 26, *) {
+            let glassEffectView = UIVisualEffectView(effect: glassEffect())
+            glassEffectView.translatesAutoresizingMaskIntoConstraints = false
+            glassEffectView.clipsToBounds = true
+            glassEffectView.cornerConfiguration = .uniformCorners(radius: .containerConcentric(minimum: 26))
+            addSubview(glassEffectView)
+            NSLayoutConstraint.activate([
+                glassEffectView.topAnchor.constraint(equalTo: topAnchor),
+                glassEffectView.leadingAnchor.constraint(equalTo: leadingAnchor),
+                glassEffectView.trailingAnchor.constraint(equalTo: trailingAnchor),
+                glassEffectView.bottomAnchor.constraint(equalTo: bottomAnchor),
+            ])
+
+            selfOrVisualEffectContentView = glassEffectView.contentView
+            glassBackgroundView = glassEffectView
+
+            directionalLayoutMargins = .init(margin: 16)
+            insetsLayoutMarginsFromSafeArea = false
+        } else {
+            selfOrVisualEffectContentView = self
+
+            directionalLayoutMargins = .init(hMargin: 0, vMargin: 4)
+        }
+
+        selfOrVisualEffectContentView.addSubview(captionTextView)
+        captionTextView.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            captionTextView.topAnchor.constraint(equalTo: layoutMarginsGuide.topAnchor),
+            captionTextView.leadingAnchor.constraint(equalTo: layoutMarginsGuide.leadingAnchor),
+            captionTextView.trailingAnchor.constraint(equalTo: layoutMarginsGuide.trailingAnchor),
+            captionTextView.bottomAnchor.constraint(equalTo: layoutMarginsGuide.bottomAnchor),
+        ])
+    }
+
+    required init?(coder aDecoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    func handleTap(_ gestureRecognizer: UITapGestureRecognizer) -> Bool {
+        let messageBody: HydratedMessageBody
+        let interactionIdentifier: InteractionSnapshotIdentifier
+        switch content {
+        case .none, .attachmentStreamCaption:
+            return false
+        case .messageBody(let body, let id):
+            messageBody = body
+            interactionIdentifier = id
+        }
+
+        let location = gestureRecognizer.location(in: captionTextView)
+        guard let characterIndex = captionTextView.characterIndex(of: location) else {
+            return false
+        }
+
+        for item in messageBody.tappableItems(
+            revealedSpoilerIds: spoilerState.revealState.revealedSpoilerIds(interactionIdentifier: interactionIdentifier),
+            dataDetector: nil /* Maybe in the future we should detect links here. We never have, before. */
+        ) {
+            switch item {
+            case .data, .mention:
+                continue
+            case .unrevealedSpoiler(let unrevealedSpoiler):
+                if unrevealedSpoiler.range.contains(characterIndex) {
+                    spoilerState.revealState.setSpoilerRevealed(
+                        withID: unrevealedSpoiler.id,
+                        interactionIdentifier: interactionIdentifier
+                    )
+                    didUpdateRevealedSpoilers(spoilerState.revealState)
+                    return true
+                }
+            }
+        }
+        return false
+    }
+
+    func didUpdateRevealedSpoilers(_ spoilerReveal: SpoilerRevealState) {
+        captionTextView.didUpdateRevealedSpoilers()
+    }
+
+    // MARK: Glass background
+
+    private var _hasGlassBackground: Bool = true
+
+    @available(iOS 26, *)
+    var hasGlassBackground: Bool {
+        get { _hasGlassBackground }
+        set {
+            _hasGlassBackground = newValue
+            updateBackground()
+        }
+    }
+
+    // Glass on iOS 26, `nil` otherwise.
+    private var glassBackgroundView: UIVisualEffectView?
+
+    @available(iOS 26, *)
+    private func glassEffect() -> UIVisualEffect? {
+        let glassEffect = UIGlassEffect(style: .regular)
+        glassEffect.isInteractive = true
+        return glassEffect
+    }
+
+    @available(iOS 26, *)
+    private func updateBackground() {
+        if hasGlassBackground {
+            if let glassBackgroundView, glassBackgroundView.effect == nil {
+                glassBackgroundView.effect = glassEffect()
+            }
+        } else {
+            if let glassBackgroundView {
+                glassBackgroundView.effect = nil
+            }
+        }
+    }
+
+    // MARK: Animations
+
+    func prepareToBeAnimatedIn() {
+        if #available(iOS 26, *), let glassBackgroundView, hasGlassBackground {
+            glassBackgroundView.effect = nil
+        }
+        captionTextView.alpha = 0
+        isHidden = false
+    }
+
+    func animateIn() {
+        if #available(iOS 26, *), let glassBackgroundView, hasGlassBackground {
+            glassBackgroundView.effect = glassEffect()
+        }
+        captionTextView.alpha = 1
+    }
+
+    func animateOut() {
+        if #available(iOS 26, *), let glassBackgroundView, hasGlassBackground {
+            glassBackgroundView.effect = nil
+        }
+        captionTextView.alpha = 0
+    }
+
+    // MARK: Subviews
+
+    private class func buildCaptionTextView(spoilerState: SpoilerRenderState) -> CaptionTextView {
+        let textView = CaptionTextView(spoilerState: spoilerState)
+        let config = HydratedMessageBody.DisplayConfiguration.mediaCaption(
+            textColor: .Signal.label,
+            revealedSpoilerIds: Set(),
+        )
+        textView.font = config.baseFont
+        textView.textColor = config.baseTextColor.forCurrentTheme
+        textView.backgroundColor = .clear
+        textView.textContainerInset = .zero
+        return textView
+    }
+    private lazy var captionTextView = MediaCaptionView.buildCaptionTextView(spoilerState: spoilerState)
+
+    private class CaptionTextView: UITextView, NSLayoutManagerDelegate {
+
+        init(spoilerState: SpoilerRenderState) {
+            var spoilerConfig = SpoilerableTextConfig.Builder(isViewVisible: true)
+            spoilerConfig.animationManager = spoilerState.animationManager
+            self.spoilerConfig = spoilerConfig
+            self.spoilerState = spoilerState
+
+            super.init(frame: .zero, textContainer: nil)
+
+            isEditable = false
+            isSelectable = false
+            textContainer.lineBreakMode = .byTruncatingTail
+            textColor = .Signal.label
+
+            disableAiWritingTools()
+            updateIsScrollEnabled()
+        }
+
+        required init?(coder: NSCoder) {
+            fatalError("init(coder:) has not been implemented")
+        }
+
+        private let spoilerState: SpoilerRenderState
+
+        private var spoilerConfig: SpoilerableTextConfig.Builder {
+            didSet {
+                spoilerAnimator.updateAnimationState(spoilerConfig)
+            }
+        }
+
+        private lazy var spoilerAnimator = SpoilerableTextViewAnimator(textView: self)
+
+        public var content: MediaCaptionView.Content? {
+            didSet {
+                recomputeContents()
+                invalidateCachedSizes()
+            }
+        }
+
+        public func didUpdateRevealedSpoilers() {
+            // No need to recompute cached sizes; spoilers have no effect on size.
+            recomputeContents()
+        }
+
+        @discardableResult
+        private func recomputeContents(doUpdate: Bool = true) -> NSAttributedString? {
+            switch content?.nilIfEmpty {
+            case .none:
+                if doUpdate {
+                    super.attributedText = nil
+                    spoilerConfig.text = nil
+                    spoilerConfig.displayConfig = nil
+                }
+                return nil
+            case .attachmentStreamCaption(let string):
+                let attrString = NSAttributedString(string: string)
+                if doUpdate {
+                    super.attributedText = attrString
+                    spoilerConfig.text = nil
+                    spoilerConfig.displayConfig = nil
+                }
+                return attrString
+            case .messageBody(let body, let interactionIdentifier):
+                let displayConfig = HydratedMessageBody.DisplayConfiguration.mediaCaption(
+                    textColor: textColor ?? .Signal.label,
+                    revealedSpoilerIds: spoilerState.revealState.revealedSpoilerIds(
+                        interactionIdentifier: interactionIdentifier
+                    )
+                )
+                let attrString = body.asAttributedStringForDisplay(
+                    config: displayConfig,
+                    isDarkThemeEnabled: Theme.isDarkThemeEnabled
+                )
+                if doUpdate {
+                    super.attributedText = attrString
+                    spoilerConfig.text = .messageBody(body)
+                    spoilerConfig.displayConfig = displayConfig
+                }
+                return attrString
+            }
+        }
+
+        @available(*, unavailable)
+        override var attributedText: NSAttributedString! {
+            didSet {}
+        }
+
+        @available(*, unavailable)
+        override var text: String! {
+            didSet {}
+        }
+
+        override var font: UIFont? {
+            didSet {
+                invalidateCachedSizes()
+            }
+        }
+
+        override var bounds: CGRect {
+            didSet {
+                if oldValue.width != bounds.width {
+                    invalidateCachedSizes()
+                }
+            }
+        }
+
+        override var frame: CGRect {
+            didSet {
+                if oldValue.width != bounds.width {
+                    invalidateCachedSizes()
+                }
+            }
+        }
+
+        // MARK: -
+
+        var canBeExpanded: Bool {
+            collapsedSize.height != expandedSize.height
+        }
+
+        private var _isExpanded: Bool = false
+        var isExpanded: Bool {
+            get {
+                guard canBeExpanded else { return false }
+                return _isExpanded
+            }
+            set {
+                guard _isExpanded != newValue else { return }
+                _isExpanded = canBeExpanded ? newValue : false
+                invalidateIntrinsicContentSize()
+                updateIsScrollEnabled()
+            }
+        }
+
+        private func updateIsScrollEnabled() {
+            isScrollEnabled = isExpanded
+        }
+
+        // MARK: Layout metrics
+
+        private static let maxHeight = CGFloat.scaleFromIPhone5(200)
+        private static let collapsedNumberOfLines = 3
+
+        private var collapsedSize: CGSize = .zero // 3 lines of text
+        private var expandedSize: CGSize = .zero  // height is limited to `maxHeight`
+        private var fullSize: CGSize = .zero
+
+        override var intrinsicContentSize: CGSize {
+            guard content?.nilIfEmpty != nil else {
+                return CGSize(width: UIView.noIntrinsicMetric, height: 0)
+            }
+
+            calculateSizesIfNecessary()
+
+            let textSize = isExpanded ? expandedSize : collapsedSize
+            return CGSize(
+                width: textContainerInset.left + textSize.width + textContainerInset.right,
+                height: textContainerInset.top + textSize.height + textContainerInset.bottom
+            )
+        }
+
+        private func invalidateCachedSizes() {
+            collapsedSize = .zero
+            expandedSize = .zero
+            fullSize = .zero
+
+            invalidateIntrinsicContentSize()
+        }
+
+        private func calculateSizesIfNecessary() {
+            guard !collapsedSize.isNonEmpty else { return }
+            guard let attributedText = recomputeContents(doUpdate: false) else { return }
+
+            let maxWidth: CGFloat
+            if frame.width > 0 {
+                maxWidth = frame.width - textContainerInset.left - textContainerInset.right
+            } else {
+                maxWidth = .greatestFiniteMagnitude
+            }
+
+            // 3 lines of text.
+            let font = font ?? .dynamicTypeBodyClamped
+            let textColor = textColor ?? .Signal.label
+            let collapsedTextConfig = CVTextLabel.Config(
+                text: .attributedText(attributedText),
+                displayConfig: .forUnstyledText(font: font, textColor: textColor),
+                font: font,
+                textColor: textColor,
+                selectionStyling: [:],
+                textAlignment: textAlignment,
+                lineBreakMode: .byWordWrapping,
+                numberOfLines: Self.collapsedNumberOfLines,
+                items: [],
+                linkifyStyle: .underlined(bodyTextColor: textColor)
+            )
+            collapsedSize = CVTextLabel.measureSize(config: collapsedTextConfig, maxWidth: maxWidth).size
+
+            // 9 lines of text or `maxHeight`, whichever is smaller.
+            let expandedTextConfig = CVTextLabel.Config(
+                text: .attributedText(attributedText),
+                displayConfig: .forUnstyledText(font: font, textColor: textColor),
+                font: font,
+                textColor: textColor,
+                selectionStyling: [:],
+                textAlignment: textAlignment,
+                lineBreakMode: .byWordWrapping,
+                numberOfLines: 3 * Self.collapsedNumberOfLines,
+                items: [],
+                linkifyStyle: .underlined(bodyTextColor: textColor)
+            )
+            let expandedTextSize = CVTextLabel.measureSize(config: expandedTextConfig, maxWidth: maxWidth).size
+            expandedSize = CGSize(width: expandedTextSize.width, height: min(expandedTextSize.height, Self.maxHeight))
+
+            // Unrestricted text height is necessary so that we could enable scrolling in the text view.
+            let fullTextConfig = CVTextLabel.Config(
+                text: .attributedText(attributedText),
+                displayConfig: .forUnstyledText(font: font, textColor: textColor),
+                font: font,
+                textColor: textColor,
+                selectionStyling: [:],
+                textAlignment: textAlignment,
+                lineBreakMode: .byWordWrapping,
+                numberOfLines: 0,
+                items: [],
+                linkifyStyle: .underlined(bodyTextColor: textColor)
+            )
+            fullSize = CVTextLabel.measureSize(config: fullTextConfig, maxWidth: maxWidth).size
+        }
+    }
+}
