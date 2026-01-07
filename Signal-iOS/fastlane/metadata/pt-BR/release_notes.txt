@@ -1,0 +1,1 @@
+• Melhorias adicionais na interface, incluindo um layout atualizado e controles de reprodução Liquid Glass no visualizador de mídia.
