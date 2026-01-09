@@ -8,18 +8,15 @@ environment:
   sdk: ^3.8.1
 
 dependencies:
+  cupertino_icons: ^1.0.8
   flutter:
     sdk: flutter
-  cupertino_icons: ^1.0.8
-  leancode_add2app:
-    path: ../leancode_add2app
 
 dev_dependencies:
+  custom_lint: ^0.7.6
   flutter_test:
     sdk: flutter
-  flutter_lints: ^5.0.0
   leancode_lint: ^17.0.0
-  custom_lint: ^0.7.6
 
 flutter:
   uses-material-design: true
