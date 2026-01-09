@@ -16,6 +16,15 @@ import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.util.DynamicNoActionBarTheme;
 import org.thoughtcrime.securesms.util.DynamicTheme;
 
+/**
+ * ADD2APP: This entire Activity is a candidate for Flutter replacement.
+ * The Flutter equivalent is signal_module's SetWallpaperScreen.
+ * Entry route: /set-wallpaper
+ * Required data: recipientId (can be null for global wallpaper)
+ * 
+ * For mixed navigation, this Activity would be replaced with a FlutterActivity
+ * or FlutterFragment that displays the SetWallpaperScreen.
+ */
 public final class ChatWallpaperActivity extends PassphraseRequiredActivity {
 
   private static final String EXTRA_RECIPIENT_ID = "extra.recipient.id";

@@ -556,6 +556,10 @@ class ConversationSettingsFragment : DSLSettingsFragment(
           title = DSLSettingsText.from(R.string.preferences__chat_color_and_wallpaper),
           icon = DSLSettingsIcon.from(R.drawable.symbol_color_24),
           onClick = {
+            // ADD2APP: Flutter integration point - SetWallpaperScreen
+            // Replace this with Flutter navigation to show signal_module's SetWallpaperScreen
+            // Entry route: /set-wallpaper
+            // Required data: recipientId = state.recipient.id
             startActivity(ChatWallpaperActivity.createIntent(requireContext(), state.recipient.id))
           }
         )
@@ -567,6 +571,10 @@ class ConversationSettingsFragment : DSLSettingsFragment(
           icon = DSLSettingsIcon.from(R.drawable.symbol_speaker_24),
           isEnabled = !state.isDeprecatedOrUnregistered,
           onClick = {
+            // ADD2APP: Flutter integration point - SoundsNotificationsScreen
+            // Replace this navigation with Flutter to show signal_module's SoundsNotificationsScreen
+            // Entry route: /sounds-notifications
+            // Required data: contactId = state.recipient.id
             val action = ConversationSettingsFragmentDirections.actionConversationSettingsFragmentToSoundsAndNotificationsSettingsFragment(state.recipient.id)
 
             navController.safeNavigate(action)

@@ -207,6 +207,9 @@ extension ConversationViewController {
         }
         var viewControllers = viewControllersUpToSelf
 
+        // ADD2APP: Flutter integration point - ContactDetailsScreen (entry point)
+        // This is the main entry to conversation settings from conversation header tap.
+        // For mixed navigation, could show Flutter ContactDetailsScreen here.
         let settingsView = ConversationSettingsViewController(
             threadViewModel: threadViewModel,
             isSystemContact: conversationViewModel.isSystemContact,

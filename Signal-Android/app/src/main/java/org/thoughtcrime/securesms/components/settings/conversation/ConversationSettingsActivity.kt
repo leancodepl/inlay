@@ -17,6 +17,15 @@ import org.thoughtcrime.securesms.recipients.RecipientId
 import org.thoughtcrime.securesms.util.DynamicConversationSettingsTheme
 import org.thoughtcrime.securesms.util.DynamicTheme
 
+/**
+ * ADD2APP: This Activity hosts the ConversationSettingsFragment (contact/group details).
+ * The Flutter equivalent is signal_module's ContactDetailsScreen.
+ * Entry route: /contact-details
+ * Required data: recipientId or groupId
+ *
+ * For mixed navigation, this could be replaced with a FlutterActivity hosting ContactDetailsScreen,
+ * or keep native and only replace child screens (wallpaper, sounds/notifications).
+ */
 open class ConversationSettingsActivity : DSLSettingsActivity(), ConversationSettingsFragment.Callback {
 
   override val dynamicTheme: DynamicTheme = DynamicConversationSettingsTheme()

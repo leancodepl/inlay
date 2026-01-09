@@ -6,6 +6,13 @@
 import SignalServiceKit
 import SignalUI
 
+/// ADD2APP: This entire ViewController is a candidate for Flutter replacement.
+/// The Flutter equivalent is signal_module's SoundsNotificationsScreen.
+/// Entry route: /sounds-notifications
+/// Required data: contactId from threadViewModel
+///
+/// For mixed navigation, this ViewController would be replaced with a FlutterViewController
+/// that displays the SoundsNotificationsScreen.
 class SoundAndNotificationsSettingsViewController: OWSTableViewController2 {
     let threadViewModel: ThreadViewModel
     init(threadViewModel: ThreadViewModel) {

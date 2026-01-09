@@ -24,6 +24,13 @@ public protocol ConversationSettingsViewDelegate: AnyObject {
 // MARK: -
 
 // TODO: We should describe which state updates & when it is committed.
+/// ADD2APP: This ViewController is the contact/group details screen.
+/// The Flutter equivalent is signal_module's ContactDetailsScreen.
+/// Entry route: /contact-details
+/// Required data: threadViewModel (contains contact/group info)
+///
+/// For mixed navigation, this could be replaced with a FlutterViewController hosting ContactDetailsScreen,
+/// or keep native and only replace child screens (wallpaper, sounds/notifications).
 class ConversationSettingsViewController: OWSTableViewController2, BadgeCollectionDataSource {
 
     public weak var conversationSettingsViewDelegate: ConversationSettingsViewDelegate?
@@ -375,11 +382,19 @@ class ConversationSettingsViewController: OWSTableViewController2, BadgeCollecti
     }
 
     func showColorAndWallpaperSettingsView() {
+        // ADD2APP: Flutter integration point - SetWallpaperScreen
+        // Replace this with Flutter navigation to show signal_module's SetWallpaperScreen
+        // Entry route: /set-wallpaper
+        // Required data: threadId = thread.uniqueId
         let vc = ColorAndWallpaperSettingsViewController(thread: thread)
         navigationController?.pushViewController(vc, animated: true)
     }
 
     func showSoundAndNotificationsSettingsView() {
+        // ADD2APP: Flutter integration point - SoundsNotificationsScreen
+        // Replace this with Flutter navigation to show signal_module's SoundsNotificationsScreen
+        // Entry route: /sounds-notifications
+        // Required data: contactId from threadViewModel.contactAddress or thread.uniqueId
         let vc = SoundAndNotificationsSettingsViewController(threadViewModel: threadViewModel)
         navigationController?.pushViewController(vc, animated: true)
     }

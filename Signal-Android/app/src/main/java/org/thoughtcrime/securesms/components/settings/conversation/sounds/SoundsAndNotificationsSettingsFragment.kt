@@ -16,6 +16,15 @@ import org.thoughtcrime.securesms.recipients.Recipient
 import org.thoughtcrime.securesms.util.adapter.mapping.MappingAdapter
 import org.thoughtcrime.securesms.util.navigation.safeNavigate
 
+/**
+ * ADD2APP: This entire Fragment is a candidate for Flutter replacement.
+ * The Flutter equivalent is signal_module's SoundsNotificationsScreen.
+ * Entry route: /sounds-notifications
+ * Required data: recipientId (contactId)
+ *
+ * For mixed navigation, this Fragment would be replaced with a FlutterFragment
+ * that displays the SoundsNotificationsScreen.
+ */
 class SoundsAndNotificationsSettingsFragment : DSLSettingsFragment(
   titleId = R.string.ConversationSettingsFragment__sounds_and_notifications
 ) {
