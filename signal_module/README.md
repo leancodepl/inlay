@@ -1,11 +1,4 @@
-# signal_module
+# Signal Module
 
-A new Flutter module project.
+Flutter module for Signal app add2app PoC. This module provides Flutter screens that can be embedded into native Signal Android and iOS apps.
 
-## Getting Started
-
-For help getting started with Flutter development, view the online
-[documentation](https://flutter.dev/).
-
-For instructions integrating Flutter modules to your existing applications,
-see the [add-to-app documentation](https://flutter.dev/to/add-to-app).
