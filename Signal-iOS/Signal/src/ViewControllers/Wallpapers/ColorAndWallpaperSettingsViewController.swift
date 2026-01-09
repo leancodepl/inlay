@@ -6,6 +6,13 @@
 public import SignalServiceKit
 public import SignalUI
 
+/// ADD2APP: This entire ViewController is a candidate for Flutter replacement.
+/// The Flutter equivalent is signal_module's SetWallpaperScreen.
+/// Entry route: /set-wallpaper
+/// Required data: threadId (can be nil for global wallpaper)
+///
+/// For mixed navigation, this ViewController would be replaced with a FlutterViewController
+/// that displays the SetWallpaperScreen.
 public class ColorAndWallpaperSettingsViewController: OWSTableViewController2 {
     let thread: TSThread?
     public init(thread: TSThread? = nil) {

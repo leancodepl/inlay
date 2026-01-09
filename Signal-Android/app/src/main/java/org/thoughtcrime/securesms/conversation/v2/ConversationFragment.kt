@@ -3953,6 +3953,11 @@ class ConversationFragment :
         return
       }
 
+      // ADD2APP: Flutter integration point - ContactDetailsScreen (entry point)
+      // This is the main entry to conversation settings from conversation header tap.
+      // For mixed navigation, could show Flutter ContactDetailsScreen here.
+      // Entry route: /contact-details
+      // Required data: contactId = recipient.id (RecipientId), contact details to be fetched
       val intent = ConversationSettingsActivity.forRecipient(requireContext(), recipient.id)
       val bundle = ConversationSettingsActivity.createTransitionBundle(
         requireActivity(),
