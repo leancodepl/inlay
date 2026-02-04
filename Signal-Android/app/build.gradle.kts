@@ -657,7 +657,8 @@ dependencies {
 }
 
 fun assertIsGitRepo() {
-  if (!file("${project.rootDir}/.git").exists()) {
+  // Added "/.." for (add2app-framework-poc)
+  if (!file("${project.rootDir}/../.git").exists()) {
     throw IllegalStateException("Must be a git repository to guarantee reproducible builds! (git hash is part of APK)")
   }
 }
