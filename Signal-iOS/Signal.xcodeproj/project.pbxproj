@@ -544,7 +544,6 @@
 		4CB5F26720F6E1E2004D1B42 /* MessageActionsToolbar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CFF4C0920F55BBA005DA313 /* MessageActionsToolbar.swift */; };
 		4CB5F26920F7D060004D1B42 /* MessageActions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CB5F26820F7D060004D1B42 /* MessageActions.swift */; };
 		4CBBFE4A2306F5D300B37450 /* LogViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CBBFE492306F5D300B37450 /* LogViewController.swift */; };
-		4CC1ECF9211A47CE00CC13BE /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4CC1ECF8211A47CD00CC13BE /* StoreKit.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 		4CC1ECFB211A553000CC13BE /* AppUpdateNag.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CC1ECFA211A553000CC13BE /* AppUpdateNag.swift */; };
 		4CD675BE22E7BE35008010D2 /* MediaDismissAnimationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CD675BD22E7BE35008010D2 /* MediaDismissAnimationController.swift */; };
 		4CD675C522E7CF22008010D2 /* ConversationViewController+OWS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CD675C422E7CF22008010D2 /* ConversationViewController+OWS.swift */; };
@@ -4670,7 +4669,6 @@
 		4CB5F26820F7D060004D1B42 /* MessageActions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageActions.swift; sourceTree = "<group>"; };
 		4CB93DC12180FF07004B9764 /* ProximityMonitoringManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProximityMonitoringManager.swift; sourceTree = "<group>"; };
 		4CBBFE492306F5D300B37450 /* LogViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogViewController.swift; sourceTree = "<group>"; };
-		4CC1ECF8211A47CD00CC13BE /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
 		4CC1ECFA211A553000CC13BE /* AppUpdateNag.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUpdateNag.swift; sourceTree = "<group>"; };
 		4CD675BD22E7BE35008010D2 /* MediaDismissAnimationController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaDismissAnimationController.swift; sourceTree = "<group>"; };
 		4CD675C422E7CF22008010D2 /* ConversationViewController+OWS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ConversationViewController+OWS.swift"; sourceTree = "<group>"; };
@@ -8193,7 +8191,6 @@
 				A163E8AB16F3F6AA0094D68B /* Security.framework in Frameworks */,
 				F9C5C8AA289451B900548EEE /* SignalServiceKit.framework in Frameworks */,
 				34A954BD271A471300B05242 /* SignalUI.framework in Frameworks */,
-				4CC1ECF9211A47CE00CC13BE /* StoreKit.framework in Frameworks */,
 				D2179CFE16BB0B480006F3AB /* SystemConfiguration.framework in Frameworks */,
 				D221A08E169C9E5E00537ABF /* UIKit.framework in Frameworks */,
 			);
@@ -11837,7 +11834,6 @@
 				A11CD70C17FA230600A2D1B1 /* QuartzCore.framework */,
 				A163E8AA16F3F6A90094D68B /* Security.framework */,
 				FC3BD9871A30A790005B96BB /* Social.framework */,
-				4CC1ECF8211A47CD00CC13BE /* StoreKit.framework */,
 				D2179CFD16BB0B480006F3AB /* SystemConfiguration.framework */,
 				D221A08D169C9E5E00537ABF /* UIKit.framework */,
 				B69CD25019773E79005CE69A /* XCTest.framework */,
@@ -15581,7 +15577,6 @@
 					};
 					453518671FC635DD00210559 = {
 						CreatedOnToolsVersion = 9.2;
-						DevelopmentTeam = U68MSDN6DR;
 						LastSwiftMigration = 1020;
 						ProvisioningStyle = Automatic;
 						SystemCapabilities = {
@@ -20169,6 +20164,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "$(SIGNAL_BUNDLEID_PREFIX).signal.SignalNSE";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SIGNAL_BUNDLEID_PREFIX = org.signal.fork;
 				SKIP_INSTALL = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -20223,6 +20219,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "$(SIGNAL_BUNDLEID_PREFIX).signal.SignalNSE";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
+				SIGNAL_BUNDLEID_PREFIX = org.signal.fork;
 				SKIP_INSTALL = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
@@ -20279,6 +20276,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "$(SIGNAL_BUNDLEID_PREFIX).signal.SignalNSE";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
+				SIGNAL_BUNDLEID_PREFIX = org.signal.fork;
 				SKIP_INSTALL = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
@@ -20335,6 +20333,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "$(SIGNAL_BUNDLEID_PREFIX).signal.SignalNSE";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
+				SIGNAL_BUNDLEID_PREFIX = org.signal.fork;
 				SKIP_INSTALL = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
@@ -20378,6 +20377,7 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = org.signal.SignalUI;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				SIGNAL_BUNDLEID_PREFIX = org.signal.fork;
 				SKIP_INSTALL = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -20442,6 +20442,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = org.signal.SignalUI;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SDKROOT = iphoneos;
+				SIGNAL_BUNDLEID_PREFIX = org.signal.fork;
 				SKIP_INSTALL = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -20508,6 +20509,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = org.signal.SignalUI;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SDKROOT = iphoneos;
+				SIGNAL_BUNDLEID_PREFIX = org.signal.fork;
 				SKIP_INSTALL = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -20574,6 +20576,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = org.signal.SignalUI;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SDKROOT = iphoneos;
+				SIGNAL_BUNDLEID_PREFIX = org.signal.fork;
 				SKIP_INSTALL = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -20614,6 +20617,7 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = org.signal.SignalUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SIGNAL_BUNDLEID_PREFIX = org.signal.fork;
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -20670,6 +20674,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = org.signal.SignalUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
+				SIGNAL_BUNDLEID_PREFIX = org.signal.fork;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
@@ -20728,6 +20733,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = org.signal.SignalUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
+				SIGNAL_BUNDLEID_PREFIX = org.signal.fork;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
@@ -20786,6 +20792,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = org.signal.SignalUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
+				SIGNAL_BUNDLEID_PREFIX = org.signal.fork;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
@@ -20810,6 +20817,7 @@
 				CODE_SIGN_ENTITLEMENTS = SignalShareExtension/SignalShareExtension.entitlements;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = U596PPABCW;
 				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_DYNAMIC_NO_PIC = NO;
@@ -20826,6 +20834,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "$(SIGNAL_BUNDLEID_PREFIX).signal.shareextension";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SIGNAL_BUNDLEID_PREFIX = org.signal.fork;
 				SKIP_INSTALL = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -20859,6 +20868,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_ENTITLEMENTS = "SignalShareExtension/SignalShareExtension-AppStore.entitlements";
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = U596PPABCW;
 				ENABLE_NS_ASSERTIONS = NO;
 				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
 				GCC_C_LANGUAGE_STANDARD = gnu11;
@@ -20880,6 +20890,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "$(SIGNAL_BUNDLEID_PREFIX).signal.shareextension";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
+				SIGNAL_BUNDLEID_PREFIX = org.signal.fork;
 				SKIP_INSTALL = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
@@ -21007,6 +21018,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = Signal/Signal.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = U596PPABCW;
 				ENABLE_TESTABILITY = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_OPTIMIZATION_LEVEL = 3;
@@ -21028,6 +21040,7 @@
 				PRODUCT_NAME = Signal;
 				RUN_CLANG_STATIC_ANALYZER = YES;
 				SDKROOT = iphoneos;
+				SIGNAL_BUNDLEID_PREFIX = org.signal.fork;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				WRAPPER_EXTENSION = app;
 			};
@@ -21085,6 +21098,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "$(SIGNAL_BUNDLEID_PREFIX).${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = SignalTests;
+				SIGNAL_BUNDLEID_PREFIX = org.signal.fork;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				TEST_HOST = "$(BUNDLE_LOADER)";
@@ -21119,6 +21133,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_ENTITLEMENTS = SignalShareExtension/SignalShareExtension.entitlements;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = U596PPABCW;
 				ENABLE_NS_ASSERTIONS = NO;
 				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
 				GCC_C_LANGUAGE_STANDARD = gnu11;
@@ -21140,6 +21155,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "$(SIGNAL_BUNDLEID_PREFIX).signal.shareextension";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
+				SIGNAL_BUNDLEID_PREFIX = org.signal.fork;
 				SKIP_INSTALL = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
@@ -21263,6 +21279,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = Signal/Signal.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = U596PPABCW;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_OPTIMIZATION_LEVEL = 3;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -21284,6 +21301,7 @@
 				PRODUCT_NAME = Signal;
 				RUN_CLANG_STATIC_ANALYZER = YES;
 				SDKROOT = iphoneos;
+				SIGNAL_BUNDLEID_PREFIX = org.signal.fork;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				WRAPPER_EXTENSION = app;
 			};
@@ -21341,6 +21359,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "$(SIGNAL_BUNDLEID_PREFIX).${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = SignalTests;
+				SIGNAL_BUNDLEID_PREFIX = org.signal.fork;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				TEST_HOST = "$(BUNDLE_LOADER)";
@@ -21375,6 +21394,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_ENTITLEMENTS = SignalShareExtension/SignalShareExtension.entitlements;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = U596PPABCW;
 				ENABLE_NS_ASSERTIONS = NO;
 				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
 				GCC_C_LANGUAGE_STANDARD = gnu11;
@@ -21396,6 +21416,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "$(SIGNAL_BUNDLEID_PREFIX).signal.shareextension";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
+				SIGNAL_BUNDLEID_PREFIX = org.signal.fork;
 				SKIP_INSTALL = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
@@ -21627,6 +21648,7 @@
 				COPY_PHASE_STRIP = NO;
 				CURRENT_PROJECT_VERSION = 1;
 				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = U596PPABCW;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -21647,6 +21669,7 @@
 				PRODUCT_NAME = Signal;
 				RUN_CLANG_STATIC_ANALYZER = YES;
 				SDKROOT = iphoneos;
+				SIGNAL_BUNDLEID_PREFIX = org.signal.fork;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				TARGETED_DEVICE_FAMILY = "1,2";
 				WRAPPER_EXTENSION = app;
@@ -21665,6 +21688,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = "Signal/Signal-AppStore.entitlements";
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = U596PPABCW;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_OPTIMIZATION_LEVEL = 3;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -21686,6 +21710,7 @@
 				PRODUCT_NAME = Signal;
 				RUN_CLANG_STATIC_ANALYZER = YES;
 				SDKROOT = iphoneos;
+				SIGNAL_BUNDLEID_PREFIX = org.signal.fork;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				WRAPPER_EXTENSION = app;
 			};
@@ -21744,6 +21769,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "$(SIGNAL_BUNDLEID_PREFIX).${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = SignalTests;
+				SIGNAL_BUNDLEID_PREFIX = org.signal.fork;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				TEST_HOST = "$(BUNDLE_LOADER)";
 				VALID_ARCHS = "arm64 armv7s armv7 i386 x86_64";
@@ -21802,6 +21828,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "$(SIGNAL_BUNDLEID_PREFIX).${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = SignalTests;
+				SIGNAL_BUNDLEID_PREFIX = org.signal.fork;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				TEST_HOST = "$(BUNDLE_LOADER)";
@@ -21840,6 +21867,7 @@
 				OTHER_SWIFT_FLAGS = "$(inherited) -Wwarning DeprecatedDeclaration";
 				PRODUCT_BUNDLE_IDENTIFIER = org.signal.SignalServiceKit;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				SIGNAL_BUNDLEID_PREFIX = org.signal.fork;
 				SKIP_INSTALL = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -21880,6 +21908,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = org.signal.SignalServiceKit;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SDKROOT = iphoneos;
+				SIGNAL_BUNDLEID_PREFIX = org.signal.fork;
 				SKIP_INSTALL = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -21920,6 +21949,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = org.signal.SignalServiceKit;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SDKROOT = iphoneos;
+				SIGNAL_BUNDLEID_PREFIX = org.signal.fork;
 				SKIP_INSTALL = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -21960,6 +21990,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = org.signal.SignalServiceKit;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SDKROOT = iphoneos;
+				SIGNAL_BUNDLEID_PREFIX = org.signal.fork;
 				SKIP_INSTALL = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -22000,6 +22031,7 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = org.signal.SignalServiceKitTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SIGNAL_BUNDLEID_PREFIX = org.signal.fork;
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
@@ -22058,6 +22090,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = org.signal.SignalServiceKitTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
+				SIGNAL_BUNDLEID_PREFIX = org.signal.fork;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
@@ -22118,6 +22151,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = org.signal.SignalServiceKitTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
+				SIGNAL_BUNDLEID_PREFIX = org.signal.fork;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
@@ -22178,6 +22212,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = org.signal.SignalServiceKitTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
+				SIGNAL_BUNDLEID_PREFIX = org.signal.fork;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
