@@ -37,7 +37,7 @@
 - (void)setup:(UIApplication*)application
      delegate:(id<FlutterBoostDelegate>)delegate
      callback:(void (^)(FlutterEngine *engine))callback {
-  // 调用默认的配置参数进行初始化
+  // Initialize with default configuration parameters
   [self setup:application
      delegate:delegate
      callback:callback
@@ -53,7 +53,7 @@
     self.engine = [[FlutterEngine alloc ] initWithName:@"io.flutter" project:options.dartObject];
   }
 
-  // 从options中获取参数
+  // Get parameters from options
   NSString* initialRoute = options.initalRoute;
   NSString* dartEntrypointFunctionName = options.dartEntryPoint;
   NSArray<NSString*>* dartEntryPointArgs = options.dartEntryPointArgs;
@@ -64,7 +64,7 @@
                       initialRoute:initialRoute
                     entrypointArgs:dartEntryPointArgs];
 
-    // 根据配置提前预热引擎,配置默认预热引擎
+    // Pre-warm the engine based on configuration, default is to pre-warm
     if (options.warmUpEngine){
       [self warmUpEngine];
     }
@@ -124,7 +124,7 @@
   }
 }
 
-/// 提前预热引擎
+/// Pre-warm the engine
 - (void)warmUpEngine {
   FlutterViewController* vc = [[FlutterViewController alloc] initWithEngine:self.engine
                                                                     nibName:nil bundle:nil];

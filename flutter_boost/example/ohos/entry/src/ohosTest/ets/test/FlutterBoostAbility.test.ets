@@ -79,7 +79,7 @@ export default function FlutterBoostAbilityTest() {
     it('FlutterBoostFlutterEngineIsNotNull', 0, async (done: Function) => {
       console.info("uitest: TestUiExample begin" + bundleName);
 
-      // 1. 先拉起EntryAbility
+      // 1. First launch EntryAbility
       const want: Want = {
         bundleName: 'com.example.flutter_boost_example',
         abilityName: 'EntryAbility'
@@ -89,7 +89,7 @@ export default function FlutterBoostAbilityTest() {
       const ability: UIAbility = await delegator.getCurrentTopAbility()
       expect(ability.context.abilityInfo.name).assertEqual('EntryAbility');
 
-      // 2.测试engine不为null
+      // 2. Test engine is not null
       const engine = FlutterBoost.getInstance().getEngine()
       expect(engine).not().assertNull();
       done();
@@ -99,7 +99,7 @@ export default function FlutterBoostAbilityTest() {
     it('FlutterBoostOpen', 0, async (done: Function) => {
       console.info("uitest: TestUiExample begin" + bundleName);
 
-      // 1. 先拉起EntryAbility
+      // 1. First launch EntryAbility
       const want: Want = {
         bundleName: 'com.example.flutter_boost_example',
         abilityName: 'EntryAbility'
@@ -120,7 +120,7 @@ export default function FlutterBoostAbilityTest() {
       let mocker: MockKit = new MockKit();
       let claser = FlutterBoost.getInstance()
       mocker.mockFunc(claser, claser.setup);
-      // 1. 先拉起EntryAbility
+      // 1. First launch EntryAbility
       const want: Want = {
         bundleName: 'com.example.flutter_boost_example',
         abilityName: 'EntryAbility'
@@ -162,19 +162,19 @@ export default function FlutterBoostAbilityTest() {
       done();
     })
 
-    // TODO:want参数传递
+    // TODO: want parameter passing
     it('testFlutterBoostAbilityWant', 0, async (done: Function) => {
-      // 1. 传递want传递的参数是否没问题 。包含url，param，getUniqueId
+      // 1. Check if want parameters passed correctly. Including url, param, getUniqueId
       done();
     })
 
-    // TODO:want通过PARAM传递参数
+    // TODO: want passing parameters via PARAM
     it('testFlutterBoostAbilityWantParam', 0, async (done: Function) => {
-      // 1. 传递want传递的参数是否没问题 。包含url，param，getUniqueId
+      // 1. Check if want parameters passed correctly. Including url, param, getUniqueId
       done();
     })
 
-    // TODO:测试Stage
+    // TODO: Test Stage
     it('testFlutterBoostAbilityStage', 0, async (done: Function) => {
       done();
     })

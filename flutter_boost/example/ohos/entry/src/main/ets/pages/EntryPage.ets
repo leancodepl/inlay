@@ -67,8 +67,8 @@ struct EntryPage {
     } else if (builderName == RouterNameConstants.FLUTTER_DIALOG) {
       FlutterUIDialog({ routerOptions: (options as RouterOptions) })
     } else {
-      //无论是从dart侧打开native页面还是从native侧打开native页面，都需要在此对builderName（也就是pageName）再次进行分支判断然后选择相应的native页面，
-      //由于example中只有一个额外的native页面，所以在此不过多展开示范
+      // Whether opening native page from dart side or native side, you need to branch on builderName (pageName) here to select the appropriate native page.
+      // Since there is only one additional native page in the example, we won't demonstrate this further here.
       NativePage({ params: (options as Record<string, Object>) })
     }
   }
@@ -81,7 +81,7 @@ struct EntryPage {
         .fontWeight(FontWeight.Bold)
         .decoration({ type: TextDecorationType.Underline, color: Color.Yellow })
         .margin({ bottom: 70 })
-      Button('打开Flutter页面')
+      Button('Open Flutter Page')
         .margin({ bottom: 20 })
         .onClick(() => {
           try {
@@ -89,10 +89,10 @@ struct EntryPage {
               this.onPageResult(pageName, result)
             })
           } catch (err) {
-            hilog.info(0x0000, TAG, '%{public}s', 'Failed to 打开Flutter页面');
+            hilog.info(0x0000, TAG, '%{public}s', 'Failed to open Flutter page');
           }
         })
-      Button('打开Native页面')
+      Button('Open Native Page')
         .margin({ bottom: 20 })
         .onClick(() => {
           try {
@@ -101,16 +101,16 @@ struct EntryPage {
                 this.onPageResult(pageName, result)
               });
           } catch (err) {
-            hilog.info(0x0000, TAG, '%{public}s', 'Failed to 打开Native页面');
+            hilog.info(0x0000, TAG, '%{public}s', 'Failed to open Native page');
           }
         })
-      Button('打开Flutter半透明弹窗')
+      Button('Open Flutter Translucent Dialog')
         .margin({ bottom: 20 })
         .onClick(() => {
           try {
             FlutterBoost.getInstance().open('transparentWidget', {}, false)
           } catch (err) {
-            hilog.info(0x0000, TAG, '%{public}s', 'Failed to 打开Flutter页面');
+            hilog.info(0x0000, TAG, '%{public}s', 'Failed to open Flutter page');
           }
         })
     }
@@ -170,7 +170,7 @@ struct EntryPage {
       // })
     }
     .width('100%')
-    .margin({ bottom: this.bottomRectHeight }) // 此处margin与导航条区域高度保持一致
+    .margin({ bottom: this.bottomRectHeight }) // This margin matches the navigation bar area height
   }
 
   onBackPress(): boolean | void {

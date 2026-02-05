@@ -29,7 +29,7 @@ import Log from '../util/Log'
 const TAG = 'FlutterContainerManager'
 
 /**
- * FlutterContainerManager 类是用于管理 FlutterBoost 容器的类。
+ * FlutterContainerManager class is used for managing FlutterBoost containers.
  */
 export default class FlutterContainerManager{
   private static instance: FlutterContainerManager;

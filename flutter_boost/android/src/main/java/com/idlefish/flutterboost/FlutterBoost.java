@@ -324,7 +324,7 @@ public class FlutterBoost {
             } else if(activityQueue.isEmpty()) {
                 activityQueue.addFirst(activity);
             } else if (activityQueue.peek() != activity) {
-                //针对多tab且每个tab都为Activity，在切换时并不会走remove，所以先从队列中删除再加入
+                // For multi-tab where each tab is an Activity, remove won't be called when switching, so first remove from queue then add
                 activityQueue.removeFirstOccurrence(activity);
                 activityQueue.addFirst(activity);
             }

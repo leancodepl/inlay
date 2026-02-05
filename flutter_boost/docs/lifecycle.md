@@ -1,19 +1,19 @@
-# 生命周期API部分（这部分只有flutter端，无原生实现）
+# Lifecycle API Section (This section only has Flutter side, no native implementation)
 
-## 1. 全局监听API
+## 1. Global Listener API
 
-一般在main阶段就可以添加一个全局观察者
+Generally you can add a global observer at the main stage
 ```dart
 void main() {
-  ///添加全局生命周期监听类
+  /// Add global lifecycle listener class
   PageVisibilityBinding.instance.addGlobalObserver(AppLifecycleObserver());
   runApp(MyApp());
 }
 ```
 
-`AppLifecycleObserver`的具体实现如下
+Specific implementation of `AppLifecycleObserver` is as follows
 ```dart
-///全局生命周期监听示例
+/// Global lifecycle listener example
 class AppLifecycleObserver with GlobalPageVisibilityObserver {
   @override
   void onBackground(Route route) {
@@ -53,9 +53,9 @@ class AppLifecycleObserver with GlobalPageVisibilityObserver {
 }
 ```
 
-## 2.单个页面的监听
+## 2. Single Page Listener
 ```dart
-///单个生命周期示例
+/// Single page lifecycle example
 class LifecycleTestPage extends StatefulWidget {
   const LifecycleTestPage({Key key}) : super(key: key);
 
@@ -93,20 +93,20 @@ class _LifecycleTestPageState extends State<LifecycleTestPage>
   void initState() {
     super.initState();
 
-    ///请在didChangeDependencies中注册而不是initState中
+    /// Please register in didChangeDependencies instead of initState
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
 
-    ///注册监听器
+    /// Register listener
     PageVisibilityBinding.instance.addObserver(this, ModalRoute.of(context));
   }
 
   @override
   void dispose() {
-    ///移除监听器
+    /// Remove listener
     PageVisibilityBinding.instance.removeObserver(this);
     super.dispose();
   }
@@ -118,18 +118,8 @@ class _LifecycleTestPageState extends State<LifecycleTestPage>
 }
 ```
 
-### 额外说明
- - 在页面层级，没有`push`事件和`pop`事件，初始化逻辑请直接写在`initState`，卸载逻辑请写在`dispose`中即可
+### Additional Notes
+ - At the page level, there are no `push` and `pop` events. Initialization logic should be written directly in `initState`, and cleanup logic should be written in `dispose`
 
- - `onPageShow`对标Android`onResume`，iOS `viewDidAppear`
- - `onPageHide`对标Android`onStop`，iOS `viewDidDisappear`
-
-
-
-
-
-
-
-
-
-
+ - `onPageShow` corresponds to Android `onResume`, iOS `viewDidAppear`
+ - `onPageHide` corresponds to Android `onStop`, iOS `viewDidDisappear`

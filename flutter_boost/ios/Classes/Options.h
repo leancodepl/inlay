@@ -25,51 +25,51 @@
 
 #import <Flutter/Flutter.h>
 
-//此文件用用于配置FlutterBoost各种配置文件
+// This file is used for configuring various FlutterBoost configuration files
 
-///启动参数配置
+/// Startup parameters configuration
 @interface FlutterBoostSetupOptions : NSObject
 
-///初始路由
+/// Initial route
 @property (nonatomic, strong) NSString* initalRoute;
 
-///dart 入口
+/// Dart entry point
 @property (nonatomic, strong) NSString* dartEntryPoint;
 
-/// dart入口参数
+/// Dart entry point arguments
 @property (nonatomic, strong) NSArray<NSString*>* dartEntryPointArgs;
 
-///FlutterDartProject数据
+/// FlutterDartProject data
 @property (nonatomic, strong) FlutterDartProject* dartObject;
 
-///是否提前预热引擎，如果提前预热引擎，可以减少第一次打开flutter页面的短暂白屏，以及字体大小跳动的现象
-///默认值为YES
+/// Whether to pre-warm the engine. If pre-warmed, it can reduce the brief white screen when first opening a flutter page, as well as font size jumping
+/// Default value is YES
 @property (nonatomic, assign) BOOL warmUpEngine;
 
-///创建一个默认的Options对象
+/// Create a default Options object
 + (FlutterBoostSetupOptions*)createDefault;
 
 @end
 
 
-///路由参数配置
+/// Route parameters configuration
 @interface FlutterBoostRouteOptions : NSObject
 
-///页面在路由表中的名字
+/// Page name in the route table
 @property(nonatomic, strong) NSString* pageName;
 
-///参数
+/// Arguments
 @property(nonatomic, strong) NSDictionary* arguments;
 
-///参数回传的回调闭包，仅在原生->flutter页面的时候有用
+/// Callback closure for returning parameters, only useful when navigating native -> flutter page
 @property(nonatomic, strong) void(^onPageFinished)(NSDictionary*);
 
-///open方法完成后的回调，仅在原生->flutter页面的时候有用
+/// Callback after open method is complete, only useful when navigating native -> flutter page
 @property(nonatomic, strong) void(^completion)(BOOL);
 
-///代理内部会使用，原生往flutter open的时候此参数设为nil即可
+/// Used internally by delegate, set this to nil when opening from native to flutter
 @property(nonatomic, strong) NSString* uniqueId;
 
-///这个页面是否透明 注意:default value = YES
+/// Whether this page is opaque. Note: default value = YES
 @property(nonatomic,assign) BOOL opaque;
 @end

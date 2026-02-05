@@ -30,14 +30,14 @@
     FBFlutterViewContainer *vc = [[FBFlutterViewContainer alloc] init];
     [vc setName:options.pageName uniqueId:options.uniqueId params:options.arguments opaque:options.opaque];
 
-    //是否伴随动画
+    // Whether to accompany animation
     BOOL animated = YES;
     NSNumber * animatedValue = options.arguments[@"animated"];
     if(animatedValue){
         animated = [animatedValue boolValue];
     }
 
-    //是否是present的方式打开,如果要push的页面是透明的，那么也要以present形式打开
+    // Whether to open in present mode, if the page to be pushed is transparent, it should also be opened in present mode
     BOOL present = [options.arguments[@"present"] boolValue] || !options.opaque;
 
     if(present){
@@ -51,35 +51,35 @@
 }
 
 - (void) popRoute:(FlutterBoostRouteOptions *)options {
-    //拿到当前vc
+    // Get the current vc
     FBFlutterViewContainer *vc = (id)self.navigationController.presentedViewController;
 
-    //是否伴随动画,默认是true
+    // Whether to accompany animation, default is true
     BOOL animated = YES;
     NSNumber * animatedValue = options.arguments[@"animated"];
     if(animatedValue){
         animated = [animatedValue boolValue];
     }
 
-    //present的情况，走dismiss逻辑
+    // For present case, use dismiss logic
     if([vc isKindOfClass:FBFlutterViewContainer.class] && [vc.uniqueIDString isEqual: options.uniqueId]){
 
-        //这里分为两种情况，由于UIModalPresentationOverFullScreen下，生命周期显示会有问题
-        //所以需要手动调用的场景，从而使下面底部的vc调用viewAppear相关逻辑
+        // There are two cases here, since UIModalPresentationOverFullScreen has lifecycle display issues
+        // Manual calling is needed so that the underlying vc calls viewAppear related logic
         if(vc.modalPresentationStyle == UIModalPresentationOverFullScreen){
 
-            //这里手动beginAppearanceTransition触发页面生命周期
+            // Manually trigger page lifecycle with beginAppearanceTransition
             [self.navigationController.topViewController beginAppearanceTransition:YES animated:NO];
 
             [vc dismissViewControllerAnimated:YES completion:^{
                 [self.navigationController.topViewController endAppearanceTransition];
             }];
         }else{
-            //正常场景，直接dismiss
+            // Normal case, dismiss directly
             [vc dismissViewControllerAnimated:YES completion:^{}];
         }
     }else{
-        //否则走pop逻辑
+        // Otherwise use pop logic
         [self.navigationController popViewControllerAnimated:animated];
     }
 

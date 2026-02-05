@@ -1,155 +1,155 @@
 ## NEXT
 
 ## 4.6.5
-1. [dart]支持业务侧获取当前flutter页面是否是外部路由flutter页面
+1. [dart] Support business side to get whether current flutter page is external route flutter page
 
 ## 4.6.4
-1. [dart]新增demo验证extended_image插件的图片左右滑动切换、缩放等手势操作是否有效
-2. [ohos]对外提供接口用于业务侧判断当前flutterEntry是否处于topContainer
+1. [dart] Add demo to verify extended_image plugin's image swipe left/right, zoom and other gesture operations
+2. [ohos] Provide external interface for business side to determine if current flutterEntry is at topContainer
 
 ## 4.6.3
-1. Revert "支持ACB跳跃路由业务场景" Reason: 经讨论，认为夸克业务中的该场景可以直接在业务侧实现，不需要改动boost内部，为了尽量减少对boost内部逻辑的干扰，决定回滚该提交
-2. [ohos]简化实现'修复连续打开同一个弹窗再回退时页面卡死的问题'
-3. [ios]修复打开一个新的container时会执行多次surfaceUpdated的问题
-4. Revert "[ios]修复打开一个新的container时会执行多次surfaceUpdated的问题" Reason: 该修改存在bad case，需要换一种实现方式
-5. [ios]重新实现“修复打开一个新的container时会执行多次surfaceUpdated的问题”
+1. Revert "Support ACB jump route business scenario" Reason: After discussion, it's considered that this scenario in Quark business can be implemented directly on business side, no need to modify boost internal, to minimize interference with boost internal logic, decided to revert this commit
+2. [ohos] Simplify implementation of 'Fix page freeze when continuously opening same dialog and going back'
+3. [ios] Fix surfaceUpdated being executed multiple times when opening a new container
+4. Revert "[ios] Fix surfaceUpdated being executed multiple times when opening a new container" Reason: This modification has bad case, need different implementation
+5. [ios] Re-implement "Fix surfaceUpdated being executed multiple times when opening a new container"
 
 ## 4.6.2
-1. 更新README以及FAQ
-2. [ohos]修复日志无法序列化处理BigInt的问题
-3. 支持ACB跳跃路由业务场景
+1. Update README and FAQ
+2. [ohos] Fix log unable to serialize BigInt issue
+3. Support ACB jump route business scenario
 
 ## 4.6.1
-1. [ohos]解决应用切换横屏时自动分屏的问题
-2. [ohos]解决dialog透明弹窗从全屏页面返回时重新执行进入动画的问题
-3. [ohos,dart]native侧取消业务自定义实现RouterOptions，优化页面返回传参接口易用性，修复native页面返回flutter页面时传参可能失败的问题
-4. [ohos]允许业务自己实现页面出栈逻辑
-5. [dart]优化PlatformView示例代码
-6. [dart]增加隐藏platformview的示例代码
-7. [dart]补充完善图片格式测试案例
-8. Revert: "[ohos,dart]native侧取消业务自定义实现RouterOptions，优化页面返回传参接口易用性..."
-9. [ohos]修复连续打开同一个弹窗再回退时页面卡死的问题
-10. [ohos,dart]优化页面返回传参接口易用性，修复native页面返回flutter页面时传参可能失败的问题
+1. [ohos] Solve auto split screen issue when app switches to landscape
+2. [ohos] Solve dialog transparent popup re-executing enter animation when returning from fullscreen page
+3. [ohos,dart] Native side cancel business custom RouterOptions implementation, optimize page return parameter interface usability, fix possible parameter passing failure when native page returns to flutter page
+4. [ohos] Allow business to implement their own page pop logic
+5. [dart] Optimize PlatformView example code
+6. [dart] Add hidden platformview example code
+7. [dart] Complete image format test cases
+8. Revert: "[ohos,dart] Native side cancel business custom RouterOptions implementation, optimize page return parameter interface usability..."
+9. [ohos] Fix page freeze when continuously opening same dialog and going back
+10. [ohos,dart] Optimize page return parameter interface usability, fix possible parameter passing failure when native page returns to flutter page
 
 ## 4.5.11
-1. [dart]添加`SystemChrome.setPreferredOrientations`测试案例
-2. [ohos]修复透明弹窗由于被其他全屏page遮盖导致弹窗再现时页面假死等一系列问题，补充和dialog相关场景example demo
-3. [ohos]解决FlutterBoostEntry中onPageHide的调用和onPageShow不对称问题
-4. [ohos]适配最新的PlatformView方案
-5. [ohos]解决横竖屏不生效的问题
-6. [ohos]解决因权限问题从系统剪贴板获取数据失败的问题
-7. [ohos]解决透明弹窗返回时底下flutter页面闪烁的问题
+1. [dart] Add `SystemChrome.setPreferredOrientations` test case
+2. [ohos] Fix transparent popup freeze and related issues when covered by other fullscreen page, add dialog related scene example demo
+3. [ohos] Solve onPageHide call asymmetry with onPageShow in FlutterBoostEntry
+4. [ohos] Adapt to latest PlatformView solution
+5. [ohos] Solve portrait/landscape orientation not taking effect issue
+6. [ohos] Solve data retrieval failure from system clipboard due to permission issues
+7. [ohos] Solve flutter page flickering under transparent popup when going back
 
 # 4.5.10
-1. [dart]添加HDR/HEIC/HEIF/TIFF/WBMP/WEBP等图片格式的测试案例
-2. [ohos]解决透明弹窗页面切后台或被Native页面覆盖后出现的假死问题
+1. [dart] Add HDR/HEIC/HEIF/TIFF/WBMP/WEBP and other image format test cases
+2. [ohos] Solve freeze issue when transparent popup page switches to background or is covered by Native page
 
 # 4.5.9
-1. [ohos]完全支持鸿蒙页面返回参数传递，包括全部四种情况(native返回native、Flutter返回native、native返回Flutter、Flutter返回Flutter)
-2. [ohos]添加前后台事件通知逻辑
-3. [ohos]让业务可以控制调试日志的输出
-4. [ohos]解决透明弹窗场景下前后台切换页面假死的问题
+1. [ohos] Fully support HarmonyOS page return parameter passing, including all four cases (native to native, Flutter to native, native to Flutter, Flutter to Flutter)
+2. [ohos] Add foreground/background event notification logic
+3. [ohos] Allow business to control debug log output
+4. [ohos] Solve page freeze issue during foreground/background switch in transparent popup scenario
 
 # 4.5.8
-1. [ohos]鸿蒙页面返回传参支持
-2. [ohos]修复Tab场景下log莫名报‘Missing params’的问题
-3. [ohos]重构ets层页面路由参数传递逻辑，支持native页面获取来自上一个native或flutter页面的业务参数
-4. [ohos]适配api12 & DevEco-5.0.3.300
+1. [ohos] HarmonyOS page return parameter support
+2. [ohos] Fix Tab scenario log inexplicably reporting 'Missing params' issue
+3. [ohos] Refactor ets layer page route parameter passing logic, support native page to get business parameters from previous native or flutter page
+4. [ohos] Adapt to api12 & DevEco-5.0.3.300
 
 # 4.5.7
-1. [ohos]问题已修复，统一使用回鸿蒙社区的git依赖
-2. 更新FlutterBoost版本说明
-3. 添加clipboard示例
-4. [ohos]更新FlutterBoost项目结构
+1. [ohos] Issue fixed, unified to use HarmonyOS community git dependency
+2. Update FlutterBoost version description
+3. Add clipboard example
+4. [ohos] Update FlutterBoost project structure
 
 # 4.5.6
-1. [ohos]接管FlutterView绑定引擎的时机，解决Tab场景显示异常的问题，避免冗余的attach/detach
-2. [ohos]解决从透明弹窗返回后页面假死的问题
+1. [ohos] Take over FlutterView engine binding timing, solve Tab scenario display abnormal issue, avoid redundant attach/detach
+2. [ohos] Solve page freeze after returning from transparent popup
 
 # 4.5.5
-1. [ohos]修复image_pick插件示例
-2. [ohos]简化鸿蒙示例代码
-3. [ohos]非官方认可的联合插件，需要在pubspec中单独指定
-4. [ohos]修复WebView示例代码
-5. [ohos]使用Navigation，解决半透明弹窗不透底的问题
-6. [ohos]修复使用Navigation后页面后退异常的问题
-7. [ohos]代码重构，便于后续优化
-8. [ohos]默认显式使用surface模式
-9. 添加SafeArea测试案例
-10. [ohos]设置全屏窗口
-11. [ohos]修复透明弹窗透底异常的问题
-12. [ohos]添加PlatformView测试案例
-13. [ohos]更新插件的import方式
+1. [ohos] Fix image_pick plugin example
+2. [ohos] Simplify HarmonyOS example code
+3. [ohos] Unofficially approved federated plugins need to be specified separately in pubspec
+4. [ohos] Fix WebView example code
+5. [ohos] Use Navigation, solve semi-transparent popup not showing through issue
+6. [ohos] Fix page back abnormal issue after using Navigation
+7. [ohos] Code refactoring for future optimization
+8. [ohos] Default to explicitly use surface mode
+9. Add SafeArea test case
+10. [ohos] Set fullscreen window
+11. [ohos] Fix transparent popup showing through abnormal issue
+12. [ohos] Add PlatformView test case
+13. [ohos] Update plugin import method
 
 ## 4.5.4
-1. [ohos]支持传入启动参数和dart入口参数
-2. [ohos]更新plugin注册逻辑（BREAKING CHANGE）
+1. [ohos] Support passing startup parameters and dart entry parameters
+2. [ohos] Update plugin registration logic (BREAKING CHANGE)
 
 ## 4.5.3
-1. [ohos]移除不必要的生命周期通知
-2. [ohos]修复getStackFromHost/saveStackToHost相关的message channel代码错误
-3. [ohos]example增加打开鸿蒙原生页面的逻辑
-4. [ohos]修复`hot restart`白屏的问题
+1. [ohos] Remove unnecessary lifecycle notifications
+2. [ohos] Fix getStackFromHost/saveStackToHost related message channel code error
+3. [ohos] Example add logic to open HarmonyOS native page
+4. [ohos] Fix `hot restart` white screen issue
 
 ## 4.5.2
-1. [ohos]解决页面切换闪烁问题
+1. [ohos] Solve page switch flickering issue
 
 ## 4.5.1
-1. [ohos]临时修复tab内容第一次显示异常的问题
+1. [ohos] Temporarily fix tab content first display abnormal issue
 
 ## 4.5.0
-1. 适配鸿蒙
+1. Adapt to HarmonyOS
 
 ## 4.4.2
-1. 将AGP的版本从7.0.4降回3.3.0
+1. Downgrade AGP version from 7.0.4 to 3.3.0
 
 ## 4.4.1
-1. Revert: "修复快速内部路由切换导致页面卡死的问题"
+1. Revert: "Fix page freeze caused by fast internal route switching"
 
 ## 4.4.0
-1. 向业务暴露更新SystemUIOverlays方法
-2. 完善SystemUiOverlayStyle Demo
-3. 创建新容器时，默认使用上个容器的SystemUiOverlayStyle来配置新容器的状态栏、导航栏
-4. 修复快速内部路由切换导致页面卡死的问题
+1. Expose updateSystemUIOverlays method to business
+2. Improve SystemUiOverlayStyle Demo
+3. When creating new container, use previous container's SystemUiOverlayStyle by default to configure new container's status bar, navigation bar
+4. Fix page freeze caused by fast internal route switching
 
 ## 4.3.1
 1. Uniform iOS code style.
-2. 更新提issue的模版
-3. fix: 修复6.0 AccessibilityBridge.release()' on a null object reference
-4. [ios] 解决pop传参不能返回的问题
+2. Update issue submission template
+3. fix: Fix 6.0 AccessibilityBridge.release()' on a null object reference
+4. [ios] Solve pop parameter not returning issue
 
 ## 4.3.0
 1. Improve codes in Android. (#1855)
 2. Improve codes (#1856)
-3. [Android] 解决横/竖屏切换后，后退时闪现页面被拉伸（或压缩）的问题 (#1857)
+3. [Android] Solve stretched (or compressed) page flash during back after landscape/portrait switch (#1857)
 4. Support passing through Dart entrypoint arguments (#1858)
-5. Revert: "[Android] 解决横/竖屏切换后，后退时闪现页面被拉伸（或压缩）的问题 (#1857)" (#1859)
+5. Revert: "[Android] Solve stretched (or compressed) page flash during back after landscape/portrait switch (#1857)" (#1859)
 
 ## 4.2.3
-1. 增加自定义`appBuilder`示例 (#1827)
-2. [Android] fix flutterfragment快速切换时，出现不渲染的bug (#1830)
+1. Add custom `appBuilder` example (#1827)
+2. [Android] fix flutterfragment fast switching causes non-rendering bug (#1830)
 3. Fixes the compilation errors when running the example with Flutter 3.10.0 (#1838)
-4. 解决打开弹窗并关闭后再关闭页面时「返回参数」不能传递到上一个页面的问题 (#1846)
-5. 修复removeWithResult接口不能返回结果的问题 (#1850)
+4. Solve issue where return parameters cannot be passed to previous page when opening dialog and closing then closing page (#1846)
+5. Fix removeWithResult interface not returning result issue (#1850)
 6. Add license headers (#1851)
-7. 暴露接口，让业务可以开启Android端内部日志输出，便于调试问题 (#1853)
+7. Expose interface to allow business to enable Android internal log output for debugging (#1853)
 
 ## 4.2.2
-1. [Android] 通过栈来记录活动的Activity，解决部分场景下topActivity可能为空的问题 (#1810)
+1. [Android] Use stack to record active Activity, solve topActivity possibly being null in some scenarios (#1810)
 2. Add Test Cases for ImageCache. (#1822)
 3. Fix type conversion errors and add a prompt for unregistered routes. (#1823)
-4. 修复后退时前一个页面不必要的rebuild的问题 (#1824)
+4. Fix unnecessary rebuild of previous page when going back (#1824)
 
 ## 4.2.1
 1. Add hero animation demo. (#1756)
 2. [ios] Fixes the warning that the license file does not exist (#1759)
-3. 处理 pushReplacement 泛型转换错误 (#1758)
-4. 更新授权许可链接 (#1754)
-5. fix(FlutterTextureHooker):设置setSurfaceTexture异常问题 (#1774)
-6. 为半透明弹窗增加PlatformView场景 (#1799)
-7. 开放FlutterBoostAppState中的_containers (#1800)
-8. 修复部分push场景与该手势可能冲突导致触发了两次pop
-9. [Android] 解决FlutterBoostFragment切换时可能闪现上一个页面的问题 (#1807)
+3. Handle pushReplacement generic conversion error (#1758)
+4. Update license link (#1754)
+5. fix(FlutterTextureHooker): Fix setSurfaceTexture exception issue (#1774)
+6. Add PlatformView scenario for semi-transparent popup (#1799)
+7. Open _containers in FlutterBoostAppState (#1800)
+8. Fix partial push scenario conflict with gesture causing two pops to trigger
+9. [Android] Solve FlutterBoostFragment possibly flashing previous page during switch (#1807)
 
 ## 4.2.0
 1. [Android] Fixes HybridCompositon does not work (#1743)
@@ -157,215 +157,215 @@
 3. [ios] Use a screen edge pan gesture to go back to the previous page of a non-container page. (#1751)
 
 ## 4.1.1
-1. [Android] 修复FlutterFragment可能会盖住NativeFragment的Bug (#1736)
+1. [Android] Fix FlutterFragment possibly covering NativeFragment Bug (#1736)
 2. Update README_CN.md (#1731)
 
 ## 4.1.0
 1. [Android]fix popUntil not working (#1718)
 2. Add demo for afterimage test
-3. [Android] 与纯Flutter应用生命周期行为保持一致：应用切换到后台时，暂停帧调度，解决动画残影的问题。[注意] 应用「务必」确保前后台通知事件（onBackground/onForeground）的准确性（必要时通过dispatchBackForegroundEvent接口进行接管），否则可能出现页面假死现象；
-4. [Android]对子类开放didFragmentShow和didFragmentHide (#1726)
+3. [Android] Keep lifecycle behavior consistent with pure Flutter app: pause frame scheduling when app switches to background, solve animation afterimage issue. [Note] App must ensure accuracy of foreground/background notification events (onBackground/onForeground) (take over via dispatchBackForegroundEvent interface when necessary), otherwise page freeze may occur;
+4. [Android] Open didFragmentShow and didFragmentHide to subclass (#1726)
 
 ## 4.0.4
-1. 修复 onPostPush 和 onPostPush 类型强转失败 (#1707)
-2. [Android] 提前暴露混淆导致的异常，并给出明确指引
+1. Fix onPostPush and onPostPush type cast failure (#1707)
+2. [Android] Expose exception caused by obfuscation early, with clear guidance
 
 ## 4.0.3
-1. 修复`addEventListener`函数中可能的类型转换错误
+1. Fix possible type conversion error in `addEventListener` function
 
 ## 4.0.2
-1. 增加dual_screen测试案例
-2. [Android]恢复detachFromFlutterEngine重载逻辑，解决空指针崩溃问题
+1. Add dual_screen test case
+2. [Android] Restore detachFromFlutterEngine override logic, solve null pointer crash issue
 
 ## 4.0.1
-1. 修复部分场景下运行时类型错误，例如hot restart
-2. 删除调试信息
+1. Fix runtime type error in some scenarios, e.g. hot restart
+2. Remove debug info
 ## 4.0.0
-1. 支持Flutter 3.0
-2. 示例代码迁移至空安全
+1. Support Flutter 3.0
+2. Migrate example code to null safety
 
 ## 3.1.0
-1. [Android] 去掉不必要的兜底方案，解决Native页面返回值丢失的问题
-2. [Android] 增加计数器测试案例，验证页面刷新问题
-3. 支持空安全（基于Flutter2.5.x）
-4. [Android] 移除对AndroidX的依赖
+1. [Android] Remove unnecessary fallback solution, solve Native page return value loss issue
+2. [Android] Add counter test case, verify page refresh issue
+3. Support null safety (based on Flutter2.5.x)
+4. [Android] Remove AndroidX dependency
 
 ## v3.0-release.2
-1. 修复flutter首页打开A页面，打开B页面返回到首页后内存泄露问题
-2. [bugfix] 1.解决异步导致的断言错误(#1583)；2.修改测试案例，解决测试页面被拦截的问题
-3. [Android] 完善PlatformView测试案例： 1. 增加复杂的Native动画场景； 2. 支持intent打开测试页面，方便自动化测试；
-4. 增加简单的WebView测试场景
-5. 将拦截器内部实现修改为同步，避免时序相关问题
+1. Fix memory leak issue when flutter home opens page A, opens page B and returns to home
+2. [bugfix] 1. Solve assertion error caused by async (#1583); 2. Modify test case, solve test page being intercepted issue
+3. [Android] Improve PlatformView test case: 1. Add complex Native animation scenario; 2. Support intent to open test page, convenient for automation testing;
+4. Add simple WebView test scenario
+5. Change interceptor internal implementation to synchronous, avoid timing related issues
 
 ## v3.0-release.1
-1. [ios]增加platform view测试案例 (#1546)
-2. [Android] 在Fragment的使用场景中，onHiddenChanged/setUserVisibleHint可能比onCreateView先调用 (#1456)
-3. [featurePR]使FlutterBoost的FlutterBoostFragment#finishContainer方法在子类可以定制容器关闭逻辑 (#1565)
-4. fix(Android):FlutterBoost开启FlutterBoostFragment页面导致状态栏颜色异常 (#1570)
-5. 拦截器重构： (#1583)
-6. 重命名example_new为example_new_for_ios
+1. [ios] Add platform view test case (#1546)
+2. [Android] In Fragment usage scenario, onHiddenChanged/setUserVisibleHint may be called before onCreateView (#1456)
+3. [featurePR] Make FlutterBoost's FlutterBoostFragment#finishContainer method allow subclass to customize container close logic (#1565)
+4. fix(Android): FlutterBoost opening FlutterBoostFragment page causes status bar color abnormal (#1570)
+5. Interceptor refactoring: (#1583)
+6. Rename example_new to example_new_for_ios
 
 Breaking Change
-1. 拦截器重构，具体见 https://github.com/alibaba/flutter_boost/pull/1583
+1. Interceptor refactoring, see https://github.com/alibaba/flutter_boost/pull/1583
 
 ## v3.0-preview.18
-1. 修复hot restart导致的黑屏问题 (#1537)
-2. feat: Android抛出popRoute代理回调 (#1531)
-3. 将运行时异常修改为日志输出 (#1541)
-4. BoostContainer增加backPressedHandler用于自定义返回键功能
-5. 支持通过FlutterEngineProvider创建引擎
-6. 优化example
+1. Fix black screen caused by hot restart (#1537)
+2. feat: Android expose popRoute delegate callback (#1531)
+3. Change runtime exception to log output (#1541)
+4. BoostContainer add backPressedHandler for custom back key functionality
+5. Support creating engine via FlutterEngineProvider
+6. Optimize example
 
 ## v3.0-preview.17
-1. [Android]修复特定场景下activity泄漏的问题
-2. [Android] 修复FlutterEngine空指针异常 (#1471)
-3. [flutter] 提供带有缓存的widget组件 BoostCacheWidget,可以解决在push过程中导致页面rebuild的问题 (#1486)
-4. [iOS] 修改 podspec xcconfig 为 pod_target_xcconfig ，避免修改宿主工程编译配置 (#1507)
+1. [Android] Fix activity leak in specific scenario
+2. [Android] Fix FlutterEngine null pointer exception (#1471)
+3. [flutter] Provide cached widget component BoostCacheWidget, can solve page rebuild issue during push process (#1486)
+4. [iOS] Modify podspec xcconfig to pod_target_xcconfig, avoid modifying host project compile configuration (#1507)
 
 ## v3.0-preview.16
-1. [Android] 修复特定场景下activity泄漏的问题 (#1444)
-2. [Android] 修复Fragment特定使用场景下的崩溃问题 (#1450)
-3. popUntil使用containers列表不能保证顺序性，在同步popRoute过程会导致出现containers的乱序。需要通过提前clone队列进行保证 (#1462)
-4. [dart] 修复应用启动首次访问flutter页面白屏问题
+1. [Android] Fix activity leak in specific scenario (#1444)
+2. [Android] Fix Fragment crash in specific usage scenario (#1450)
+3. popUntil using containers list cannot guarantee order, will cause containers disorder during sync popRoute process. Need to clone queue in advance to guarantee (#1462)
+4. [dart] Fix white screen issue when first visiting flutter page on app launch
 
 ## v3.0-preview.15
-1. [ios]对外暴露flutter页面资源释放API(#1443)
-2. [Android] 从Native页面切换回FlutterFragment时，恢复Dart视角的system chrome style，解决沉浸式状态栏显示问题
+1. [ios] Expose flutter page resource release API externally (#1443)
+2. [Android] When switching back to FlutterFragment from Native page, restore Dart perspective system chrome style, solve immersive status bar display issue
 
 ## v3.0-preview.14
-1. [ios] 修复应用置后台后，通过外链接起应用进入Flutter页面,applicationState还处于inActive状态,渲染错误的问题 (#1442)
+1. [ios] Fix rendering error when app is put to background then launched via deeplink to enter Flutter page while applicationState is still in inActive state (#1442)
 
 ## v3.0-preview.13
-1. [flutter] 修复在引擎启动完毕但是flutter侧还没有加载完毕的时候进行操作的函数调用的时序问题 (#1415)
-2. [Android] 修复实现了onWillPop回调的Widget不能后退的问题 (#1411)
+1. [flutter] Fix timing issue of function calls when performing operations after engine startup but before flutter side has finished loading (#1415)
+2. [Android] Fix Widget with onWillPop callback not being able to go back (#1411)
 
 ## v3.0-preview.12
-1. [iOS] 将控制iOS手势的方法收口到BoostChannel作为通用方法，以及在container的show的监听中做手势的动态禁用和启用
-2. [flutter] 更新example以及默认的appBuilder实现，传入builder参数，避免showDialog无法关闭dialog而是关闭页面的操作
-3. [flutter] 修复路由在极端情况下顺序错误的问题
+1. [iOS] Consolidate iOS gesture control methods to BoostChannel as common methods, and dynamically disable and enable gestures in container's show listener
+2. [flutter] Update example and default appBuilder implementation, pass builder parameter to avoid showDialog closing page instead of dialog
+3. [flutter] Fix route order error in extreme cases
 
 ## v3.0-preview.11
-1. [flutter] 让NavigatorExt接管pushNamed方法
-2. [flutter] 增加tab模式的example，删除iOS端无用的生命周期，避免初始化阶段进行push，造成初始化情况下tab白屏问题
-3. [iOS] 提前事件监听的注册时机，以及在删除的时候对block进行判空，避免crash
+1. [flutter] Let NavigatorExt take over pushNamed method
+2. [flutter] Add tab mode example, delete unused lifecycle on iOS side, avoid push during initialization phase, solve tab white screen issue during initialization
+3. [iOS] Advance event listener registration timing, and null check block when deleting, avoid crash
 
 ## v3.0-preview.10
-1. [iOS] 提供引擎预热功能，避免第一次进入flutter页面短暂的白屏/黑屏，以及字体大小跳动的情况
-2. [iOS] 单VC，多flutterPage下，动态控制容器手势侧滑，内部有多page的时候，侧滑将走flutter内部侧滑逻辑，避免多page下侧滑直接带走整个容器的情况
-3. [dart] 更新example代码，表明如何在单容器内跳转拥有跳转动画（比如iOS的push效果）
+1. [iOS] Provide engine warm-up functionality, avoid brief white/black screen when first entering flutter page, and font size jumping
+2. [iOS] Single VC, multi flutterPage scenario, dynamically control container gesture swipe, when there are multiple pages internally, swipe will go through flutter internal swipe logic, avoid swipe taking away entire container when there are multiple pages
+3. [dart] Update example code, show how to have transition animation when navigating within single container (e.g. iOS push effect)
 
 ## v3.0-preview.9
-1.  [Android] 解决切后台场景下Android Q生命周期回调异常导致透明弹窗背景不正确问题 (#1288)
-2.  [Android] 增加引擎释放接口 (#1291)
+1.  [Android] Solve transparent popup background incorrect issue due to Android Q lifecycle callback abnormal in background switch scenario (#1288)
+2.  [Android] Add engine release interface (#1291)
 
 ## v3.0-preview.8
-1. [Android] 解决特定场景下半透明弹窗背景黑/白屏、传参丢失、请求权限失败，以及image_picker插件不可用等问题
-2. [Android] 修复FlutterBoostActivity和FlutterBoostFragment接收不到请求权限结果的bug
-3. 解决 iOS dismissViewController completion 异步回调事件不完整的问题
-4. [Android] 适配页面透明参数，增加测试案例 (#1265)
-5. [Android] fix #1264 修复由于这条提交 #1250 导致FlutterboosrActivity 接收不到onActivityResult 回调结果 的bug
+1. [Android] Solve semi-transparent popup background black/white screen, parameter loss, permission request failure, and image_picker plugin unavailable issues in specific scenarios
+2. [Android] Fix FlutterBoostActivity and FlutterBoostFragment not receiving permission request result bug
+3. Solve iOS dismissViewController completion async callback event incomplete issue
+4. [Android] Adapt page transparency parameter, add test case (#1265)
+5. [Android] fix #1264 Fix bug where FlutterboostActivity cannot receive onActivityResult callback result due to commit #1250
 
 ## v3.0-preview.7
-1. [Android] 解决前一个页面destroy时导致当前页面的PlatformViewsChannel断开的问题 (#1250)
-2. Hfix #1229 修复example中从Flutter页面推后台再回前天，栈顶页面是Native的页面的问题
-3. 修复单引擎多VC下问题：1.updateViewportMetrics在键盘唤起时被多个VC调用 2.Tab初始化场景下导致的Crash
-4. 修复 FlutterBoostFragment跳转新的FlutterBoostFragment，返回上一个FlutterFragment后不响应点击事件
+1. [Android] Solve PlatformViewsChannel disconnect issue when previous page destroys causing current page issue (#1250)
+2. Hfix #1229 Fix example issue where when pushing to background from Flutter page and coming back to foreground, top page is Native page
+3. Fix single engine multi VC issue: 1. updateViewportMetrics being called by multiple VCs when keyboard is invoked 2. Crash in Tab initialization scenario
+4. Fix FlutterBoostFragment navigating to new FlutterBoostFragment, returning to previous FlutterFragment not responding to click events
 
 
 ## v3.0-preview.6
-1.[iOS] 修复iOS打开Flutter页面再关闭不走dispose逻辑问题
-2.[Android] 解决setSystemUIOverlayStyle不生效的问题
-3.[Android] 默认开启状态恢复功能
+1.[iOS] Fix iOS opening Flutter page then closing not going through dispose logic issue
+2.[Android] Solve setSystemUIOverlayStyle not taking effect issue
+3.[Android] Enable state restoration by default
 
 ## v3.0-preview.5
-1. Native侧代码重构
-  a.uniqueId的创建方式与Dart侧保持一致
-  b.去掉ContainerShadowNode抽象代码
-  c.去掉Flutter容器创建时不必要的engineId参数
-2. open方法实现自定义配置参数，增强拓展性
-3. [双端一致性] Android端抽象出FlutterContainerManager的概念
-4. 原生 onActivityResult 回传参数到Flutter 重构
-5. 增加线程判断，确保 engine run 在主线程，可以让业务在子线程 setup boost
-6. [android] 修复Tab场景下多个Fragment使用了同一个FlutterView，以及解决Fragment第一次显示时不能正确切换surface的问题
-7. FlutterBoostFragment优化
-8. [android]当FlutterFragment的onCreateView回调时，暂不attache到引擎
-9. iOS侧透明能力提供
-10. 增加example3.0
-11. 修复FlutterFragment退出后，下面的容器页面出现假死问题
-12. 为了业务能更方便地从2.0升级到3.0，为remove接口提供argument可选参数
-13. 【dart,Android,iOS】均提供自定义事件发送机制，事件均可双向传递
-14. [Android] 允许业务复用提前创建的引擎
-15. FIXED:HeroController.didPush assert(navigator != null) 报空异常
-16. 确保onPageShow事件能够在页面创建的时候调用到
-17. PageVisibility不再提供create和destroy方法，另外onPageCreate和onPageDestroy改名为onPagePush和onPagePop
-18. FIXED:同一个容器提供多个FlutterView,业务层通过remove(uniqueId)，指定id移除非首个flutterview会失效
-19. Boost接管handleAppLifecycleStateChanged，让Flutter生命周期与应用前后台对齐
-20. BoostNavigator添加pushReplacement方法，同时修复pop和findContainerById的逻辑
-21. 过滤内部路由RouteSettings.name为null的路由事件，如对话框路等非页面路由事件，否则影响正常页面生命周期
-22. [双端一致性] iOS端FBFlutterContainerManager与Android统一，FLutterBoostPlugin生命周期相关逻辑统一
-23. 调整 Flutter Engine 初始化流程，避免使用异步方式产生插件注册时序问题
-24. 支持通过原生Navigator关闭容器页面
-25. 重构内部路由Pop时的结果回传逻辑
-26. [Android] 修复特定场景下（例如，ViewPager2）onPageHide事件未触发的问题
+1. Native side code refactoring
+  a. uniqueId creation method consistent with Dart side
+  b. Remove ContainerShadowNode abstract code
+  c. Remove unnecessary engineId parameter when creating Flutter container
+2. open method implements custom configuration parameters, enhance extensibility
+3. [Consistency] Android side abstract FlutterContainerManager concept
+4. Native onActivityResult return parameter to Flutter refactoring
+5. Add thread check, ensure engine run on main thread, allow business to setup boost in sub-thread
+6. [android] Fix multiple Fragments using same FlutterView in Tab scenario, and solve Fragment first display not correctly switching surface issue
+7. FlutterBoostFragment optimization
+8. [android] When FlutterFragment's onCreateView callback, temporarily don't attach to engine
+9. iOS side transparency capability provided
+10. Add example3.0
+11. Fix page freeze after FlutterFragment exits for container page below
+12. For easier business upgrade from 2.0 to 3.0, provide optional argument parameter for remove interface
+13. [dart,Android,iOS] All provide custom event sending mechanism, events can be passed bidirectionally
+14. [Android] Allow business to reuse pre-created engine
+15. FIXED: HeroController.didPush assert(navigator != null) null exception
+16. Ensure onPageShow event can be called when page is created
+17. PageVisibility no longer provides create and destroy methods, also onPageCreate and onPageDestroy renamed to onPagePush and onPagePop
+18. FIXED: Same container provides multiple FlutterViews, business layer using remove(uniqueId) to remove non-first flutterview by specified id fails
+19. Boost takes over handleAppLifecycleStateChanged, let Flutter lifecycle align with app foreground/background
+20. BoostNavigator add pushReplacement method, also fix pop and findContainerById logic
+21. Filter internal route events where RouteSettings.name is null, like dialog and other non-page route events, otherwise affects normal page lifecycle
+22. [Consistency] iOS side FBFlutterContainerManager unified with Android, FLutterBoostPlugin lifecycle related logic unified
+23. Adjust Flutter Engine initialization flow, avoid timing issues with plugin registration using async method
+24. Support closing container page through native Navigator
+25. Refactor internal route Pop result return logic
+26. [Android] Fix onPageHide event not triggered in specific scenarios (e.g., ViewPager2)
 
 Breaking Change
-1.为了后续Delegate的可扩展性，增加一个FlutterBoostRouteOptions的概念用于封装参数，Delegate的push和pop的参数传递都依赖这个对象
+1. For future Delegate extensibility, add FlutterBoostRouteOptions concept for parameter encapsulation, Delegate's push and pop parameter passing depends on this object
 
-具体见
+See details:
 https://github.com/alibaba/flutter_boost/commit/14a3be59f97cad24bdba8663a79f3d17359641df
 https://github.com/alibaba/flutter_boost/commit/c085258e09b79dc6c3660d384409c50e2497ef4b
 https://github.com/alibaba/flutter_boost/commit/ce48530ad7114703d3a8dfb02e4e32543c9aaa10
 https://github.com/alibaba/flutter_boost/commit/47676230f21472c28791660ec93515f41d4f6c2f
 
-2. BoostNavigator提供的pop接口改为异步
+2. BoostNavigator's pop interface changed to async
 https://github.com/alibaba/flutter_boost/commit/d2d1fdc100dee34085b76d597194b93309e0cd0f
 
-3. PageVisibility不再提供create和destroy方法，另外onPageCreate和onPageDestroy改名为onPagePush和onPagePop
-原先写在onPageCreate和onPageDestroy的代码，写到initState和dispose中
+3. PageVisibility no longer provides create and destroy methods, also onPageCreate and onPageDestroy renamed to onPagePush and onPagePop
+Code previously in onPageCreate and onPageDestroy should be written in initState and dispose
 https://github.com/alibaba/flutter_boost/commit/e2f15b234260ede810e943c4f8248fd07fce6414
 
-4. Boost接管handleAppLifecycleStateChanged，让容器数量决定Flutter的resume和pause状态
-请移步接入文档，看BoostFlutterBinding的使用方式
+4. Boost takes over handleAppLifecycleStateChanged, let container count determine Flutter's resume and pause state
+Please refer to integration documentation for BoostFlutterBinding usage
 https://github.com/alibaba/flutter_boost/commit/173c910ff8ed971eacfa1a263745921ae5cd5689
 https://github.com/alibaba/flutter_boost/commit/abc2598f48dbcbeabf48057eec6d7737b0e21989
 
 
 ## v3.0-beta.11
-1. 修复透明页面背景是前一个Container的问题
-2. 重写BoostContainerWidget判等方法，避免框架层对已存在页面进行rebuild
+1. Fix transparent page background being previous Container issue
+2. Rewrite BoostContainerWidget equality method, avoid framework layer rebuilding existing pages
 
 ## v3.0-beta.10
-1. BoostContainer重构，修复容器内打开和关闭页面时界面不刷新问题
+1. BoostContainer refactoring, fix UI not refreshing when opening and closing pages in container
 
 ## v3.0-beta.9
-1. 添加前台后台的回调接口
-2. 增加从原生open flutter页面时，open操作完成后的回调能力
+1. Add foreground/background callback interface
+2. Add callback capability for when native opens flutter page, after open operation completes
 
 Breaking Change:
- [iOS] 增加从原生open flutter页面时，open操作完成后的回调能力 : https://github.com/alibaba/flutter_boost/commit/7f55728955b0afcdbaba5a17543e9dbdf1c24e65
-由于一些业务方需要知道页面动画是否完成，需要获取present的completion回调，
-因此将
+ [iOS] Add callback capability for when native opens flutter page, after open operation completes: https://github.com/alibaba/flutter_boost/commit/7f55728955b0afcdbaba5a17543e9dbdf1c24e65
+Due to some business parties needing to know if page animation is complete, need to get present's completion callback,
+therefore changed
 - (void) pushFlutterRoute:(NSString *) pageName uniqueId:(NSString *)uniqueId arguments:(NSDictionary *) arguments
-改为
+to
 - (void) pushFlutterRoute:(NSString *) pageName uniqueId:(NSString *)uniqueId arguments:(NSDictionary *) arguments completion:(void(^)(BOOL)) completion;
 
 ## v3.0-beta.8
-1. 提供flutter_boost.dart作为对外接口
-2. BoostNavigator相关API和实现的修改
-3. 解决_pendingResult可能没有完成的问题
-4. 新增前置拦截器能力
-5. 解决在push和pop的时候，页面栈所有页面重复build的问题
-6. 使用effective_dart包提供的linter规则文件
+1. Provide flutter_boost.dart as external interface
+2. BoostNavigator related API and implementation modifications
+3. Solve _pendingResult possibly not completing issue
+4. Add pre-interceptor capability
+5. Solve all pages in page stack rebuilding during push and pop issue
+6. Use effective_dart package provided linter rules file
 
 ## v3.0-beta.7
-1. 生命周期实现调整
-2. 解决Android端特定场景下生命周期事件重复的问题
-3. 添加自定义启动参数设置入口
-4. 新增页面回退传参能力
+1. Lifecycle implementation adjustment
+2. Solve Android side lifecycle event duplication in specific scenarios
+3. Add custom startup parameter setting entry
+4. Add page back parameter passing capability
 
 Breaking Change:
-page create and destroy event adjustment : https://github.com/alibaba/flutter_boost/commit/62c88805bf08606805e13254170691d2bc00bd4a
-由于生命周期实现的改变，PageVisiblityObserver的onPageShow和onPageHide方法中，不再包含参数isForegroundEvent以及isBackgroundEvent
+page create and destroy event adjustment: https://github.com/alibaba/flutter_boost/commit/62c88805bf08606805e13254170691d2bc00bd4a
+Due to lifecycle implementation change, PageVisiblityObserver's onPageShow and onPageHide methods no longer include isForegroundEvent and isBackgroundEvent parameters
 
 ## 1.12.13+2
   Fixed bugs
@@ -459,14 +459,14 @@ FlutterBoostPlugin2
 
 ```
 
-2. FLBPlatform protocol removed flutterCanPop、accessibilityEnable and added entryForDart
+2. FLBPlatform protocol removed flutterCanPop, accessibilityEnable and added entryForDart
 **Before change:**
 ```objectivec
 @protocol FLBPlatform <NSObject>
 @optional
 //Whether to enable accessibility support. Default value is Yes.
 - (BOOL)accessibilityEnable;
-// flutter模块是否还可以pop
+// Whether flutter module can still pop
 - (void)flutterCanPop:(BOOL)canpop;
 @required
 - (void)openPage:(NSString *)name
@@ -509,7 +509,7 @@ Map getSettings();
 And added following APIs:
 
 ```java
-void registerPlugins(PluginRegistry registry) 方法
+void registerPlugins(PluginRegistry registry);
 void openContainer(Context context,String url,Map<String,Object> urlParams,int requestCode,Map<String,Object> exts);
 void closeContainer(IContainerRecord record, Map<String,Object> result, Map<String,Object> exts);
 IFlutterEngineProvider engineProvider();

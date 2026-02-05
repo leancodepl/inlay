@@ -540,12 +540,12 @@ class _PushWidgetState extends State<PushWidget> {
           leading: Builder(builder: (BuildContext context) {
             return IconButton(
               icon: const Icon(Icons.arrow_back),
-              // 如果有抽屉的话的就打开
+              // Open the drawer if there is one
               onPressed: () {
                 // BoostNavigator.instance.pop('Hello, I am from PushWidget.');
                 Navigator.of(context).pop('Hello, I am from PushWidget.');
               },
-              // 显示描述信息
+              // Display description info
               tooltip: MaterialLocalizations.of(context).openAppDrawerTooltip,
             );
           }),

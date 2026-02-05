@@ -273,7 +273,7 @@ class _MyAppState extends State<MyApp> {
           settings: settings, pageBuilder: (_, __, ___) => ExtendedImageDemo());
     },
 
-    ///可以在native层通过 getContainerParams 来传递参数
+    /// Parameters can be passed through getContainerParams in native layer
     'flutterPage': (settings, isContainerPage, uniqueId) {
       debugPrint('flutterPage settings:$settings, uniqueId:$uniqueId');
       return PageRouteBuilder<dynamic>(
@@ -408,7 +408,7 @@ class _MyAppState extends State<MyApp> {
           settings: settings, pageBuilder: (_, __, ___) => ImageFormatDemo());
     },
 
-    ///isContainerPage的值和BoostNavigator.instance.push()该页面时的withContainer值相同
+    /// isContainerPage value equals the withContainer value when calling BoostNavigator.instance.push() for this page
     'cupertino_page_route_demo':(settings, isContainerPage, uniqueId) {
       if (isContainerPage) {
         Logger.log('current page is a container page');
@@ -421,7 +421,7 @@ class _MyAppState extends State<MyApp> {
       }
     },
 
-    ///使用 BoostCacheWidget包裹你的页面时，可以解决push pageA->pageB->pageC 过程中，pageA，pageB 会多次 rebuild 的问题
+    /// Using BoostCacheWidget to wrap your page can solve the problem of pageA, pageB rebuilding multiple times during push pageA->pageB->pageC process
     'flutterRebuildDemo': (settings, isContainerPage, uniqueId) {
       return MaterialPageRoute(
           settings: settings,
@@ -470,8 +470,8 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return FlutterBoostApp(routeFactory,
-        // 如果自定了appBuilder，需要将传入的参数添加到widget层次结构中去，
-        // 否则会导致FluttBoost初始化失败。
+        // If you customize appBuilder, you need to add the passed parameter to the widget hierarchy,
+        // otherwise it will cause FlutterBoost initialization to fail.
         appBuilder: (child) => MaterialApp(
               home: child,
             ),

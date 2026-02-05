@@ -26,7 +26,7 @@ import CommonParams from './CommonParams';
 import FlutterRouterApiCodec from './FlutterRouterApiCodec';
 
 /**
- * 向 Flutter 侧发送消息
+ * Send messages to Flutter side
  */
 export default class FlutterRouterApi {
   private binaryMessenger: BinaryMessenger;
@@ -36,10 +36,10 @@ export default class FlutterRouterApi {
   }
 
   /**
-   * 将发送push路由事件
+   * Will send push route event
    *
-   * @param argInput 路由的输入参数。
-   * @param callback 在路由推送后调用的回调函数。
+   * @param argInput Route input parameters.
+   * @param callback Callback function called after route push.
    */
   pushRoute(argInput: CommonParams, callback: () => void) {
     const channel = new BasicMessageChannel<Object>(
@@ -58,9 +58,9 @@ export default class FlutterRouterApi {
 
 
   /**
-   * 发送pop路由事件
-   * @param argInput 弹出路由的参数
-   * @param callback 弹出路由完成后的回调函数
+   * Send pop route event
+   * @param argInput Pop route parameters
+   * @param callback Callback function after pop route completes
    */
   popRoute(argInput: CommonParams, callback: () => void) {
     const channel = new BasicMessageChannel<Object>(
@@ -75,9 +75,9 @@ export default class FlutterRouterApi {
 
 
   /**
-   * 移除路由
-   * @param argInput 移除路由的参数
-   * @param callback 移除路由完成后的回调函数
+   * Remove route
+   * @param argInput Remove route parameters
+   * @param callback Callback function after remove route completes
    */
   removeRoute(argInput: CommonParams, callback: () => void) {
     const channel = new BasicMessageChannel<Object>(
@@ -91,9 +91,9 @@ export default class FlutterRouterApi {
   }
 
   /**
-   * 回到前台
-   * @param argInput - 公共参数
-   * @param callback - 回调函数
+   * Return to foreground
+   * @param argInput - Common parameters
+   * @param callback - Callback function
    */
   onForeground(argInput: CommonParams, callback: () => void) {
     const channel = new BasicMessageChannel<Object>(
@@ -107,9 +107,9 @@ export default class FlutterRouterApi {
   }
 
   /**
-   * 进入后台
-   * @param argInput - 公共参数
-   * @param callback - 回调函数
+   * Enter background
+   * @param argInput - Common parameters
+   * @param callback - Callback function
    */
   onBackground(argInput: CommonParams, callback: () => void) {
     const channel = new BasicMessageChannel<Object>(
@@ -123,9 +123,9 @@ export default class FlutterRouterApi {
   }
 
   /**
-   * 处理原生返回结果
-   * @param argInput 参数输入
-   * @param callback 回调函数
+   * Handle native return result
+   * @param argInput Parameter input
+   * @param callback Callback function
    */
   onNativeResult(argInput: CommonParams, callback: () => void) {
     const channel = new BasicMessageChannel<Object>(
@@ -139,9 +139,9 @@ export default class FlutterRouterApi {
   }
 
   /**
-   * 当容器显示发送到flutter侧
-   * @param argInput - 公共参数
-   * @param callback - 回调函数
+   * Send to flutter side when container shows
+   * @param argInput - Common parameters
+   * @param callback - Callback function
    */
   onContainerShow(argInput: CommonParams, callback: () => void) {
     const channel = new BasicMessageChannel<Object>(
@@ -156,9 +156,9 @@ export default class FlutterRouterApi {
 
 
   /**
-   * 当容器隐藏时发送到flutter侧
-   * @param argInput - 公共参数
-   * @param callback - 回调函数
+   * Send to flutter side when container hides
+   * @param argInput - Common parameters
+   * @param callback - Callback function
    */
   onContainerHide(argInput: CommonParams, callback: () => void) {
     const channel = new BasicMessageChannel<Object>(
@@ -172,9 +172,9 @@ export default class FlutterRouterApi {
   }
 
   /**
-   * 向Flutter发送事件
-   * @param argInput 输入参数
-   * @param callback 回调函数
+   * Send event to Flutter
+   * @param argInput Input parameters
+   * @param callback Callback function
    */
   sendEventToFlutter(argInput: CommonParams, callback: () => void) {
     const channel = new BasicMessageChannel<Object>(
@@ -188,8 +188,8 @@ export default class FlutterRouterApi {
   }
 
   /**
-   * 发送返回按钮事件
-   * @param callback 回调函数，当返回按钮按下时执行。
+   * Send back button event
+   * @param callback Callback function, executed when back button is pressed.
    */
   onBackPressed(callback: () => void) {
     const channel = new BasicMessageChannel<Object>(

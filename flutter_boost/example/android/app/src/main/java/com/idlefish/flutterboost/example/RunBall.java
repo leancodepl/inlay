@@ -16,24 +16,24 @@ import java.util.List;
 import java.util.Random;
 
 public class RunBall extends View {
-    private ValueAnimator mAnimator;//时间流
+    private ValueAnimator mAnimator;// Time flow
 
-    private List<Ball> mBalls;//小球对象
-    private Paint mPaint;//主画笔
-    private Paint mHelpPaint;//辅助线画笔
-    private Point mCoo;//坐标系
+    private List<Ball> mBalls;// Ball objects
+    private Paint mPaint;// Main paint
+    private Paint mHelpPaint;// Auxiliary line paint
+    private Point mCoo;// Coordinate system
 
-    private float defaultR = 10;//默认小球半径
-    private int defaultColor = Color.BLUE;//默认小球颜色
-    private float defaultVX = 10;//默认小球x方向速度
-    private float defaultF = 0.95f;//碰撞损耗
-    private float defaultVY = -10;//默认小球y方向速度
-    private float defaultAY = 0.1f;//默认小球加速度
+    private float defaultR = 10;// Default ball radius
+    private int defaultColor = Color.BLUE;// Default ball color
+    private float defaultVX = 10;// Default ball x-direction velocity
+    private float defaultF = 0.95f;// Collision loss
+    private float defaultVY = -10;// Default ball y-direction velocity
+    private float defaultAY = 0.1f;// Default ball acceleration
 
-    private float mMaxX = 500;//X最大值
-    private float mMinX = 10;//X最小值
-    private float mMaxY = 400;//Y最大值
-    private float mMinY = 10;//Y最小值
+    private float mMaxX = 500;// X maximum value
+    private float mMinX = 10;// X minimum value
+    private float mMaxY = 400;// Y maximum value
+    private float mMinY = 10;// Y minimum value
 
     private LinearInterpolator li;
 
@@ -48,35 +48,35 @@ public class RunBall extends View {
 
     private void init() {
         mCoo = new Point(10, 10);
-        //初始化小球
+        // Initialize balls
 
-        //初始画笔
+        // Initialize paint
         mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         mBalls = new ArrayList<>();
         //Ball ball = initBall();
         for(int i=0;i<100;i++) {
             Ball ball = initBall();
-            mBalls.add(ball); //添加一个
+            mBalls.add(ball); // Add one
         }
         mHelpPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         mHelpPaint.setColor(Color.BLACK);
         mHelpPaint.setStyle(Paint.Style.FILL);
         mHelpPaint.setStrokeWidth(3);
 
-        //初始化时间流ValueAnimator
+        // Initialize time flow ValueAnimator
         mAnimator = ValueAnimator.ofFloat(-1, 0);
         mAnimator.setRepeatCount(-1);
         mAnimator.setDuration(1000);
         mAnimator.setRepeatMode(ValueAnimator.REVERSE);
         mAnimator.setInterpolator(new LinearInterpolator());
-        //需要开发者选项，打开“动画程序时长”为非关闭状态即可。
+        // Developer options required, enable "Animator duration scale" to non-off state.
         //
-        //原因是ValueAnimator是Android用来做动画的选项，
-        //因为所有的Animator都有一个Interpolator（默认是AccelerateDecelerateInterpolator），
-        //而setInterpolator传入的值是TimeInterpolator，即“动画程序时长”
+        // The reason is ValueAnimator is Android's option for animation,
+        // because all Animators have an Interpolator (default is AccelerateDecelerateInterpolator),
+        // and the value passed to setInterpolator is TimeInterpolator, i.e., "Animator duration scale"
         mAnimator.addUpdateListener(animation -> {
             // android.util.Log.d("JUMIN", "addUpdateListener "+animation.getAnimatedValue());
-            updateBall();//更新小球位置
+            updateBall();// Update ball position
             invalidate();
         });
         mAnimator.start();
@@ -93,10 +93,10 @@ public class RunBall extends View {
     }
 
     /**
-     * 绘制小球集合
+     * Draw ball collection
      *
      * @param canvas
-     * @param balls  小球集合
+     * @param balls  Ball collection
      */
     private void drawBalls(Canvas canvas, List<Ball> balls) {
         for (Ball ball : balls) {
@@ -107,7 +107,7 @@ public class RunBall extends View {
     }
 
     /**
-     * 更新小球
+     * Update balls
      */
     private void updateBall() {
         for (int i = 0; i < mBalls.size(); i++) {
@@ -118,7 +118,7 @@ public class RunBall extends View {
             ball.vY += ball.aY;
             ball.vX += ball.aX;
             if (ball.x > mMaxX - ball.r) {
-//                Ball newBall = ball.clone();//新建一个ball同等信息的球
+//                Ball newBall = ball.clone();// Create a new ball with the same info
 //                //newBall.r = newBall.r / 2;
 //                newBall.vX = -newBall.vX;
 //                newBall.vY = -newBall.vY;
@@ -126,7 +126,7 @@ public class RunBall extends View {
 
                 ball.x = mMaxX - ball.r;
                 ball.vX = -ball.vX;// * defaultF;
-                ball.color =randomRGB();//更改颜色
+                ball.color =randomRGB();// Change color
                 //ball.r = ball.r / 2;
             }
             if (ball.x < mMinX - ball.r) {
@@ -186,9 +186,9 @@ public class RunBall extends View {
 
 
     /**
-     * 返回随机颜色
+     * Return random color
      *
-     * @return 随机颜色
+     * @return Random color
      */
     public static int randomRGB() {
         Random random = new Random();

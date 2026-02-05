@@ -24,7 +24,7 @@
 import FlutterBoostRouteOptions from './FlutterBoostRouteOptions';
 
 /**
- * FlutterBoostDelegate接口
+ * FlutterBoostDelegate interface
  */
 export default interface FlutterBoostDelegate {
   pushNativeRoute(options: FlutterBoostRouteOptions, onPageResult?: (pageName: string, result: Record<string, Object>) => void): void;

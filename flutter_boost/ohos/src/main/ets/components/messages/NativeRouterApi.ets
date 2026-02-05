@@ -28,49 +28,49 @@ import { Reply } from '@ohos/flutter_ohos/src/main/ets/plugin/common/BasicMessag
 import NativeRouterApiCodec from './NativeRouterApiCodec';
 
 /**
- * 来自 Flutter 的消息处理器
+ * Message handler from Flutter
  */
 export default interface NativeRouterApi {
   /**
-   * push原生栈路由
-   * @param arg 公共参数
+   * Push native stack route
+   * @param arg Common parameters
    */
   onPushNativeRoute(arg: CommonParams): void;
 
   /**
-   * push Flutter栈 路由
-   * @param arg 公共参数
+   * Push Flutter stack route
+   * @param arg Common parameters
    */
   onPushFlutterRoute(arg: CommonParams): void;
 
   /**
-   * pop路由
-   * @param arg 公共参数
-   * @param completion 完成回调函数
+   * Pop route
+   * @param arg Common parameters
+   * @param completion Completion callback function
    */
   onPopRoute(arg: CommonParams, completion: () => void): void;
 
   /**
-   * 获取路由栈信息
-   * @returns 路由栈信息
+   * Get route stack information
+   * @returns Route stack information
    */
   onGetStackFromHost(): StackInfo;
 
   /**
-   * 保存路由栈信息
-   * @param arg 路由栈信息
+   * Save route stack information
+   * @param arg Route stack information
    */
   onSaveStackToHost(arg: StackInfo): void;
 
   /**
-   * 发送事件
-   * @param arg 公共参数
+   * Send event
+   * @param arg Common parameters
    */
   onSendEventToNative(arg: CommonParams): void;
 }
 
 /**
- * 监听来自dart的channel的回调函数
+ * Listen for callback functions from dart channel
  */
 export function NativeRouterApiSetup(binaryMessenger: BinaryMessenger, api: NativeRouterApi) {
   // pushNativeRoute

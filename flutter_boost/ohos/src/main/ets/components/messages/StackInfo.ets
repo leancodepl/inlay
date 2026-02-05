@@ -25,7 +25,7 @@ import router from '@ohos.router'
 import FlutterContainer from './FlutterContainer';
 
 /**
- * Dart路由栈信息
+ * Dart route stack information
  * Containers Stack Information
  */
 export default class StackInfo {

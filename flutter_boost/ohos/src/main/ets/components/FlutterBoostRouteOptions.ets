@@ -23,18 +23,18 @@
  */
 
 /**
- *  路由参数配置
+ * Route parameters configuration
  *
- * 用于路由跳转
+ * Used for route navigation
  */
 export default class FlutterBoostRouteOptions {
-  // 页面名称
+  // Page name
   private readonly pageName: string
-  // 参数
+  // Arguments
   private readonly arguments: Record<string, Object>
-  // 唯一标识符
+  // Unique identifier
   private readonly uniqueId: string | null
-  // 是否不透明
+  // Whether opaque
   private readonly opaque: boolean
 
   constructor(builder: FlutterBoostRouteOptionsBuilder) {

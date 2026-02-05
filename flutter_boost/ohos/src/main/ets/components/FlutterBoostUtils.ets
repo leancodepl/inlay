@@ -56,10 +56,10 @@ export default class FlutterBoostUtils {
   }
 
   /**
-   * 递归遍历映射对象，将其转换为Record对象。
+   * Recursively traverse map object and convert it to Record object.
    *
-   * @param map 要遍历的映射对象
-   * @returns 转换后的记录对象
+   * @param map The map object to traverse
+   * @returns The converted record object
    */
   public static mapToRecord(map: Map<string, Object>): Record<string, Object> {
     let result: Record<string, Object> = {};
@@ -74,10 +74,10 @@ export default class FlutterBoostUtils {
   }
 
   /**
-   * 递归遍历记录对象，将其转换为映射对象。
+   * Recursively traverse record object and convert it to map object.
    *
-   * @param record 要遍历的记录对象
-   * @returns 转换后的映射对象
+   * @param record The record object to traverse
+   * @returns The converted map object
    */
   public static recordToMap(record: Record<string, Object>): Map<string, Object> {
     const map = new Map<string, Object>();

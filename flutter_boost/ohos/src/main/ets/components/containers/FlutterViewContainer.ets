@@ -24,7 +24,7 @@
 import { LifecycleStage } from './Lifecycle';
 
 /**
- * 视图容器
+ * View Container
  */
 export interface FlutterViewContainer {
 

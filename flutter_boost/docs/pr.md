@@ -1,23 +1,21 @@
-# Pull Requset流程
+# Pull Request Process
 
-1. 提一个issue，标题前标注`[featurePR]`描述一下您的使用场景，以及boost框架为何不能满足您所述的场景
-   标题例子如下：
+1. Submit an issue with `[featurePR]` marked before the title, describing your use case and why the boost framework cannot meet your described scenario
+   Example title:
 ```
-[featurePR]使FlutterBoost支持xxxxx功能
+[featurePR] Make FlutterBoost support xxxxx feature
 ```
-然后在issue的描述部分简述您解决该问题的思路即可
+Then briefly describe your approach to solving the problem in the issue description
 
-2. 我们在收到您的issue后会对您的feature以及您的方案进行评估，如果评估结果成功，您将进入流程3，否则流程结束
+2. After we receive your issue, we will evaluate your feature and your solution. If the evaluation is successful, you will proceed to step 3, otherwise the process ends
    
-3. 您可以为PR开始coding了，提交时，您除了提交您的修改代码之外，还需要:
-   - 在`exmaple3.0`中添加/修改相关用例，**如果原代码中不支持您的用例，那么您可以自行添加/修改用例用例以支持您PR的场景**
-   - 在`AUTHORS`文件中添加您的名字和邮箱，具体可自行查看书写格式，表明您对我们的框架做过贡献的记录，如果已存在您的信息，就不用添加了
+3. You can start coding for the PR. When submitting, in addition to your modified code, you also need to:
+   - Add/modify related cases in `example3.0`, **If the original code doesn't support your case, you can add/modify cases yourself to support your PR scenario**
+   - Add your name and email in the `AUTHORS` file, see the file for format. This marks your contribution to our framework. If your information already exists, no need to add it
 
-4. 在PR中写上明确的标题和描述，描述中写上您PR的这个用例的复现路径(基于`exmaple3.0`)
+4. Write a clear title and description in the PR. In the description, write the reproduction path of your PR's use case (based on `example3.0`)
   
-**<font color='red'> 提交的主代码和 格式化操作 请分开提交，不然review起来是比较麻烦的 </font>**
+**<font color='red'> Please submit main code and formatting operations separately, otherwise reviewing will be troublesome </font>**
 
 
-5. 提交PR，等待回应即可
-
-
+5. Submit PR and wait for response

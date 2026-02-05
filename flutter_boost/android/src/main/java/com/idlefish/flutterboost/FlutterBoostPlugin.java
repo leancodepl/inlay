@@ -117,7 +117,7 @@ public class FlutterBoostPlugin implements FlutterPlugin, NativeRouterApi, Activ
                     .arguments((Map<String, Object>) (Object) params.getArguments())
                     .build();
             boolean isHandle = delegate.popRoute(options);
-            //isHandle代表是否已经自定义处理，如果未自定义处理走默认逻辑
+            // isHandle indicates whether custom handling was done, if not custom handled, use default logic
             if (!isHandle) {
                 String uniqueId = params.getUniqueId();
                 if (uniqueId != null) {
@@ -130,7 +130,7 @@ public class FlutterBoostPlugin implements FlutterPlugin, NativeRouterApi, Activ
                     throw new RuntimeException("Oops!! The unique id is null!");
                 }
             } else {
-                //被拦截处理了，那么直接通知result
+                // Was intercepted and handled, so directly notify result
                 result.success(null);
             }
         } else {
@@ -359,7 +359,7 @@ public class FlutterBoostPlugin implements FlutterPlugin, NativeRouterApi, Activ
                 }
             }
         });
-        //onContainerDisappeared并非异步触发，为了匹配对应，onContainerShow也不做异步
+        // onContainerDisappeared is not triggered asynchronously, to match this, onContainerShow also won't be async
         onContainerShow(uniqueId);
     }
 

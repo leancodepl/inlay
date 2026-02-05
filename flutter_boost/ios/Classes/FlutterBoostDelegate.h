@@ -32,12 +32,12 @@
 - (FlutterEngine*) engine;
 @required
 
-// 如果框架发现您输入的路由表在flutter里面注册的路由表中找不到，那么就会调用此方法来push一个纯原生页面
+// If the framework finds that the route you entered is not found in the Flutter route table, this method will be called to push a pure native page
 - (void) pushNativeRoute:(NSString *) pageName arguments:(NSDictionary *) arguments;
 
-// 当框架的withContainer为true的时候，会调用此方法来做原生的push
+// When withContainer is true in the framework, this method will be called to perform native push
 - (void) pushFlutterRoute:(FlutterBoostRouteOptions *)options;
 
-// 当pop调用涉及到原生容器的时候，此方法将会被调用
+// When pop call involves a native container, this method will be called
 - (void) popRoute:(FlutterBoostRouteOptions *)options;
 @end
