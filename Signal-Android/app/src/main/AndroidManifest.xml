@@ -1143,6 +1143,18 @@
               android:exported="false"
               android:theme="@style/Signal.DayNight.NoActionBar" />
 
+     <activity
+        android:name="com.idlefish.flutterboost.containers.FlutterBoostActivity"
+        android:theme="@style/Theme.AppCompat"
+        android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|layoutDirection|fontScale|screenLayout|density"
+        android:hardwareAccelerated="true"
+        android:windowSoftInputMode="adjustResize" >
+    </activity>
+
+    <meta-data android:name="flutterEmbedding"
+            android:value="2">
+    </meta-data>         
+
     <service
         android:enabled="true"
         android:exported="false"

@@ -47,3 +47,4 @@ app.*.symbols
 
 # Obfuscation related
 app.*.map.json
+custom_lint.log
