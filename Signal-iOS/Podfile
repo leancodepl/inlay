@@ -2,6 +2,9 @@ platform :ios, '15.0'
 
 use_frameworks!
 
+flutter_application_path = '../signal_module'
+load File.join(flutter_application_path, '.ios', 'Flutter', 'podhelper.rb')
+
 ###
 # OWS Pods
 ###
@@ -62,6 +65,8 @@ target 'Signal' do
   # Pods only available inside the main Signal app
   ui_pods
 
+  install_all_flutter_pods(flutter_application_path)
+
   target 'SignalTests' do
     inherit! :search_paths
   end
@@ -106,6 +111,8 @@ post_install do |installer|
   fix_ringrtc_project_symlink(installer)
   fetch_ringrtc
   copy_acknowledgements
+
+  flutter_post_install(installer) if defined?(flutter_post_install)
 end
 
 # Works around CocoaPods behavior designed for static libraries.

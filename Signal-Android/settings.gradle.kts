@@ -7,7 +7,9 @@ pluginManagement {
   includeBuild("build-logic")
 }
 dependencyResolutionManagement {
-  repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+  // Changed from FAIL_ON_PROJECT_REPOS to PREFER_SETTINGS to allow Flutter plugin to add repositories
+  repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
+  val storageUrl: String = System.getenv("FLUTTER_STORAGE_BASE_URL") ?: "https://storage.googleapis.com"
   repositories {
     google()
     mavenCentral()
@@ -18,6 +20,7 @@ dependencyResolutionManagement {
         includeGroupByRegex("org\\.signal.*")
       }
     }
+    maven("$storageUrl/download.flutter.io")
     maven {
       url = uri("https://raw.githubusercontent.com/signalapp/maven/master/aesgcmprovider/release/")
       content {
@@ -125,5 +128,10 @@ project(":video-app").projectDir = file("video/app")
 
 project(":registration").projectDir = file("registration/lib")
 project(":registration-app").projectDir = file("registration/app")
+
+// Flutter module integration
+include(":signal_module")
+apply(from = File(settingsDir.parentFile, "signal_module/.android/include_flutter.groovy"))
+project(":signal_module").projectDir = File(settingsDir.parentFile, "signal_module")
 
 rootProject.name = "Signal"
