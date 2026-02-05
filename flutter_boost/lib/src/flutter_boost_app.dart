@@ -413,7 +413,7 @@ class FlutterBoostAppState extends State<FlutterBoostApp> {
         for (BoostPage page in _containers[index].pages) {
           if (uniqueId == page.pageInfo.uniqueId ||
               uniqueId == _containers[index].pageInfo.uniqueId) {
-            //uniqueId优先级更高，优先匹配
+            // uniqueId has higher priority, match first
             targetContainer = _containers[index];
             targetPage = page;
             break;

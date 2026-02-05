@@ -1,14 +1,12 @@
-# 如何向我们提issue
+# How to Submit an Issue
 
-1. 在issue里面用语言简单描述一下您的场景以及出现的bug
+1. Briefly describe your scenario and the bug in the issue using language
 
 
-2. 之后您可以fork一个分支，然后在您的分支上，在`example3.0`中添加一个您用于
-   复现bug场景的用例入口
-   - 如果您的入口是原生端，在原生的页面上加按钮添加操作即可。
-   - 如果您的入口是flutter端，那就在flutter的`main_page`列表中添加一个Model即可添加用例，具体可以查看代码
+2. After that, you can fork a branch, then on your branch, in `example3.0`, add an entry for your bug reproduction case
+   - If your entry is on the native side, just add a button on the native page to add the operation.
+   - If your entry is on the flutter side, just add a Model to the flutter's `main_page` list to add the case, see the code for details
 
-**<font color='red'> 注意，这个地方不支持使用其他方式提交复现代码（原因在于，如果大家使用自己的代码，容易带有使用的错误以及自己的业务逻辑，
-   我们就不清楚是业务问题还是框架本身的问题，之前遇到了一些同学，debug下来结果是自己业务代码出了问题造成结果不一致，所以请理解） </font>**
+**<font color='red'> Note: Other methods of submitting reproduction code are not supported here (The reason is that if everyone uses their own code, it's easy to include usage errors and their own business logic. We won't be clear whether it's a business problem or a framework issue. We've encountered some cases where debugging revealed that the inconsistent results were caused by their own business code issues, so please understand) </font>**
 
-3. 在您的issue中给出您的分支链接，提交即可，我们debug的时候就会直接进入您分支下的`exmaple3.0`中您所给的用例进行bug复现 
+3. Provide your branch link in the issue and submit. When we debug, we will directly go to the case you provided in your branch's `example3.0` for bug reproduction

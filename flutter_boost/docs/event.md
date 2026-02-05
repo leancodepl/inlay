@@ -1,70 +1,70 @@
-# 自定义事件传递API
+# Custom Event Passing API
 
-这个部分相当于让开发者省略了手动搭桥的功能，通过事件标识key和参数map即可完成事件传递
+This section is equivalent to letting developers skip the manual bridging functionality, allowing event passing through event identifier key and parameter map
 
 
-## flutter端使用
+## Flutter Side Usage
 
- - 接收消息
+ - Receive messages
 ```dart
-///声明一个用来存回调的对象
+/// Declare an object to store the callback
 VoidCallback removeListener;
 
-///添加事件响应者,监听native发往flutter端的事件
+/// Add event responder, listen for events sent from native to flutter
 removeListener = BoostChannel.instance.addEventListener("yourEventKey", (key, arguments) {
-  ///deal with your event here
+  /// deal with your event here
   return;
 });
 
-///然后在退出的时候（比如dispose中）移除监听者
+/// Then remove the listener when exiting (e.g., in dispose)
 removeListener?.call();
 ```
 
- - 发送消息给native
+ - Send messages to native
 ```dart
 BoostChannel.instance.sendEventToNative("eventToNative",{"key1":"value1"});
 ```
 
-## iOS端使用
+## iOS Side Usage
 
- - 接收消息
+ - Receive messages
 ```swift
-//同样声明一个对象用来存删除的函数
+// Similarly declare an object to store the remove function
 var removeListener:FBVoidCallback?
 
-//这里注册事件监听，监听flutter发送到iOS的事件
+// Register event listener here, listen for events sent from flutter to iOS
 self.removeListener =  FlutterBoost.instance().addEventListener({[weak self] key, dic in
-    //注意，如果这里self持有removeListener，而这个闭包中又有self的话，要用weak self
-    //否则就有self->removeListener->self 循环引用
+    // Note: if self holds removeListener, and this closure also has self, use weak self
+    // Otherwise there's self->removeListener->self circular reference
     
-    //在这里处理你的事件
+    // Handle your event here
     
 }, forName: "event")
 
-//在退出的时候解除注册(比如 deinit/dealloc 中)
+// Unregister when exiting (e.g., in deinit/dealloc)
 removeListener?()
 ```
 
-- 发送消息给flutter
+- Send messages to flutter
 ```swift
 FlutterBoost.instance().sendEventToFlutter(with: "event", arguments: ["data":"event from native"])
 ```
 
-## Android端使用
+## Android Side Usage
 
- - 接收消息
+ - Receive messages
 
 ```java
 EventListener listener = (key, args) -> {
-    //deal with your event here      
+    // deal with your event here      
 };
 ListenerRemover remover = FlutterBoost.instance().addEventListener("event", listener);
 
-//最后在清理的时候移除监听(比如onDestroy中)
+// Finally remove listener when cleaning up (e.g., in onDestroy)
 remover.remove();
 ```
 
-- 发送消息给flutter
+- Send messages to flutter
 ```java
 Map<Object,Object> map = new HashMap<>();
 map.put("key","value");

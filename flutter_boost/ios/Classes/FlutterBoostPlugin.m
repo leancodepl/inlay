@@ -129,7 +129,7 @@
   options.arguments = input.arguments;
   options.opaque = [input.opaque boolValue];
 
-  // 因为这里是flutter端开启新容器push一个页面，所以这里原生用不着，所以这里completion传一个空的即可
+  // Since this is flutter side opening a new container to push a page, native side doesn't need this, so passing an empty completion is fine
   options.completion = ^(BOOL completion) {
   };
 
@@ -139,7 +139,7 @@
 - (void)popRouteParam:(FBCommonParams *)input
            completion:(void(^)(FlutterError *_Nullable))completion {
   if ([self.containerManager findContainerByUniqueId:input.uniqueId]) {
-    // 封装成options传回代理
+    // Wrap into options and pass back to delegate
     FlutterBoostRouteOptions* options = [[FlutterBoostRouteOptions alloc]init];
     options.pageName = input.pageName;
     options.uniqueId = input.uniqueId;
@@ -147,7 +147,7 @@
     options.completion = ^(BOOL ret) {
     };
 
-    // 调用代理回调给调用层
+    // Call delegate callback to the calling layer
     [self.delegate popRoute:options];
     completion(nil);
   } else {
@@ -169,7 +169,7 @@
   self.stackInfo = stack;
 }
 
-// flutter端将会调用此方法给native发送信息,所以这里将是接收事件的逻辑
+// Flutter side will call this method to send information to native, so this is the event receiving logic
 - (void)sendEventToNativeParams:(FBCommonParams *)params
                           error:(FlutterError *_Nullable *_Nonnull)error {
   NSString* key = params.key;
@@ -177,12 +177,12 @@
 
   assert(key != nil);
 
-  // 如果arg是null，那么就生成一个空的字典传过去，避免null造成的崩溃
+  // If args is null, generate an empty dictionary to pass, avoiding crashes caused by null
   if (args == nil) {
     args = [NSDictionary dictionary];
   }
 
-  // 从总事件表中找到和key对应的事件监听者列表
+  // Find the event listener list corresponding to the key from the main event table
   NSMutableArray* listeners = self.listenersTable[key];
 
   if (listeners == nil) return;

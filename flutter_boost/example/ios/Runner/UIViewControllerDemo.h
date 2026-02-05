@@ -3,7 +3,7 @@
 //  Runner
 //
 //  Created by Jidong Chen on 2018/10/17.
-//  Copyright © 2018年 The Chromium Authors. All rights reserved.
+//  Copyright © 2018 The Chromium Authors. All rights reserved.
 //
 
 #import <UIKit/UIKit.h>

@@ -45,60 +45,60 @@
 
 #pragma mark
 
-/// Boost全局单例
+/// Boost global singleton
 + (instancetype)instance;
 
-/// 初始化
-/// @param application 全局Application实例，如未设置engine参数，则默认从Application做engine的绑定
-/// @param delegate FlutterBoostDelegate的实例，用于实现Push和Pop的具体策略（Native侧如何Push，以及需要Push一个新的FlutterViewController时的具体动作），以及Engine的部分初始化策略
-/// @param callback 初始化完成以后的回调，
-/// TODO 设计需要再review下 callback并不是异步的感觉没有必要。
+/// Initialize
+/// @param application Global Application instance. If engine parameter is not set, the engine binding is done from the Application by default
+/// @param delegate Instance of FlutterBoostDelegate, used to implement specific Push and Pop strategies (how Native side performs Push, and specific actions when a new FlutterViewController needs to be pushed), as well as some engine initialization strategies
+/// @param callback Callback after initialization is complete
+/// TODO Design needs review - callback is not async so may not be necessary
 - (void)setup:(UIApplication*)application delegate:(id<FlutterBoostDelegate>)delegate callback:(void (^)(FlutterEngine *engine))callback;
 
 
-/// 利用自定义配置进行初始化
-/// @param application 全局Application实例，如未设置engine参数，则默认从Application做engine的绑定
-/// @param delegate FlutterBoostDelegate的实例，用于实现Push和Pop的具体策略
-/// @param callback 初始化完成以后的回调
-/// @param options 启动的配置，如果需要自定义请使用此参数
+/// Initialize with custom configuration
+/// @param application Global Application instance. If engine parameter is not set, the engine binding is done from the Application by default
+/// @param delegate Instance of FlutterBoostDelegate, used to implement specific Push and Pop strategies
+/// @param callback Callback after initialization is complete
+/// @param options Startup configuration, use this parameter if customization is needed
 - (void)setup:(UIApplication*)application delegate:(id<FlutterBoostDelegate>)delegate callback:(void (^)(FlutterEngine *engine))callback options:(FlutterBoostSetupOptions*)options;
 
-/// 关闭页面，混合栈推荐使用的用于操作页面的接口
-/// @param uniqueId 关闭的页面唯一ID符
+/// Close a page, recommended interface for page operations in hybrid stack
+/// @param uniqueId Unique ID of the page to close
 - (void)close:(NSString *)uniqueId;
 
-/// （ 已废弃，之后有新参数可能不支持此方法 ！！！ ）
-/// 打开新页面（默认以push方式），混合栈推荐使用的用于操作页面的接口
-/// 通过arguments可以设置为以present方式打开页面：arguments:@{@"present":@(YES)}
-/// @param pageName 打开的页面资源定位符
-/// @param arguments 传入页面的参数; 若有特殊逻辑，可以通过这个参数设置回调的id
-/// @param completion 页面open操作完成的回调，注意，从原生调用此方法跳转此参数才会生效
+/// (DEPRECATED - new parameters may not support this method in the future!!!)
+/// Open a new page (default is push method), recommended interface for page operations in hybrid stack
+/// You can set to open page in present mode via arguments: arguments:@{@"present":@(YES)}
+/// @param pageName Page resource locator to open
+/// @param arguments Parameters to pass to the page; if there is special logic, callback id can be set through this parameter
+/// @param completion Callback when page open operation is complete. Note: this parameter only works when called from native side
 - (void)open:(NSString *)pageName arguments:(NSDictionary *)arguments completion:(void(^)(BOOL)) completion;
 
 
-/// （推荐使用）利用启动参数配置开启新页面
-/// @param options 配置参数
+/// (Recommended) Open a new page with configuration options
+/// @param options Configuration parameters
 - (void)open:(FlutterBoostRouteOptions* )options;
 
 
-/// 将原生页面的数据回传到flutter侧的页面的的方法
-/// @param pageName 这个页面在路由表中的名字，和flutter侧BoostNavigator.push(name)中的name一样
-/// @param arguments 你想传的参数
+/// Method to pass data from native page back to flutter page
+/// @param pageName Name of this page in the route table, same as the name in BoostNavigator.push(name) on flutter side
+/// @param arguments Parameters you want to pass
 - (void)sendResultToFlutterWithPageName:(NSString*)pageName arguments:(NSDictionary*) arguments;
 
-/// 添加一个事件监听
-/// @param listener FBEventListener类型的函数
-/// @param key 事件标识符
-/// @return 用于移除监听器的一个函数，直接调用此函数可以移除此监听器避免内存泄漏
+/// Add an event listener
+/// @param listener Function of FBEventListener type
+/// @param key Event identifier
+/// @return A function to remove the listener, call this function directly to remove the listener and avoid memory leaks
 - (FBVoidCallback)addEventListener:(FBEventListener)listener
                            forName:(NSString *)key;
 
-/// 将自定义事件传递给flutter侧
-/// @param key 事件的标识符
-/// @param arguments 事件的参数
+/// Pass custom events to flutter side
+/// @param key Event identifier
+/// @param arguments Event parameters
 - (void)sendEventToFlutterWith:(NSString*)key arguments:(NSDictionary*)arguments;
 
-/// 卸载引擎
+/// Unload the engine
 - (void)unsetFlutterBoost;
 
 @end

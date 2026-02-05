@@ -42,9 +42,9 @@ import Log from './util/Log';
 const TAG = "FlutterBoost";
 
 /**
- * FlutterBoost核心类
+ * FlutterBoost core class
  *
- * 实现NativeRouterApi是用户接受来自dart侧的消息
+ * Implementing NativeRouterApi is for users to receive messages from dart side
  */
 export class FlutterBoost {
   private static instance: FlutterBoost;
@@ -67,11 +67,11 @@ export class FlutterBoost {
   }
 
   /**
-   * 设置FlutterBoost的配置信息
-   * @param delegate FlutterBoost的委托对象
-   * @param context 上下文对象
-   * @param onEngineReady 回调函数
-   * @param options FlutterBoost的配置选项
+   * Set FlutterBoost configuration information
+   * @param delegate FlutterBoost delegate object
+   * @param context Context object
+   * @param onEngineReady Callback function
+   * @param options FlutterBoost configuration options
    */
   public async setup(delegate: FlutterBoostDelegate,
                      context: common.Context,
@@ -81,12 +81,12 @@ export class FlutterBoost {
     this.delegate = delegate;
 
     if (options == null) {
-      // 指定默认设置参数（初始路由为/,入口参数main）
+      // Specify default settings (initial route is /, entry point is main)
       options = FlutterBoostSetupOptions.createDefault();
     }
     FlutterBoostUtils.setDebugLoggingEnabled(options.isDebugLoggingEnabled());
 
-    // 1. 初始化引擎
+    // 1. Initialize engine
     let engine: FlutterEngine | null = this.getEngine()
     if (engine == null) {
       const engineProvider = options.getFlutterEngineProvider();
@@ -101,19 +101,19 @@ export class FlutterBoost {
     }
     this.flutterEngine = engine;
 
-    // 2. 通知业务引擎就绪
+    // 2. Notify business that engine is ready
     onEngineReady(engine);
 
-    // 3. 设置message channel消息代理
+    // 3. Set message channel message delegate
     this.getPlugin()!.setDelegate(this.delegate);
 
-    // 4. DartVM预热
+    // 4. DartVM pre-warm
     if (!engine.getDartExecutor().isExecutingDart()) {
       const navigationChannel = engine.getNavigationChannel()
       if (navigationChannel) {
         navigationChannel.setInitialRoute(options.getInitialRoute())
       }
-      // TODO:这里没完全对齐
+      // TODO: Not fully aligned here
       const dartEntrypoint: DartEntrypoint = new DartEntrypoint(
         FlutterInjector.getInstance().getFlutterLoader().findAppBundlePath(),
         '',
@@ -125,10 +125,10 @@ export class FlutterBoost {
 
 
   /**
-   * 设置FlutterBoost的配置信息(Promise)
-   * @param delegate FlutterBoost的委托对象
-   * @param context 上下文对象
-   * @param options FlutterBoost的配置选项
+   * Set FlutterBoost configuration information (Promise)
+   * @param delegate FlutterBoost delegate object
+   * @param context Context object
+   * @param options FlutterBoost configuration options
    */
   public setupSync(delegate: FlutterBoostDelegate,
                    context: common.Context,
@@ -139,16 +139,16 @@ export class FlutterBoost {
           resolve(engine);
         }, options)
       } catch (error) {
-        // 如果有错误发生，则拒绝Promise
+        // If an error occurs, reject the Promise
         reject(error);
       }
     });
   }
 
   /**
-   * 打开页面
-   * @param pageName 页面名称
-   * @param param 参数
+   * Open page
+   * @param pageName Page name
+   * @param param Parameters
    */
   public open(pageName: string, param: Record<string, Object>, opaque?: boolean, onPageResult?: (pageName: string, result: Record<string, Object>) => void) {
     let options = new FlutterBoostRouteOptionsBuilder()
@@ -170,16 +170,16 @@ export class FlutterBoost {
   }
 
   /**
-   * 获取引擎对象
-   * @returns 引擎对象，如果不存在则返回null
+   * Get engine object
+   * @returns Engine object, returns null if not exists
    */
   public getEngine(): FlutterEngine | null {
     return FlutterEngineCache.getInstance().get(FlutterBoost.ENGINE_ID);
   }
 
   /**
-   * 获取插件对象
-   * @returns {FlutterBoostPlugin | null} 插件对象或者null
+   * Get plugin object
+   * @returns {FlutterBoostPlugin | null} Plugin object or null
    */
   public getPlugin(): FlutterBoostPlugin | null {
     if (this.plugin == null) {
@@ -199,9 +199,9 @@ export class FlutterBoost {
   }
 
   /**
-   * 向Flutter发送事件
-   * @param key 事件的键
-   * @param args 事件的参数
+   * Send event to Flutter
+   * @param key Event key
+   * @param args Event arguments
    */
   public sendEventToFlutter(key: string, args: Record<string, Object>) {
     this.getPlugin()?.sendEventToFlutter(key, args);

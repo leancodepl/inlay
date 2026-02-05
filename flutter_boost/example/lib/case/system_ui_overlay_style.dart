@@ -7,7 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_boost/flutter_boost.dart';
 
 ///
-/// SystemUiOverlayStyle 测试Demo
+/// SystemUiOverlayStyle test demo
 ///
 class SystemUiOverlayStyleDemo extends StatefulWidget {
   final bool? isDark;

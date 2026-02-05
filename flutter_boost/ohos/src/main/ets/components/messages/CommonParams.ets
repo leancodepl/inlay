@@ -24,7 +24,7 @@
 import FlutterBoostUtils from '../FlutterBoostUtils'
 
 /**
- *  Flutter/Native互相发消息参数
+ * Parameters for Flutter/Native message passing
  */
 export default class CommonParams {
   public pageName?: string
@@ -61,7 +61,7 @@ export default class CommonParams {
   static fromObject(obj: Object): CommonParams {
     let fromMapResult: CommonParams = new CommonParams()
 
-    // 传入map类型的情况
+    // When the input is of map type
     if (obj instanceof Map) {
       const map = obj as Map<string, Object>;
       let pageName = map.get("pageName");

@@ -40,7 +40,7 @@ public class TabMainActivity extends FragmentActivity implements View.OnClickLis
 
         init();
         initClick();
-        //默认选中第1个
+        // Select the first one by default
         setSelect(0);
     }
 
@@ -54,7 +54,7 @@ public class TabMainActivity extends FragmentActivity implements View.OnClickLis
         }
     }
 
-    //初始化元素
+    // Initialize elements
     private void init() {
         mes = (LinearLayout) findViewById(R.id.mes);
         friend = (LinearLayout) findViewById(R.id.friend);
@@ -83,7 +83,7 @@ public class TabMainActivity extends FragmentActivity implements View.OnClickLis
 //        fragmentList.add(nativeFragment);
     }
 
-    //初始化监听
+    // Initialize listeners
     private void initClick() {
         mes.setOnClickListener(this);
         friend.setOnClickListener(this);
@@ -94,16 +94,16 @@ public class TabMainActivity extends FragmentActivity implements View.OnClickLis
     private void showFragment(Fragment fragment) {
         FragmentManager fm = getSupportFragmentManager();
         if (currentFragment != fragment) {
-            // 判断传入的fragment是不是当前的currentFragment
+            // Check if the passed fragment is the current currentFragment
             FragmentTransaction transaction = fm.beginTransaction();
             if (currentFragment != null) {
-                // 不是则隐藏
+                // If not, hide it
                 transaction.hide(currentFragment);
             }
-            // 然后将传入的fragment赋值给currentFragment
+            // Then assign the passed fragment to currentFragment
             currentFragment = fragment;
 
-            // 判断传入的fragment是否已经被add()过
+            // Check if the passed fragment has already been add()ed
             if (!fragment.isAdded()) {
                 transaction.add(R.id.fragment_stub, fragment).show(fragment).commit();
             } else {
@@ -129,14 +129,14 @@ public class TabMainActivity extends FragmentActivity implements View.OnClickLis
 
     }
 
-    //全部图片设为暗色
+    // Set all images to dark
     private void resetImages() {
         mesImag.setImageResource(R.drawable.tab1_normal);
         friendImag.setImageResource(R.drawable.tab2_normal);
         addressImag.setImageResource(R.drawable.tab3_normal);
     }
 
-    //点亮选中图片
+    // Highlight the selected image
     private void setSelect(int i) {
         resetImages();
         switch (i) {

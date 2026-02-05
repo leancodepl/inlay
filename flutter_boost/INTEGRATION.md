@@ -1,6 +1,6 @@
-# Boost集成文档
-## dart测接入
-### 1. 初始化：
+# Boost Integration Documentation
+## Dart Integration
+### 1. Initialization:
 
 ```dart
 void main() {
@@ -53,7 +53,7 @@ class _MyAppState extends State<MyApp> {
     );
   }
   ```
-### 2.Boost生命周期监听：
+### 2. Boost Lifecycle Monitoring:
 ```dart
 class SimpleWidget extends StatefulWidget {
   final Map params;
@@ -163,18 +163,18 @@ class _SimpleWidgetState extends State<SimpleWidget>
   }
 }
 ```
-### 页面跳转
-打开页面
+### Page Navigation
+Open page
 ```java
  String result = await BoostNavigator.instance
                         .push("flutterPage", withContainer: true);
 ```
-关闭页面
+Close page
 ```java
 BoostNavigator.instance.pop('I am result for popping.'),
 ```
-## Android 测接入
-### 1.Application 初始化
+## Android Integration
+### 1. Application Initialization
 ```java
 public class MyApplication extends FlutterApplication {
 
@@ -212,7 +212,7 @@ public class MyApplication extends FlutterApplication {
 
 ```
 
-### 2.AndroidManifest.xml
+### 2. AndroidManifest.xml
 flutterEmbedding=2
 
 ```
@@ -240,16 +240,16 @@ flutterEmbedding=2
     </application>
 </manifest>
 ```
-### 3.native 打开关闭Flutter页面
+### 3. Native Opening/Closing Flutter Pages
 ```java
 FlutterBoost.instance().open("flutterPage",params);
 
  FlutterBoost.instance().close("uniqueId");
 
 ```
-## IOS测接入
+## iOS Integration
 
-### 1.AppDelegate
+### 1. AppDelegate
 ```objc
 @interface AppDelegate ()
 
@@ -328,7 +328,7 @@ FlutterBoost.instance().open("flutterPage",params);
 @end
 
 ```
-### native 打开flutter 页面
+### Native Opening Flutter Page
 
 ```objc
 [[FlutterBoost instance] open:@"flutterPage" arguments:@{@"animated":@(YES)}  ];

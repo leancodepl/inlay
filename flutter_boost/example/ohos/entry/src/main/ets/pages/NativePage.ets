@@ -71,7 +71,7 @@ export struct NativePage {
         .fontWeight(FontWeight.Bold)
         .decoration({ type: TextDecorationType.Underline, color: Color.Yellow })
         .margin({ bottom: 70 })
-      Button('打开Flutter页面')
+      Button('Open Flutter Page')
         .margin({ bottom: 20 })
         .onClick(() => {
           try {
@@ -79,10 +79,10 @@ export struct NativePage {
               this.onPageResult(pageName, result)
             })
           } catch (err) {
-            hilog.info(0x0000, TAG, '%{public}s', 'Failed to 打开Flutter页面');
+            hilog.info(0x0000, TAG, '%{public}s', 'Failed to open Flutter page');
           }
         })
-      Button('打开Native页面')
+      Button('Open Native Page')
         .margin({ bottom: 20 })
         .onClick(() => {
           try {
@@ -91,16 +91,16 @@ export struct NativePage {
                 this.onPageResult(pageName, result)
               });
           } catch (err) {
-            hilog.info(0x0000, TAG, '%{public}s', 'Failed to 打开Native页面');
+            hilog.info(0x0000, TAG, '%{public}s', 'Failed to open Native page');
           }
         })
-      Button('打开Flutter半透明弹窗')
+      Button('Open Flutter Translucent Dialog')
         .margin({ bottom: 20 })
         .onClick(() => {
           try {
             FlutterBoost.getInstance().open('transparentWidget', {}, false)
           } catch (err) {
-            hilog.info(0x0000, TAG, '%{public}s', 'Failed to 打开Flutter页面');
+            hilog.info(0x0000, TAG, '%{public}s', 'Failed to open Flutter page');
           }
         })
     }

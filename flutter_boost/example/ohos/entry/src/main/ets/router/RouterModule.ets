@@ -5,10 +5,10 @@ export class RouterOptions {
         this.params = params;
         this.uniqueId = uniqueId;
     }
-    //！！！业务自定义的路由参数中，务必保证uri、params、uniqueId这三个属性的名字跟example中的保持一致 ！！！
+    // !!! In custom route parameters, make sure the names of uri, params, uniqueId are consistent with the example !!!
     uri: string;
     params: Record<string, Object>;
-    uniqueId: string | null = null;  //！！！业务自定义路由参数中必须要包含uniqueId，避免丢失dart侧传过来的uniqueId ！！！
+    uniqueId: string | null = null;  // !!! Custom route parameters must include uniqueId to avoid losing uniqueId passed from dart side !!!
 }
 
 export class RouterModule {
@@ -22,7 +22,7 @@ export class RouterModule {
         if (RouterModule.routeStack != null) {
             RouterModule.routeStack.pushPath({name: name, param: options, onPop: (popInfo: PopInfo) => {
               if (onPageResult) {
-                //如果前一页面是flutter页面，请务必将popInfo.result的类型转换成Record<string, Object> ！！！
+                // If the previous page is a flutter page, make sure to cast popInfo.result to Record<string, Object> !!!
                 onPageResult((options instanceof RouterOptions) ? (options as RouterOptions).uri : name,
                     (popInfo && popInfo.result) ? (popInfo.result as Record<string, Object>) : ({} as Record<string, Object>));
               }

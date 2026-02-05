@@ -47,7 +47,7 @@ import FlutterBoostUtils from '../FlutterBoostUtils';
 const TAG = 'FlutterBoostPlugin'
 
 /**
- * FlutterBoostPlugin插件类。
+ * FlutterBoostPlugin plugin class.
  */
 export class FlutterBoostPlugin implements FlutterPlugin, MethodCallHandler, NativeRouterApi {
   public static className = 'FlutterBoostPlugin'
@@ -56,7 +56,7 @@ export class FlutterBoostPlugin implements FlutterPlugin, MethodCallHandler, Nat
   public static FLUTTER_APP_STATE_RESUMED = 0
   public static FLUTTER_APP_STATE_PAUSED = 2
 
-  private channel: FlutterRouterApi | null // 发送到dart
+  private channel: FlutterRouterApi | null // Send to dart
   private engine: FlutterEngine | null
   private delegate: FlutterBoostDelegate | null
   private dartStack: StackInfo
@@ -177,14 +177,14 @@ export class FlutterBoostPlugin implements FlutterPlugin, MethodCallHandler, Nat
   }
 
   onSendEventToNative(params: CommonParams) {
-    // 处理来自 Flutter 侧的事件
+    // Handle events from Flutter side
     const key = params.key
     let args: Record<string, Object> = params.arguments ? params.arguments : {}
     if (!key) {
       throw new Error("Key cannot be null");
     }
     if (!arguments) {
-      args = {} // 使用空对象代替 HashMap
+      args = {} // Use empty object instead of HashMap
     }
     const listeners = this.listenersTable[key];
     if (!listeners) {
@@ -236,7 +236,7 @@ export class FlutterBoostPlugin implements FlutterPlugin, MethodCallHandler, Nat
     }
     listeners.push(listener);
 
-    // 返回符合 ListenerRemover 接口的对象
+    // Return an object that conforms to the ListenerRemover interface
     return {
       remove: () => {
         const index = listeners.indexOf(listener);
@@ -248,7 +248,7 @@ export class FlutterBoostPlugin implements FlutterPlugin, MethodCallHandler, Nat
   }
 
   /*
-   * 向Flutter侧发送pushRoute事件
+   * Send pushRoute event to Flutter side
    * */
   public pushRoute(uniqueId: string, pageName: string, args: Record<string, Object>, callback: () => void) {
     if (this.isTraceEnabled()) Log.i(TAG, "#pushRoute start: " + pageName);
@@ -271,7 +271,7 @@ export class FlutterBoostPlugin implements FlutterPlugin, MethodCallHandler, Nat
   }
 
   /*
-   * 向Flutter侧发送popRoute事件
+   * Send popRoute event to Flutter side
    * */
   public popRoute(uniqueId: string, callback: () => void) {
     if (this.isTraceEnabled()) Log.i(TAG, "#popRoute: " + uniqueId);
@@ -290,7 +290,7 @@ export class FlutterBoostPlugin implements FlutterPlugin, MethodCallHandler, Nat
   }
 
   // public method
-  // 创建 [1/4]
+  // Create [1/4]
   public onContainerCreated(container: FlutterViewContainer) {
     let uniqueId = container.getUniqueId()
     if (this.isTraceEnabled()) Log.i(TAG, "#onContainerCreated: " + uniqueId);
@@ -300,12 +300,12 @@ export class FlutterBoostPlugin implements FlutterPlugin, MethodCallHandler, Nat
     }
   }
 
-  // 展示 [2/4]
+  // Show [2/4]
   public onContainerAppeared(container: FlutterViewContainer, callback: () => void) {
     let uniqueId = container.getUniqueId()
     if (this.isTraceEnabled()) Log.i(TAG, "## onContainerAppeared: " + uniqueId);
     FlutterContainerManager.getInstance().activateContainer(uniqueId, container)
-    // 这里和android对齐。将pushRoute+onContainerShow合并到一起
+    // Align with Android here. Combine pushRoute+onContainerShow together
     this.pushRoute(uniqueId, container.getUrl(), container.getUrlParams(), () => {
       if (FlutterContainerManager.getInstance().isTopContainer(uniqueId)) {
           if (callback) {
@@ -316,7 +316,7 @@ export class FlutterBoostPlugin implements FlutterPlugin, MethodCallHandler, Nat
     this._sendContainerShow(uniqueId);
   }
 
-  // 隐藏 [3/4]
+  // Hide [3/4]
   public onContainerDisappeared(container: FlutterViewContainer) {
     let uniqueId = container.getUniqueId()
     if (this.isTraceEnabled()) Log.i(TAG, "## onContainerDisappeared: " + uniqueId);
@@ -330,24 +330,24 @@ export class FlutterBoostPlugin implements FlutterPlugin, MethodCallHandler, Nat
     this._sendContainerHide(uniqueId, args);
   }
 
-  // 销毁 [4/4]
+  // Destroy [4/4]
   public onContainerDestroyed(container: FlutterViewContainer, callback?: () => void) {
     let uniqueId = container.getUniqueId()
     if (this.isTraceEnabled()) Log.i(TAG, "## onContainerDestroyed: " + uniqueId);
     let args = container.getUrlParams()
-    // 1.发送移除消息到dart侧
+    // 1. Send remove message to dart side
     this._sendRemoveRoute(uniqueId, args, () => {
       if (callback) {
         callback()
       }
     });
-    // 2.移除FlutterContainerManager中的container
+    // 2. Remove container from FlutterContainerManager
     FlutterContainerManager.getInstance().removeContainer(uniqueId);
   }
 
   /**
-   * 修改Flutter应用生命周期状态
-   * @param state 状态值
+   * Change Flutter app lifecycle state
+   * @param state State value
    */
   public changeFlutterAppLifecycle(state: Number) {
     // assert (state == FLUTTER_APP_STATE_PAUSED || state == FLUTTER_APP_STATE_RESUMED);
@@ -357,9 +357,9 @@ export class FlutterBoostPlugin implements FlutterPlugin, MethodCallHandler, Nat
   }
 
   /**
-   * 向Flutter发送事件
-   * @param key 事件的键
-   * @param args 事件的参数
+   * Send event to Flutter
+   * @param key Event key
+   * @param args Event arguments
    */
   public sendEventToFlutter(key: string, args: Record<string, Object>) {
     if (this.channel) {
@@ -406,7 +406,7 @@ export class FlutterBoostPlugin implements FlutterPlugin, MethodCallHandler, Nat
 
   private _sendContainerShow(uniqueId: string) {
     if (this.isTraceEnabled()) Log.i(TAG, "## _sendContainerShow: " + uniqueId);
-    // 向flutter侧发送onContainerShow消息
+    // Send onContainerShow message to flutter side
     if (this.channel) {
       this.checkEngineState();
       let params = new CommonParams()
@@ -420,7 +420,7 @@ export class FlutterBoostPlugin implements FlutterPlugin, MethodCallHandler, Nat
 
   private _sendContainerHide(uniqueId: string, args: Record<string, Object>) {
     if (this.isTraceEnabled()) Log.i(TAG, "## _sendContainerHide: " + uniqueId);
-    // 向flutter侧发送onContainerHide消息
+    // Send onContainerHide message to flutter side
     if (this.channel) {
       this.checkEngineState();
       let params = new CommonParams();
@@ -435,7 +435,7 @@ export class FlutterBoostPlugin implements FlutterPlugin, MethodCallHandler, Nat
 
   private _sendRemoveRoute(uniqueId: string, args: Record<string, Object>, callback: () => void) {
     if (this.isTraceEnabled()) Log.i(TAG, "## _sendRemoveRoute: " + uniqueId);
-    // 向flutter侧发送_sendRemoveRoute消息
+    // Send _sendRemoveRoute message to flutter side
     if (this.channel) {
       this.checkEngineState();
       let params = new CommonParams()

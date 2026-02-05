@@ -38,7 +38,7 @@ const TAG = "FlutterBoostAbility";
 const EVENT_BACK_PRESS = 'EVENT_BACK_PRESS';
 
 /**
- * FlutterBoostAbility类
+ * FlutterBoostAbility class
  */
 export default class FlutterBoostAbility extends FlutterAbility implements FlutterViewContainer {
   private isAttached?: boolean = false
@@ -74,17 +74,17 @@ export default class FlutterBoostAbility extends FlutterAbility implements Flutt
       windowStage?.on('windowStageEvent', (data) => {
         let stageEventType: window.WindowStageEventType = data;
         switch (stageEventType) {
-          case window.WindowStageEventType.SHOWN: // 切到前台
+          case window.WindowStageEventType.SHOWN: // Switch to foreground
             Log.i(TAG, 'windowStage foreground.');
             break;
-          case window.WindowStageEventType.ACTIVE: // 获焦状态
+          case window.WindowStageEventType.ACTIVE: // Focused state
             Log.i(TAG, 'windowStage active.');
             this.onContainerAppeared()
             break;
-          case window.WindowStageEventType.INACTIVE: // 失焦状态
+          case window.WindowStageEventType.INACTIVE: // Unfocused state
             Log.i(TAG, 'windowStage inactive.');
             break;
-          case window.WindowStageEventType.HIDDEN: // 切到后台
+          case window.WindowStageEventType.HIDDEN: // Switch to background
             Log.i(TAG, 'windowStage background.');
             this.onContainerDisappeared()
             break;
@@ -172,12 +172,12 @@ export default class FlutterBoostAbility extends FlutterAbility implements Flutt
   }
 
   /**
-   * 当容器创建完成时
+   * When container creation is complete
    */
   private onContainerCreated() {
     this.stage = LifecycleStage.ON_CREATE;
 
-    // TODO:待补齐
+    // TODO: To be completed
     // this.getFlutterView()?.detachFromFlutterEngine(); // Avoid failure when attaching to engine in |onResume|.
     FlutterBoost.getInstance().getPlugin()?.onContainerCreated(this);
 
@@ -185,7 +185,7 @@ export default class FlutterBoostAbility extends FlutterAbility implements Flutt
   }
 
   /**
-   * 当容器出现时
+   * When container appears
    */
   private onContainerAppeared() {
     // try to detach previous container from the engine.
@@ -204,7 +204,7 @@ export default class FlutterBoostAbility extends FlutterAbility implements Flutt
   }
 
   /**
-   * 当容器消失时
+   * When container disappears
    */
   private onContainerDisappeared() {
     FlutterBoost.getInstance().getPlugin()?.onContainerDisappeared(this);
@@ -212,7 +212,7 @@ export default class FlutterBoostAbility extends FlutterAbility implements Flutt
   }
 
   /**
-   * 当容器销毁时
+   * When container is destroyed
    */
   private onContainerDestroy() {
     this.detachFromEngineIfNeeded()
@@ -228,18 +228,18 @@ export default class FlutterBoostAbility extends FlutterAbility implements Flutt
 
   // private methods ==> start
   /**
-   * 绑定
+   * Attach
    */
   private performAttach() {
     if (!this.isAttached) {
 
-      // 1.plugin attach
+      // 1. Plugin attach
       const exclusiveAppComponent = this.getExclusiveAppComponent()
       if (exclusiveAppComponent) {
         this.getFlutterEngine()?.getAbilityControlSurface()?.attachToAbility(exclusiveAppComponent)
       }
 
-      // 2.Ability attach
+      // 2. Ability attach
       this.getFlutterView()?.attachToFlutterEngine(this.getFlutterEngine()!);
 
       if (!this.platformPlugin) {
@@ -252,7 +252,7 @@ export default class FlutterBoostAbility extends FlutterAbility implements Flutt
   }
 
   /**
-   * 解绑
+   * Detach
    */
   private performDetach() {
     if (this.isAttached) {

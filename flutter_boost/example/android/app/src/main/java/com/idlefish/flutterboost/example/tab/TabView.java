@@ -14,7 +14,7 @@ public class TabView extends FrameLayout {
 
     public TabView(@NonNull Context context) {
         super(context);
-        title = "这是一个Native view，hashCode=" + hashCode();
+        title = "This is a Native view, hashCode=" + hashCode();
         TextView textView = new TextView(getContext());
         textView.setText(title);
         textView.setGravity(Gravity.CENTER);

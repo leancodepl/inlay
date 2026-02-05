@@ -3,7 +3,7 @@
 //  sdfsdf
 //
 //  Created by Jidong Chen on 2018/10/18.
-//  Copyright © 2018年 Jidong Chen. All rights reserved.
+//  Copyright © 2018 Jidong Chen. All rights reserved.
 //
 
 #import "AppDelegate.h"

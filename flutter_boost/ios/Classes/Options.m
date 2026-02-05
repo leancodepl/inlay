@@ -44,7 +44,7 @@
 - (instancetype)init {
   self = [super init];
   if (self) {
-    //设置opaque默认为YES
+    // Set opaque default to YES
     self.opaque = YES;
   }
   return self;

@@ -23,10 +23,10 @@
  */
 
 export enum LifecycleStage {
-  ON_CREATE, //创建
-  ON_ABOUT_TO_APPEAR, //即将展示
-  ON_SHOW, //展示
-  ON_HIDE, //隐藏
-  ON_FINISH, //结束
-  ON_ABOUT_TO_DISAPPEAR //销毁
+  ON_CREATE, // Create
+  ON_ABOUT_TO_APPEAR, // About to appear
+  ON_SHOW, // Show
+  ON_HIDE, // Hide
+  ON_FINISH, // Finish
+  ON_ABOUT_TO_DISAPPEAR // Destroy
 }

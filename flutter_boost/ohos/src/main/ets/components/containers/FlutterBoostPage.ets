@@ -28,7 +28,7 @@ import Log from '../util/Log';
 const TAG = "FlutterBoostPage";
 
 /**
- * 基础page组件，承载XComponent组件
+ * Basic page component, hosting XComponent
  */
 @Component
 export struct FlutterBoostPage {

@@ -85,7 +85,7 @@ export class FlutterBoostSetupOptionsBuilder {
 }
 
 /**
- * FlutterBoostSetupOptions 类是用于配置 FlutterBoost 的设置选项。
+ * FlutterBoostSetupOptions class is used for configuring FlutterBoost settings options.
  */
 export class FlutterBoostSetupOptions {
   private readonly initialRoute: string;

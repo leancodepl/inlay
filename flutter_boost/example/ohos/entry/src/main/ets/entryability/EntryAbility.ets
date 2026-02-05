@@ -42,12 +42,12 @@ import { SimpleTextViewFactory } from '../platform_view/SimpleTextViewFactory';
 const TAG: string = "EntryAbility";
 export default class EntryAbility extends UIAbility implements FlutterBoostDelegate {
 
-  // 打开原生页面
+  // Open native page
   pushNativeRoute(options: FlutterBoostRouteOptions, onPageResult?: (pageName: string, result: Record<string, Object>) => void) {
     RouterModule.push(options.getPageName(), options.getArguments(), onPageResult);
   }
 
-  // 打开flutter页面
+  // Open flutter page
   pushFlutterRoute(options: FlutterBoostRouteOptions, onPageResult?: (pageName: string, result: Record<string, Object>) => void) {
     let routerName: string = RouterNameConstants.FLUTTER_PAGE
     if (!options.isOpaque()) {
@@ -59,9 +59,9 @@ export default class EntryAbility extends UIAbility implements FlutterBoostDeleg
       options.getUniqueId()), onPageResult);
   }
 
-  // 关闭flutter页面
+  // Close flutter page
   popRoute(options: FlutterBoostRouteOptions): boolean {
-    //自定义popRoute处理逻辑,如果不想走默认处理逻辑返回true进行拦截
+    // Custom popRoute handling logic, return true to intercept if you don't want to use default handling logic
     return false;
   }
 
@@ -89,7 +89,7 @@ export default class EntryAbility extends UIAbility implements FlutterBoostDeleg
 
     hilog.info(0x0000, TAG, 'isDebugMode: %{public}s', options.isDebugLoggingEnabled());
     FlutterBoost.getInstance().setup(this, this.context, (engine) => {
-      hilog.info(0x0000, TAG, '%{public}s', '引擎初始化成功');
+      hilog.info(0x0000, TAG, '%{public}s', 'Engine initialization successful');
 
       // Register plugins
       GeneratedPluginRegistrant.registerWith(engine)
@@ -115,7 +115,7 @@ export default class EntryAbility extends UIAbility implements FlutterBoostDeleg
           });
 
           let avoidArea = windowClass.getWindowAvoidArea(window.AvoidAreaType.TYPE_NAVIGATION_INDICATOR);
-          let bottomRectHeight = avoidArea.bottomRect.height; // 获取到导航条区域的高度
+          let bottomRectHeight = avoidArea.bottomRect.height; // Get the height of the navigation bar area
           AppStorage.setOrCreate('bottomRectHeight', bottomRectHeight);
       });
     }, options)

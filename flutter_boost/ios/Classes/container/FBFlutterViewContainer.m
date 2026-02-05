@@ -82,7 +82,7 @@ _Pragma("clang diagnostic pop")
   if (self = [super initWithEngine:ENGINE
                           nibName:_flbNibName
                            bundle:_flbNibBundle]) {
-    // NOTES:在present页面时，默认是全屏，如此可以触发底层VC的页面事件。否则不会触发而导致异常
+    // NOTES: When presenting a page, the default is full screen, this can trigger page events of the underlying VC. Otherwise it won't trigger and cause exceptions
     self.modalPresentationStyle = UIModalPresentationFullScreen;
     [self _setup];
   }
@@ -129,10 +129,10 @@ _Pragma("clang diagnostic pop")
     _params = params;
     _opaque = opaque;
 
-    // 这里如果是不透明的情况，才将viewOpaque 设为false，
-    // 并且才将modalStyle设为UIModalPresentationOverFullScreen
-    // 因为UIModalPresentationOverFullScreen模式下，下面的vc重新显示的时候不会
-    // 调用viewAppear相关生命周期,所以需要手动调用beginAppearanceTransition相关方法来触发
+    // Only set viewOpaque to false in the non-opaque case,
+    // and set modalStyle to UIModalPresentationOverFullScreen
+    // Because in UIModalPresentationOverFullScreen mode, when the VC below is shown again,
+    // viewAppear lifecycle methods won't be called, so we need to manually call beginAppearanceTransition methods to trigger them
     if (!_opaque) {
       self.viewOpaque = opaque;
       self.modalPresentationStyle = UIModalPresentationOverFullScreen;
@@ -144,24 +144,24 @@ _Pragma("clang diagnostic pop")
 
   [FB_PLUGIN containerCreated:self];
 
-  // 设置这个container对应的从flutter过来的事件监听
+  // Set up event listener for events coming from flutter for this container
   [self setupEventListeningFromFlutter];
 }
 
-/// 设置这个container对应的从flutter过来的事件监听
+/// Set up event listener for events coming from flutter for this container
 - (void)setupEventListeningFromFlutter {
   @weakify(self)
-  // 为这个容器注册监听，监听内部的flutterPage往这个容器发的事件
+  // Register listener for this container to listen to events sent from internal flutterPage to this container
   self.removeEventCallback = [FlutterBoost.instance addEventListener:^(NSString *name, NSDictionary *arguments) {
     @strongify(self)
-    //事件名
+    // Event name
     NSString *event = arguments[@"event"];
 
-    //事件参数
+    // Event arguments
     NSDictionary *args = arguments[@"args"];
 
     if ([event isEqualToString:@"enablePopGesture"]) {
-      // 多page情况下的侧滑动态禁用和启用事件
+      // Dynamic enable/disable swipe back gesture in multi-page scenario
       NSNumber *enableNum = args[@"enable"];
       BOOL enable = [enableNum boolValue];
       self.navigationController.interactivePopGestureRecognizer.enabled = enable;
@@ -180,7 +180,7 @@ _Pragma("clang diagnostic pop")
 
 - (void)didMoveToParentViewController:(UIViewController *)parent {
   if (!parent) {
-    //当VC被移出parent时，就通知flutter层销毁page
+    // When VC is removed from parent, notify flutter layer to destroy the page
     [self detachFlutterEngineIfNeeded];
     [self notifyWillDealloc];
   }
@@ -194,7 +194,7 @@ _Pragma("clang diagnostic pop")
                               if (completion) {
                                 completion();
                               }
-                              //当VC被dismiss时，就通知flutter层销毁page
+                              // When VC is dismissed, notify flutter layer to destroy the page
                               [self detachFlutterEngineIfNeeded];
                               [self notifyWillDealloc];
                             }];
@@ -217,7 +217,7 @@ _Pragma("clang diagnostic pop")
   [self attatchFlutterEngine];
 
   [super viewDidLoad];
-  //只有在不透明情况下，才设置背景颜色，否则不设置颜色（也就是默认透明）
+  // Only set background color in opaque case, otherwise don't set color (which defaults to transparent)
   if (self.opaque) {
     self.view.backgroundColor = UIColor.whiteColor;
   }
@@ -291,18 +291,18 @@ _Pragma("clang diagnostic pop")
   [self attatchFlutterEngine];
 
   [super bridge_viewWillAppear:animated];
-  [self.view setNeedsLayout];//TODO:通过param来设定
+  [self.view setNeedsLayout]; // TODO: Set through param
 }
 
 - (void)viewDidAppear:(BOOL)animated {
   //Ensure flutter view is attached.
   [self attatchFlutterEngine];
 
-  // 根据淘宝特价版日志证明，即使在UIViewController的viewDidAppear下，application也可能在inactive模式，此时如果提交渲染会导致GPU后台渲染而crash
-  // 参考：https://github.com/flutter/flutter/issues/57973
+  // Based on Taobao Tejia logs, even in UIViewController's viewDidAppear, the application may be in inactive mode. In this case, submitting render will cause GPU background rendering and crash
+  // Reference: https://github.com/flutter/flutter/issues/57973
   // https://github.com/flutter/engine/pull/18742
   if ([UIApplication sharedApplication].applicationState == UIApplicationStateActive){
-    //NOTES：务必在show之后再update，否则有闪烁; 或导致侧滑返回时上一个页面会和top页面内容一样
+    // NOTES: Must update after show, otherwise there will be flickering; or it may cause the previous page to show the same content as top page when swiping back
     [self surfaceUpdated:YES];
   }
   [super viewDidAppear:animated];

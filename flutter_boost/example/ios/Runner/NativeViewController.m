@@ -47,12 +47,12 @@
 
 - (void)viewDidAppear:(BOOL)animated{
     [super viewDidAppear:animated];
-    //注意这行代码不可缺少
+    // Note this line of code is essential
 //    [self.flutterContainer.view setNeedsLayout];
 //    [self.flutterContainer.view layoutIfNeeded];
 }
 
-//NOTES: embed情景下必须实现！！！
+// NOTES: Must be implemented in embed scenario!!!
 - (void)didMoveToParentViewController:(UIViewController *)parent {
     [self.flutterContainer didMoveToParentViewController:parent];
     [super didMoveToParentViewController:parent];

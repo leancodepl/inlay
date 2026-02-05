@@ -10,7 +10,7 @@
     },
     {
       "name": "EntryAbility_label",
-      "value": "FlutterBoost示例"
+      "value": "FlutterBoost Example"
     },
     {
       "name": "tab_title",
@@ -22,7 +22,7 @@
     },
     {
       "name": "clipboard_reason",
-      "value": "获取剪贴板内容"
+      "value": "Get clipboard content"
     }
   ]
 }
