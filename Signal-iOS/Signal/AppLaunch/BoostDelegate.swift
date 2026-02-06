@@ -8,7 +8,11 @@ class BoostDelegate: NSObject, FlutterBoostDelegate {
     }
 
     func pushFlutterRoute(_ options: FlutterBoostRouteOptions!) {
-        let vc = FBFlutterViewContainer()
+        guard let vc = FBFlutterViewContainer() else {
+            NSLog("Failed to create FBFlutterViewContainer")
+            return
+        }
+        
         vc.setName(options.pageName, uniqueId: options.uniqueId, params: options.arguments, opaque: options.opaque)
 
         let isPresent = (options.arguments?["isPresent"] as? Bool) ?? false
