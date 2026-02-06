@@ -4,6 +4,7 @@
 //
 
 import CryptoKit
+import flutter_boost
 import GRDB
 import Intents
 import SignalServiceKit
@@ -182,6 +183,9 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
 
         Logger.warn("Launching…")
         defer { Logger.info("Launched.") }
+
+        FlutterBoost.instance().setup(application, delegate: boostDelegate) { engine in
+        }
 
         BenchEventStart(title: "Presenting HomeView", eventId: "AppStart", logInProduction: true)
         appReadiness.runNowOrWhenUIDidBecomeReadySync { BenchEventComplete(eventId: "AppStart") }
@@ -362,6 +366,7 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
     }
 
     var window: UIWindow?
+    private let boostDelegate = BoostDelegate()
 
     private func initializeWindow(mainAppContext: MainAppContext, rootViewController: UIViewController) -> UIWindow {
         let window = OWSWindow()
