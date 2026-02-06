@@ -7,6 +7,7 @@ import ContactsUI
 import LibSignalClient
 import SignalServiceKit
 import SignalUI
+import flutter_boost
 
 public enum ConversationSettingsPresentationMode: UInt {
     case `default`
@@ -382,21 +383,29 @@ class ConversationSettingsViewController: OWSTableViewController2, BadgeCollecti
     }
 
     func showColorAndWallpaperSettingsView() {
-        // ADD2APP: Flutter integration point - SetWallpaperScreen
-        // Replace this with Flutter navigation to show signal_module's SetWallpaperScreen
-        // Entry route: /set-wallpaper
-        // Required data: threadId = thread.uniqueId
-        let vc = ColorAndWallpaperSettingsViewController(thread: thread)
-        navigationController?.pushViewController(vc, animated: true)
+        // ADD2APP: Flutter integration - Navigate to Flutter SetWallpaperScreen
+        let options = FlutterBoostRouteOptions()
+        options.pageName = "setWallpaper"
+        options.arguments = [
+            "recipientId": thread.uniqueId,
+            "isAnimated": true
+        ]
+        options.opaque = true
+        
+        FlutterBoost.instance().open(options)
     }
 
     func showSoundAndNotificationsSettingsView() {
-        // ADD2APP: Flutter integration point - SoundsNotificationsScreen
-        // Replace this with Flutter navigation to show signal_module's SoundsNotificationsScreen
-        // Entry route: /sounds-notifications
-        // Required data: contactId from threadViewModel.contactAddress or thread.uniqueId
-        let vc = SoundAndNotificationsSettingsViewController(threadViewModel: threadViewModel)
-        navigationController?.pushViewController(vc, animated: true)
+        // ADD2APP: Flutter integration - Navigate to Flutter SoundsNotificationsScreen
+        let options = FlutterBoostRouteOptions()
+        options.pageName = "soundsNotifications"
+        options.arguments = [
+            "recipientId": thread.uniqueId,
+            "isAnimated": true
+        ]
+        options.opaque = true
+        
+        FlutterBoost.instance().open(options)
     }
 
     func showPermissionsSettingsView() {

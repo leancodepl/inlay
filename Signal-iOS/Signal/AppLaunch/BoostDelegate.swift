@@ -2,9 +2,13 @@ import UIKit
 import flutter_boost
 
 class BoostDelegate: NSObject, FlutterBoostDelegate {
+    
+    /// The navigation controller used for push operations
+    weak var navigationController: UINavigationController?
 
     func pushNativeRoute(_ pageName: String!, arguments: [AnyHashable: Any]!) {
-        // TODO
+        // TODO: Handle navigation to native routes if needed
+        // For example, if Flutter wants to navigate back to a native screen
     }
 
     func pushFlutterRoute(_ options: FlutterBoostRouteOptions!) {
@@ -18,6 +22,7 @@ class BoostDelegate: NSObject, FlutterBoostDelegate {
         let isPresent = (options.arguments?["isPresent"] as? Bool) ?? false
         let isAnimated = (options.arguments?["isAnimated"] as? Bool) ?? true
 
+        // Get the top navigation controller or view controller
         if let navigationController = topNavigationController() {
             if isPresent || !options.opaque {
                 navigationController.present(vc, animated: isAnimated, completion: nil)
@@ -26,6 +31,8 @@ class BoostDelegate: NSObject, FlutterBoostDelegate {
             }
         } else if let topVC = topViewController() {
             topVC.present(vc, animated: isAnimated, completion: nil)
+        } else {
+            NSLog("Failed to get top view controller or navigation controller")
         }
     }
 

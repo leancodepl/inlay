@@ -8,12 +8,13 @@ import '../widgets/wallpaper_preview.dart';
 class SetWallpaperScreen extends StatefulWidget {
   const SetWallpaperScreen({
     super.key,
-    this.contactId,
+    this.recipientId,
     this.currentWallpaperId,
   });
 
   /// If null, setting wallpaper for all chats
-  final String? contactId;
+  /// This is the recipient/thread ID from both iOS and Android
+  final String? recipientId;
   final String? currentWallpaperId;
 
   @override
