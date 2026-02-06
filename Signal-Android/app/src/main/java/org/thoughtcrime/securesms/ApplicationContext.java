@@ -18,6 +18,7 @@ package org.thoughtcrime.securesms;
 
 import android.app.Application;
 import android.content.Context;
+import android.content.Intent;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -120,6 +121,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import com.idlefish.flutterboost.FlutterBoost;
+import com.idlefish.flutterboost.FlutterBoostDelegate;
+import com.idlefish.flutterboost.FlutterBoostRouteOptions;
+import com.idlefish.flutterboost.containers.FlutterBoostActivity;
+import io.flutter.embedding.android.FlutterActivityLaunchConfigs;
+
 import io.reactivex.rxjava3.exceptions.OnErrorNotImplementedException;
 import io.reactivex.rxjava3.exceptions.UndeliverableException;
 import io.reactivex.rxjava3.plugins.RxJavaPlugins;
@@ -152,6 +159,26 @@ public class ApplicationContext extends Application implements AppForegroundObse
     long startTime = System.currentTimeMillis();
 
     super.onCreate();
+
+    FlutterBoost.instance().setup(this, new FlutterBoostDelegate() {
+      @Override
+      public void pushNativeRoute(FlutterBoostRouteOptions options) {
+        // TODO
+      }
+
+      @Override
+      public void pushFlutterRoute(FlutterBoostRouteOptions options) {
+        Intent intent = new FlutterBoostActivity.CachedEngineIntentBuilder(FlutterBoostActivity.class)
+                .backgroundMode(FlutterActivityLaunchConfigs.BackgroundMode.transparent)
+                .destroyEngineWithActivity(false)
+                .uniqueId(options.uniqueId())
+                .url(options.pageName())
+                .urlParams(options.arguments())
+                .build(FlutterBoost.instance().currentActivity());
+        FlutterBoost.instance().currentActivity().startActivity(intent);
+      }
+    }, engine -> {
+    });
 
     AppStartup.getInstance().addBlocking("sqlcipher-init", () -> {
                 SqlCipherLibraryLoader.load();
