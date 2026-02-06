@@ -107,6 +107,8 @@ import org.thoughtcrime.securesms.util.views.SimpleProgressDialog
 import org.thoughtcrime.securesms.verify.VerifyIdentityActivity
 import org.thoughtcrime.securesms.wallpaper.ChatWallpaperActivity
 import java.util.Locale
+import com.idlefish.flutterboost.FlutterBoost
+import com.idlefish.flutterboost.FlutterBoostRouteOptions
 
 private const val REQUEST_CODE_VIEW_CONTACT = 1
 private const val REQUEST_CODE_ADD_CONTACT = 2
@@ -556,11 +558,15 @@ class ConversationSettingsFragment : DSLSettingsFragment(
           title = DSLSettingsText.from(R.string.preferences__chat_color_and_wallpaper),
           icon = DSLSettingsIcon.from(R.drawable.symbol_color_24),
           onClick = {
-            // ADD2APP: Flutter integration point - SetWallpaperScreen
-            // Replace this with Flutter navigation to show signal_module's SetWallpaperScreen
-            // Entry route: /set-wallpaper
-            // Required data: recipientId = state.recipient.id
-            startActivity(ChatWallpaperActivity.createIntent(requireContext(), state.recipient.id))
+            // ADD2APP: Navigate to Flutter SetWallpaperScreen
+            val options = FlutterBoostRouteOptions.Builder()
+              .pageName("setWallpaper")
+              .arguments(hashMapOf<String, Any>(
+                "recipientId" to state.recipient.id.serialize(),
+                "isAnimated" to true
+              ))
+              .build()
+            FlutterBoost.instance().open(options)
           }
         )
       }
@@ -571,13 +577,15 @@ class ConversationSettingsFragment : DSLSettingsFragment(
           icon = DSLSettingsIcon.from(R.drawable.symbol_speaker_24),
           isEnabled = !state.isDeprecatedOrUnregistered,
           onClick = {
-            // ADD2APP: Flutter integration point - SoundsNotificationsScreen
-            // Replace this navigation with Flutter to show signal_module's SoundsNotificationsScreen
-            // Entry route: /sounds-notifications
-            // Required data: contactId = state.recipient.id
-            val action = ConversationSettingsFragmentDirections.actionConversationSettingsFragmentToSoundsAndNotificationsSettingsFragment(state.recipient.id)
-
-            navController.safeNavigate(action)
+            // ADD2APP: Navigate to Flutter SoundsNotificationsScreen
+            val options = FlutterBoostRouteOptions.Builder()
+              .pageName("soundsNotifications")
+              .arguments(hashMapOf<String, Any>(
+                "recipientId" to state.recipient.id.serialize(),
+                "isAnimated" to true
+              ))
+              .build()
+            FlutterBoost.instance().open(options)
           }
         )
       }

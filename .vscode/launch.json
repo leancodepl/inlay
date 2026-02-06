@@ -23,6 +23,12 @@
       "program": "lib/main.dart",
       "cwd": "${workspaceFolder}/signal_module",
       "flutterMode": "profile"
+    },
+    {
+      "name": "Signal Module (Attach)",
+      "type": "dart",
+      "request": "attach",
+      "program": "lib/main.dart"
     }
   ]
 }

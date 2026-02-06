@@ -20,26 +20,35 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   Map<String, FlutterBoostRouteFactory> routerMap = {
     'contactDetails': (settings, isContainerPage, uniqueId) {
+      final args = settings.arguments as Map?;
+      final recipientId = args?['recipientId'] as String? ?? '1';
+      
       return MaterialPageRoute(
         settings: settings,
         builder: (_) {
-          return const ContactDetailsScreen(contactId: '1');
+          return ContactDetailsScreen(contactId: recipientId);
         },
       );
     },
     'setWallpaper': (settings, isContainerPage, uniqueId) {
+      final args = settings.arguments as Map?;
+      final recipientId = args?['recipientId'] as String?;
+      
       return MaterialPageRoute(
         settings: settings,
         builder: (_) {
-          return const SetWallpaperScreen();
+          return SetWallpaperScreen(recipientId: recipientId);
         },
       );
     },
     'soundsNotifications': (settings, isContainerPage, uniqueId) {
+      final args = settings.arguments as Map?;
+      final recipientId = args?['recipientId'] as String? ?? '1';
+      
       return MaterialPageRoute(
         settings: settings,
         builder: (_) {
-          return const SoundsNotificationsScreen(contactId: '1');
+          return SoundsNotificationsScreen(contactId: recipientId);
         },
       );
     },
@@ -50,7 +59,18 @@ class _MyAppState extends State<MyApp> {
     bool isContainerPage,
     String? uniqueId,
   ) {
-    final func = routerMap[settings.name]!;
+    print('FlutterBoost routeFactory called:');
+    print('  - route name: ${settings.name}');
+    print('  - arguments: ${settings.arguments}');
+    print('  - isContainerPage: $isContainerPage');
+    print('  - uniqueId: $uniqueId');
+    
+    final func = routerMap[settings.name];
+    if (func == null) {
+      print('ERROR: Unknown route: ${settings.name}');
+      print('Available routes: ${routerMap.keys.join(", ")}');
+      return null;
+    }
     return func(settings, isContainerPage, uniqueId);
   }
 

@@ -5,6 +5,7 @@
 
 import SignalServiceKit
 import SignalUI
+import flutter_boost
 
 final class AppearanceSettingsTableViewController: OWSTableViewController2 {
     override func viewDidLoad() {
@@ -40,9 +41,17 @@ final class AppearanceSettingsTableViewController: OWSTableViewController2 {
                 comment: "Label for settings view that allows user to change the chat color and wallpaper."
             )
         ) { [weak self] in
-            guard let self = self else { return }
-            let vc = ColorAndWallpaperSettingsViewController()
-            self.navigationController?.pushViewController(vc, animated: true)
+            guard self != nil else { return }
+            // ADD2APP: Flutter integration - Navigate to Flutter SetWallpaperScreen (global settings)
+            let options = FlutterBoostRouteOptions()
+            options.pageName = "setWallpaper"
+            options.arguments = [
+                "isAnimated": true
+                // No recipientId means global wallpaper settings
+            ]
+            options.opaque = true
+            
+            FlutterBoost.instance().open(options)
         })
         firstSection.add(
             OWSTableItem(
