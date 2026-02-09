@@ -11,8 +11,6 @@ dependencies:
   cupertino_icons: ^1.0.8
   flutter:
     sdk: flutter
-  flutter_boost:
-    path: ../flutter_boost
 
 dev_dependencies:
   custom_lint: ^0.7.6

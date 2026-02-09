@@ -190,13 +190,6 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
-  flutter_boost:
-    dependency: "direct main"
-    description:
-      path: "../flutter_boost"
-      relative: true
-    source: path
-    version: "4.6.5"
   flutter_test:
     dependency: "direct dev"
     description: flutter
