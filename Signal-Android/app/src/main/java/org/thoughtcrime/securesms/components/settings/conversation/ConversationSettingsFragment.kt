@@ -107,8 +107,6 @@ import org.thoughtcrime.securesms.util.views.SimpleProgressDialog
 import org.thoughtcrime.securesms.verify.VerifyIdentityActivity
 import org.thoughtcrime.securesms.wallpaper.ChatWallpaperActivity
 import java.util.Locale
-import com.idlefish.flutterboost.FlutterBoost
-import com.idlefish.flutterboost.FlutterBoostRouteOptions
 
 private const val REQUEST_CODE_VIEW_CONTACT = 1
 private const val REQUEST_CODE_ADD_CONTACT = 2
@@ -559,14 +557,14 @@ class ConversationSettingsFragment : DSLSettingsFragment(
           icon = DSLSettingsIcon.from(R.drawable.symbol_color_24),
           onClick = {
             // ADD2APP: Navigate to Flutter SetWallpaperScreen
-            val options = FlutterBoostRouteOptions.Builder()
-              .pageName("setWallpaper")
-              .arguments(hashMapOf<String, Any>(
-                "recipientId" to state.recipient.id.serialize(),
-                "isAnimated" to true
-              ))
-              .build()
-            FlutterBoost.instance().open(options)
+//            val options = FlutterBoostRouteOptions.Builder()
+//              .pageName("setWallpaper")
+//              .arguments(hashMapOf<String, Any>(
+//                "recipientId" to state.recipient.id.serialize(),
+//                "isAnimated" to true
+//              ))
+//              .build()
+//            FlutterBoost.instance().open(options)
           }
         )
       }
@@ -578,14 +576,14 @@ class ConversationSettingsFragment : DSLSettingsFragment(
           isEnabled = !state.isDeprecatedOrUnregistered,
           onClick = {
             // ADD2APP: Navigate to Flutter SoundsNotificationsScreen
-            val options = FlutterBoostRouteOptions.Builder()
-              .pageName("soundsNotifications")
-              .arguments(hashMapOf<String, Any>(
-                "recipientId" to state.recipient.id.serialize(),
-                "isAnimated" to true
-              ))
-              .build()
-            FlutterBoost.instance().open(options)
+//            val options = FlutterBoostRouteOptions.Builder()
+//              .pageName("soundsNotifications")
+//              .arguments(hashMapOf<String, Any>(
+//                "recipientId" to state.recipient.id.serialize(),
+//                "isAnimated" to true
+//              ))
+//              .build()
+//            FlutterBoost.instance().open(options)
           }
         )
       }

@@ -610,7 +610,6 @@ dependencies {
   implementation(project(":billing"))
 
   implementation(project(":flutter"))
-  implementation(project(":flutter_boost"))
 
   "spinnerImplementation"(project(":spinner"))
 
