@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
+import '../add2app_nav.dart';
 import '../theme/signal_theme.dart';
 import '../widgets/settings_tile.dart';
 
@@ -25,91 +27,115 @@ class _SoundsNotificationsScreenState extends State<SoundsNotificationsScreen> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Sounds & Notifications'),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop) {
+          SystemNavigator.pop();
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Sounds & Notifications'),
+          leading: const IconButton(
+            icon: Icon(Icons.arrow_back),
+            onPressed: SystemNavigator.pop,
+          ),
         ),
-      ),
-      body: ListView(
-        children: [
-          const SizedBox(height: 8),
+        body: ListView(
+          children: [
+            const SizedBox(height: 8),
 
-          // Mute toggle
-          SwitchListTile(
-            secondary: Icon(
-              _muteNotifications
-                  ? Icons.notifications_off
-                  : Icons.notifications,
-              color: isDark
-                  ? SignalColors.textSecondaryDark
-                  : SignalColors.textSecondaryLight,
-            ),
-            title: const Text('Mute notifications'),
-            subtitle: _muteNotifications
-                ? const Text('Notifications are muted')
-                : null,
-            value: _muteNotifications,
-            onChanged: (value) {
-              setState(() => _muteNotifications = value);
-            },
-          ),
-
-          const Divider(indent: 56),
-
-          SettingsTile(
-            icon: Icons.music_note_outlined,
-            title: 'Notification sound',
-            subtitle: _notificationSound,
-            onTap: () => _showSoundPicker(context),
-          ),
-
-          const Divider(indent: 56),
-
-          SettingsTile(
-            icon: Icons.vibration,
-            title: 'Vibrate',
-            subtitle: _vibrationPattern,
-            onTap: () => _showVibrationPicker(context),
-          ),
-
-          const SizedBox(height: 24),
-          const SettingsSectionHeader(title: 'Message notifications'),
-
-          SwitchListTile(
-            secondary: Icon(
-              Icons.visibility_outlined,
-              color: isDark
-                  ? SignalColors.textSecondaryDark
-                  : SignalColors.textSecondaryLight,
-            ),
-            title: const Text('Show previews'),
-            subtitle: const Text('Display message content in notifications'),
-            value: _showPreviews,
-            onChanged: (value) {
-              setState(() => _showPreviews = value);
-            },
-          ),
-
-          const SizedBox(height: 32),
-
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Text(
-              'These settings override the default notification settings for this conversation.',
-              style: TextStyle(
-                fontSize: 14,
+            // Mute toggle
+            SwitchListTile(
+              secondary: Icon(
+                _muteNotifications
+                    ? Icons.notifications_off
+                    : Icons.notifications,
                 color: isDark
                     ? SignalColors.textSecondaryDark
                     : SignalColors.textSecondaryLight,
               ),
+              title: const Text('Mute notifications'),
+              subtitle: _muteNotifications
+                  ? const Text('Notifications are muted')
+                  : null,
+              value: _muteNotifications,
+              onChanged: (value) {
+                setState(() => _muteNotifications = value);
+              },
             ),
-          ),
 
-          const SizedBox(height: 48),
-        ],
+            const Divider(indent: 56),
+
+            SettingsTile(
+              icon: Icons.music_note_outlined,
+              title: 'Notification sound',
+              subtitle: _notificationSound,
+              onTap: () => _showSoundPicker(context),
+            ),
+
+            const Divider(indent: 56),
+
+            SettingsTile(
+              icon: Icons.vibration,
+              title: 'Vibrate',
+              subtitle: _vibrationPattern,
+              onTap: () => _showVibrationPicker(context),
+            ),
+
+            const SizedBox(height: 24),
+            const SettingsSectionHeader(title: 'Message notifications'),
+
+            SwitchListTile(
+              secondary: Icon(
+                Icons.visibility_outlined,
+                color: isDark
+                    ? SignalColors.textSecondaryDark
+                    : SignalColors.textSecondaryLight,
+              ),
+              title: const Text('Show previews'),
+              subtitle: const Text('Display message content in notifications'),
+              value: _showPreviews,
+              onChanged: (value) {
+                setState(() => _showPreviews = value);
+              },
+            ),
+
+            const SizedBox(height: 32),
+
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Text(
+                'These settings override the default notification settings for this conversation.',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: isDark
+                      ? SignalColors.textSecondaryDark
+                      : SignalColors.textSecondaryLight,
+                ),
+              ),
+            ),
+
+            // ADD2APP: Open same screen in new Activity (new engine) to spawn many engines
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: OutlinedButton.icon(
+                icon: const Icon(Icons.open_in_new, size: 20),
+                label: const Text('Open again (new activity / new engine)'),
+                onPressed: () async {
+                  try {
+                    await openSoundsNotificationsInNewActivity(widget.contactId);
+                  } on PlatformException catch (e) {
+                    debugPrint('add2app_nav: $e');
+                  }
+                },
+              ),
+            ),
+
+            const SizedBox(height: 48),
+          ],
+        ),
       ),
     );
   }

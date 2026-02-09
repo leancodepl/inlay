@@ -106,6 +106,8 @@ import org.thoughtcrime.securesms.util.navigation.safeNavigate
 import org.thoughtcrime.securesms.util.views.SimpleProgressDialog
 import org.thoughtcrime.securesms.verify.VerifyIdentityActivity
 import org.thoughtcrime.securesms.wallpaper.ChatWallpaperActivity
+import org.thoughtcrime.securesms.flutter.SetWallpaperFlutterActivity
+import org.thoughtcrime.securesms.flutter.SoundsNotificationsFlutterActivity
 import java.util.Locale
 
 private const val REQUEST_CODE_VIEW_CONTACT = 1
@@ -556,15 +558,8 @@ class ConversationSettingsFragment : DSLSettingsFragment(
           title = DSLSettingsText.from(R.string.preferences__chat_color_and_wallpaper),
           icon = DSLSettingsIcon.from(R.drawable.symbol_color_24),
           onClick = {
-            // ADD2APP: Navigate to Flutter SetWallpaperScreen
-//            val options = FlutterBoostRouteOptions.Builder()
-//              .pageName("setWallpaper")
-//              .arguments(hashMapOf<String, Any>(
-//                "recipientId" to state.recipient.id.serialize(),
-//                "isAnimated" to true
-//              ))
-//              .build()
-//            FlutterBoost.instance().open(options)
+            // ADD2APP: Flutter Set Wallpaper — standalone engine (no engine group) for comparison.
+            startActivity(SetWallpaperFlutterActivity.createIntent(requireContext(), state.recipient.id.serialize()))
           }
         )
       }
@@ -575,15 +570,8 @@ class ConversationSettingsFragment : DSLSettingsFragment(
           icon = DSLSettingsIcon.from(R.drawable.symbol_speaker_24),
           isEnabled = !state.isDeprecatedOrUnregistered,
           onClick = {
-            // ADD2APP: Navigate to Flutter SoundsNotificationsScreen
-//            val options = FlutterBoostRouteOptions.Builder()
-//              .pageName("soundsNotifications")
-//              .arguments(hashMapOf<String, Any>(
-//                "recipientId" to state.recipient.id.serialize(),
-//                "isAnimated" to true
-//              ))
-//              .build()
-//            FlutterBoost.instance().open(options)
+            // ADD2APP: Flutter Sounds & Notifications — always uses engine from FlutterEngineGroup for comparison.
+            startActivity(SoundsNotificationsFlutterActivity.createIntent(requireContext(), state.recipient.id.serialize()))
           }
         )
       }
