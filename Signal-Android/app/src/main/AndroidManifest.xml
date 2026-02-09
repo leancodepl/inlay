@@ -834,6 +834,22 @@
         android:windowSoftInputMode="stateAlwaysHidden"
         android:exported="false"/>
 
+    <!-- ADD2APP: Set Wallpaper — standalone Flutter engine (no engine group). -->
+    <activity
+        android:name=".flutter.SetWallpaperFlutterActivity"
+        android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|layoutDirection|fontScale|screenLayout|density"
+        android:hardwareAccelerated="true"
+        android:exported="false"
+        android:theme="@style/Signal.DayNight.NoActionBar"/>
+
+    <!-- ADD2APP: Sounds & Notifications — Flutter engine from FlutterEngineGroup. -->
+    <activity
+        android:name=".flutter.SoundsNotificationsFlutterActivity"
+        android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|layoutDirection|fontScale|screenLayout|density"
+        android:hardwareAccelerated="true"
+        android:exported="false"
+        android:theme="@style/Signal.DayNight.NoActionBar"/>
+
     <activity
         android:name=".wallpaper.ChatWallpaperPreviewActivity"
         android:configChanges="touchscreen|keyboard|keyboardHidden|orientation|screenLayout|screenSize"

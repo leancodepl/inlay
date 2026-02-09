@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
+import '../add2app_nav.dart';
 import '../models/wallpaper.dart';
 import '../theme/signal_theme.dart';
 import '../widgets/wallpaper_preview.dart';
@@ -59,110 +61,136 @@ class _SetWallpaperScreenState extends State<SetWallpaperScreen>
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Set Wallpaper'),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-        bottom: TabBar(
-          controller: _tabController,
-          labelColor: SignalColors.signalBlue,
-          unselectedLabelColor: isDark
-              ? SignalColors.textSecondaryDark
-              : SignalColors.textSecondaryLight,
-          indicatorColor: SignalColors.signalBlue,
-          tabs: const [
-            Tab(text: 'Solid Colors'),
-            Tab(text: 'Gradients'),
-          ],
-        ),
-      ),
-      body: Column(
-        children: [
-          // Preview area
-          Expanded(flex: 2, child: _buildPreviewArea(context)),
-
-          // Wallpaper selection
-          Expanded(
-            flex: 3,
-            child: Column(
-              children: [
-                // Choose from photos option
-                ListTile(
-                  leading: Container(
-                    width: 48,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      color: isDark
-                          ? SignalColors.darkSurfaceElevated
-                          : SignalColors.lightBackground,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Icon(Icons.photo_library_outlined),
-                  ),
-                  title: const Text('Choose from photos'),
-                  trailing: const Icon(Icons.chevron_right),
-                  onTap: _onChooseFromPhotos,
-                ),
-
-                const Divider(),
-
-                // Wallpaper grid
-                Expanded(
-                  child: TabBarView(
-                    controller: _tabController,
-                    children: [
-                      // Solid colors tab
-                      SingleChildScrollView(
-                        child: WallpaperGrid(
-                          wallpapers: _solidColors,
-                          selectedId: _selectedWallpaperId,
-                          onSelect: _onSelectWallpaper,
-                        ),
-                      ),
-                      // Gradients tab
-                      SingleChildScrollView(
-                        child: WallpaperGrid(
-                          wallpapers: _gradients,
-                          selectedId: _selectedWallpaperId,
-                          onSelect: _onSelectWallpaper,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop) {
+          SystemNavigator.pop();
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Set Wallpaper'),
+          leading: const IconButton(
+            icon: Icon(Icons.arrow_back),
+            onPressed: SystemNavigator.pop,
           ),
+          bottom: TabBar(
+            controller: _tabController,
+            labelColor: SignalColors.signalBlue,
+            unselectedLabelColor: isDark
+                ? SignalColors.textSecondaryDark
+                : SignalColors.textSecondaryLight,
+            indicatorColor: SignalColors.signalBlue,
+            tabs: const [
+              Tab(text: 'Solid Colors'),
+              Tab(text: 'Gradients'),
+            ],
+          ),
+        ),
+        body: Column(
+          children: [
+            // Preview area
+            Expanded(flex: 2, child: _buildPreviewArea(context)),
 
-          // Dim in dark mode toggle
-          if (_selectedWallpaper != null) ...[
-            const Divider(height: 1),
-            SwitchListTile(
-              title: const Text('Dim wallpaper in dark mode'),
-              value: _dimInDarkMode,
-              onChanged: (value) {
-                setState(() => _dimInDarkMode = value);
-              },
+            // Wallpaper selection
+            Expanded(
+              flex: 3,
+              child: Column(
+                children: [
+                  // Choose from photos option
+                  ListTile(
+                    leading: Container(
+                      width: 48,
+                      height: 48,
+                      decoration: BoxDecoration(
+                        color: isDark
+                            ? SignalColors.darkSurfaceElevated
+                            : SignalColors.lightBackground,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Icon(Icons.photo_library_outlined),
+                    ),
+                    title: const Text('Choose from photos'),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: _onChooseFromPhotos,
+                  ),
+
+                  const Divider(),
+
+                  // Wallpaper grid
+                  Expanded(
+                    child: TabBarView(
+                      controller: _tabController,
+                      children: [
+                        // Solid colors tab
+                        SingleChildScrollView(
+                          child: WallpaperGrid(
+                            wallpapers: _solidColors,
+                            selectedId: _selectedWallpaperId,
+                            onSelect: _onSelectWallpaper,
+                          ),
+                        ),
+                        // Gradients tab
+                        SingleChildScrollView(
+                          child: WallpaperGrid(
+                            wallpapers: _gradients,
+                            selectedId: _selectedWallpaperId,
+                            onSelect: _onSelectWallpaper,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ],
 
-          // Set wallpaper button
-          SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: SizedBox(
-                width: double.infinity,
-                child: FilledButton(
-                  onPressed: _selectedWallpaper != null ? _onSetWallpaper : null,
-                  child: const Text('Set Wallpaper'),
+            // Dim in dark mode toggle
+            if (_selectedWallpaper != null) ...[
+              const Divider(height: 1),
+              SwitchListTile(
+                title: const Text('Dim wallpaper in dark mode'),
+                value: _dimInDarkMode,
+                onChanged: (value) {
+                  setState(() => _dimInDarkMode = value);
+                },
+              ),
+            ],
+
+            // ADD2APP: Open same screen in new Activity (new engine) to spawn many engines
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: OutlinedButton.icon(
+                icon: const Icon(Icons.open_in_new, size: 20),
+                label: const Text('Open again (new activity / new engine)'),
+                onPressed: () async {
+                  try {
+                    await openSetWallpaperInNewActivity(widget.recipientId);
+                  } on PlatformException catch (e) {
+                    debugPrint('add2app_nav: $e');
+                  }
+                },
+              ),
+            ),
+
+            // Set wallpaper button
+            SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: FilledButton(
+                    onPressed: _selectedWallpaper != null
+                        ? _onSetWallpaper
+                        : null,
+                    child: const Text('Set Wallpaper'),
+                  ),
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -256,10 +284,7 @@ class _SetWallpaperScreenState extends State<SetWallpaperScreen>
   }
 
   void _onSetWallpaper() {
-    // Return the selected wallpaper to the calling screen
-    Navigator.of(context).pop({
-      'wallpaperId': _selectedWallpaperId,
-      'dimInDarkMode': _dimInDarkMode,
-    });
+    // In add2app we close the activity; result could be sent via method channel if needed
+    SystemNavigator.pop();
   }
 }
