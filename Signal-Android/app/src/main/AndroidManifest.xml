@@ -850,6 +850,12 @@
         android:exported="false"
         android:theme="@style/Signal.DayNight.NoActionBar"/>
 
+    <!-- ADD2APP: Native Sounds & Notifications — uses same Pigeon KeyValueStorage as Flutter. -->
+    <activity
+        android:name=".flutter.NativeSoundsNotificationsActivity"
+        android:exported="false"
+        android:theme="@style/Signal.DayNight"/>
+
     <activity
         android:name=".wallpaper.ChatWallpaperPreviewActivity"
         android:configChanges="touchscreen|keyboard|keyboardHidden|orientation|screenLayout|screenSize"
