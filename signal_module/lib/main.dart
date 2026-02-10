@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:signal_module/src/routes.dart';
+import 'package:signal_module/src/storage/key_value_storage.dart';
 
 void main() {
   runApp(const MyApp());
@@ -12,8 +13,12 @@ void mainSetWallpaper() {
 }
 
 /// ADD2APP entrypoint: Sounds & Notifications screen (launched with engine from FlutterEngineGroup).
+/// Initializes [KeyValueStorage] so this isolate can read/write and receive
+/// change notifications from other engines and the Android side.
 @pragma('vm:entry-point')
 void mainSoundsNotifications() {
+  WidgetsFlutterBinding.ensureInitialized();
+  KeyValueStorage().init();
   runApp(const _Add2AppHost(initialRoute: 'soundsNotifications'));
 }
 

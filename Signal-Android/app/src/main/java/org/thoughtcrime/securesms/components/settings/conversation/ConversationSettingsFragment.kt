@@ -107,7 +107,7 @@ import org.thoughtcrime.securesms.util.views.SimpleProgressDialog
 import org.thoughtcrime.securesms.verify.VerifyIdentityActivity
 import org.thoughtcrime.securesms.wallpaper.ChatWallpaperActivity
 import org.thoughtcrime.securesms.flutter.SetWallpaperFlutterActivity
-import org.thoughtcrime.securesms.flutter.SoundsNotificationsFlutterActivity
+import org.thoughtcrime.securesms.flutter.NativeSoundsNotificationsActivity
 import java.util.Locale
 
 private const val REQUEST_CODE_VIEW_CONTACT = 1
@@ -565,13 +565,15 @@ class ConversationSettingsFragment : DSLSettingsFragment(
       }
 
       if (!state.recipient.isSelf) {
+        // ADD2APP: Opens native Sounds & Notifications screen which uses the same
+        // Pigeon KeyValueStorage. From there a button launches the Flutter entrypoint
+        // (SoundsNotificationsFlutterActivity) so both screens share state.
         clickPref(
           title = DSLSettingsText.from(R.string.ConversationSettingsFragment__sounds_and_notifications),
           icon = DSLSettingsIcon.from(R.drawable.symbol_speaker_24),
           isEnabled = !state.isDeprecatedOrUnregistered,
           onClick = {
-            // ADD2APP: Flutter Sounds & Notifications — always uses engine from FlutterEngineGroup for comparison.
-            startActivity(SoundsNotificationsFlutterActivity.createIntent(requireContext(), state.recipient.id.serialize()))
+            startActivity(NativeSoundsNotificationsActivity.createIntent(requireContext(), state.recipient.id.serialize()))
           }
         )
       }

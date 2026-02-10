@@ -7,7 +7,6 @@ import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.embedding.engine.FlutterEngineGroup
 import io.flutter.embedding.engine.FlutterEngineGroupCache
-import io.flutter.plugin.common.MethodChannel
 
 /**
  * ADD2APP: Flutter Activity for Sounds & Notifications screen.
@@ -15,6 +14,10 @@ import io.flutter.plugin.common.MethodChannel
  * with [SetWallpaperFlutterActivity] (standalone engine) — e.g. memory, start time.
  * Each launch creates a new engine from the group (many engines supported); use
  * "Open again (new activity)" from Flutter to spawn more.
+ *
+ * Registers the Pigeon [KeyValueStorageImpl] on each engine so that:
+ * - The Flutter isolate can read/write storage via the HostApi.
+ * - The platform can push change notifications to the Flutter isolate via the FlutterApi.
  */
 class SoundsNotificationsFlutterActivity : FlutterActivity() {
 
@@ -23,7 +26,17 @@ class SoundsNotificationsFlutterActivity : FlutterActivity() {
 
   override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
     super.configureFlutterEngine(flutterEngine)
+
+    // Attach Pigeon KeyValueStorage APIs to this engine.
+    KeyValueStorageImpl.attachToEngine(flutterEngine)
+
+    // Attach the existing navigation method channel.
     Add2AppNavMethodChannel.attach(flutterEngine, this)
+  }
+
+  override fun cleanUpFlutterEngine(flutterEngine: FlutterEngine) {
+    super.cleanUpFlutterEngine(flutterEngine)
+    KeyValueStorageImpl.detachFromEngine(flutterEngine)
   }
 
   companion object {
