@@ -850,6 +850,14 @@
         android:exported="false"
         android:theme="@style/Signal.DayNight.NoActionBar"/>
 
+    <!-- ADD2APP: Generic Flutter Activity used by Add2AppNavigator for all pages. -->
+    <activity
+        android:name=".flutter.Add2AppFlutterActivity"
+        android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|layoutDirection|fontScale|screenLayout|density"
+        android:hardwareAccelerated="true"
+        android:exported="false"
+        android:theme="@style/Signal.DayNight.NoActionBar"/>
+
     <!-- ADD2APP: Native Sounds & Notifications — uses same Pigeon KeyValueStorage as Flutter. -->
     <activity
         android:name=".flutter.NativeSoundsNotificationsActivity"

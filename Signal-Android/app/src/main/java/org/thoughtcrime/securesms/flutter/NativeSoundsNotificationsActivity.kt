@@ -11,6 +11,7 @@ import android.widget.Switch
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import co.leancode.signal_module.navigator.PageSettings
 import co.leancode.signal_module.StorageEntry
 
 /**
@@ -24,7 +25,7 @@ import co.leancode.signal_module.StorageEntry
  * - **Main-thread delivery**: observer callbacks always arrive on the UI
  *   thread.
  *
- * Also provides a button to launch [SoundsNotificationsFlutterActivity].
+ * Also provides a button to launch the Flutter equivalent via [Add2AppNavigator].
  */
 class NativeSoundsNotificationsActivity : AppCompatActivity() {
 
@@ -210,10 +211,11 @@ class NativeSoundsNotificationsActivity : AppCompatActivity() {
             text = "Open Flutter Sounds & Notifications"
             setPadding(0, dp(8), 0, dp(8))
             setOnClickListener {
-                startActivity(
-                    SoundsNotificationsFlutterActivity.createIntent(
-                        this@NativeSoundsNotificationsActivity,
-                        recipientId
+                Add2AppNavigator.push(
+                    this@NativeSoundsNotificationsActivity,
+                    PageSettings(
+                        "soundsNotifications",
+                        mapOf("contactId" to recipientId)
                     )
                 )
             }
