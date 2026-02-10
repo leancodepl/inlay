@@ -3,7 +3,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../add2app_nav.dart';
+import '../navigator/add2app_navigator.dart';
+import '../navigator/pages.dart';
 import '../storage/key_value_storage.dart';
 import '../theme/signal_theme.dart';
 import '../widgets/settings_tile.dart';
@@ -239,11 +240,13 @@ class _SoundsNotificationsScreenState extends State<SoundsNotificationsScreen> {
                       ),
                       onPressed: () async {
                         try {
-                          await openSoundsNotificationsInNewActivity(
-                            widget.contactId,
+                          await Add2AppNavigator.instance.push(
+                            SoundsNotificationsPage(
+                              contactId: widget.contactId,
+                            ),
                           );
                         } on PlatformException catch (e) {
-                          debugPrint('add2app_nav: $e');
+                          debugPrint('Add2AppNavigator: $e');
                         }
                       },
                     ),

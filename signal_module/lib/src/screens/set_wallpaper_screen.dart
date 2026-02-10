@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../add2app_nav.dart';
 import '../models/wallpaper.dart';
+import '../navigator/add2app_navigator.dart';
+import '../navigator/pages.dart';
 import '../theme/signal_theme.dart';
 import '../widgets/wallpaper_preview.dart';
 
@@ -166,9 +167,11 @@ class _SetWallpaperScreenState extends State<SetWallpaperScreen>
                 label: const Text('Open again (new activity / new engine)'),
                 onPressed: () async {
                   try {
-                    await openSetWallpaperInNewActivity(widget.recipientId);
+                    await Add2AppNavigator.instance.push(
+                      SetWallpaperPage(recipientId: widget.recipientId),
+                    );
                   } on PlatformException catch (e) {
-                    debugPrint('add2app_nav: $e');
+                    debugPrint('Add2AppNavigator: $e');
                   }
                 },
               ),

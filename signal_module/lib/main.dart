@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:signal_module/src/navigator/add2app_navigator.dart';
 import 'package:signal_module/src/routes.dart';
 import 'package:signal_module/src/storage/key_value_storage.dart';
 
@@ -6,26 +7,76 @@ void main() {
   runApp(const MyApp());
 }
 
-/// ADD2APP entrypoint: Set Wallpaper screen (launched with standalone Flutter engine, no engine group).
+// ── Framework entrypoint ─────────────────────────────────────────────
+
+/// **Single** Dart entrypoint used by [Add2AppNavigator] for every page.
+///
+/// The Android side always calls this entrypoint and encodes the target page
+/// in the `initialRoute`.  This function:
+/// 1. Registers all known pages in the navigator.
+/// 2. Initialises framework services (e.g. [KeyValueStorage]).
+/// 3. Decodes the `initialRoute` to find out which page to show.
+/// 4. Builds the widget and runs the app.
+///
+/// Developers only need to add a new page to the registry here — no need
+/// to create new entrypoints, Activities, method channels, etc.
 @pragma('vm:entry-point')
-void mainSetWallpaper() {
-  runApp(const _Add2AppHost(initialRoute: 'setWallpaper'));
+void add2appMain() {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // ── 1. Register pages ──────────────────────────────────────────────
+  _registerPages();
+
+  // ── 2. Init framework services ─────────────────────────────────────
+  KeyValueStorage().init();
+
+  // ── 3. Decode initial route ────────────────────────────────────────
+  final initialRoute =
+      WidgetsBinding.instance.platformDispatcher.defaultRouteName;
+  final page = Add2AppNavigator.decodeInitialRoute(initialRoute);
+
+  // ── 4. Run ─────────────────────────────────────────────────────────
+  runApp(
+    MaterialApp(home: Add2AppNavigator.instance.buildPage(page)),
+  );
 }
 
-/// ADD2APP entrypoint: Sounds & Notifications screen (launched with engine from FlutterEngineGroup).
-/// Initializes [KeyValueStorage] so this isolate can read/write and receive
-/// change notifications from other engines and the Android side.
+/// Central page registry.
+///
+/// Every add2app screen is registered here once.  The key is the `routeId`
+/// that matches the `Add2AppPage.routeId`.
+void _registerPages() {
+  Add2AppNavigator.instance
+    ..registerPage('soundsNotifications', (params) {
+      return SoundsNotificationsScreen(contactId: params['contactId'] ?? '1');
+    })
+    ..registerPage('setWallpaper', (params) {
+      return SetWallpaperScreen(recipientId: params['recipientId']);
+    })
+    ..registerPage('contactDetails', (params) {
+      return ContactDetailsScreen(contactId: params['contactId'] ?? '1');
+    });
+}
+
+// ── Legacy entrypoints (kept for backward compatibility) ─────────────
+
+/// ADD2APP entrypoint: Set Wallpaper screen (standalone engine).
+@pragma('vm:entry-point')
+void mainSetWallpaper() {
+  runApp(const _LegacyAdd2AppHost(initialRoute: 'setWallpaper'));
+}
+
+/// ADD2APP entrypoint: Sounds & Notifications screen (engine group).
 @pragma('vm:entry-point')
 void mainSoundsNotifications() {
   WidgetsFlutterBinding.ensureInitialized();
   KeyValueStorage().init();
-  runApp(const _Add2AppHost(initialRoute: 'soundsNotifications'));
+  runApp(const _LegacyAdd2AppHost(initialRoute: 'soundsNotifications'));
 }
 
-/// Host widget for add2app entrypoints: shows a single screen based on initialRoute.
-/// The recipientId is read from the engine's initial route (set by Android when starting the activity).
-class _Add2AppHost extends StatelessWidget {
-  const _Add2AppHost({required this.initialRoute});
+/// Legacy host widget — kept only for old Activities that haven't migrated yet.
+class _LegacyAdd2AppHost extends StatelessWidget {
+  const _LegacyAdd2AppHost({required this.initialRoute});
 
   final String initialRoute;
 
@@ -52,6 +103,8 @@ class _Add2AppHost extends StatelessWidget {
   }
 }
 
+// ── Standalone app (for development) ─────────────────────────────────
+
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
@@ -60,42 +113,6 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  Map<String, PageRoute<dynamic> Function(RouteSettings, String)> routerMap = {
-    'contactDetails': (settings, uniqueId) {
-      final args = settings.arguments as Map?;
-      final recipientId = args?['recipientId'] as String? ?? '1';
-
-      return MaterialPageRoute(
-        settings: settings,
-        builder: (_) {
-          return ContactDetailsScreen(contactId: recipientId);
-        },
-      );
-    },
-    'setWallpaper': (settings, uniqueId) {
-      final args = settings.arguments as Map?;
-      final recipientId = args?['recipientId'] as String?;
-
-      return MaterialPageRoute(
-        settings: settings,
-        builder: (_) {
-          return SetWallpaperScreen(recipientId: recipientId);
-        },
-      );
-    },
-    'soundsNotifications': (settings, uniqueId) {
-      final args = settings.arguments as Map?;
-      final recipientId = args?['recipientId'] as String? ?? '1';
-
-      return MaterialPageRoute(
-        settings: settings,
-        builder: (_) {
-          return SoundsNotificationsScreen(contactId: recipientId);
-        },
-      );
-    },
-  };
-
   @override
   Widget build(BuildContext context) {
     return const MaterialApp(home: Center(child: Text('Signal Module')));

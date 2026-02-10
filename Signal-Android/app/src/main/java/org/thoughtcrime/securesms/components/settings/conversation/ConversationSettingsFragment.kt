@@ -106,7 +106,8 @@ import org.thoughtcrime.securesms.util.navigation.safeNavigate
 import org.thoughtcrime.securesms.util.views.SimpleProgressDialog
 import org.thoughtcrime.securesms.verify.VerifyIdentityActivity
 import org.thoughtcrime.securesms.wallpaper.ChatWallpaperActivity
-import org.thoughtcrime.securesms.flutter.SetWallpaperFlutterActivity
+import co.leancode.signal_module.navigator.PageSettings
+import org.thoughtcrime.securesms.flutter.Add2AppNavigator
 import org.thoughtcrime.securesms.flutter.NativeSoundsNotificationsActivity
 import java.util.Locale
 
@@ -558,8 +559,11 @@ class ConversationSettingsFragment : DSLSettingsFragment(
           title = DSLSettingsText.from(R.string.preferences__chat_color_and_wallpaper),
           icon = DSLSettingsIcon.from(R.drawable.symbol_color_24),
           onClick = {
-            // ADD2APP: Flutter Set Wallpaper — standalone engine (no engine group) for comparison.
-            startActivity(SetWallpaperFlutterActivity.createIntent(requireContext(), state.recipient.id.serialize()))
+            // ADD2APP: Flutter Set Wallpaper — uses Add2AppNavigator (engine group).
+            Add2AppNavigator.push(
+              requireContext(),
+              PageSettings("setWallpaper", mapOf("recipientId" to state.recipient.id.serialize()))
+            )
           }
         )
       }
@@ -567,7 +571,7 @@ class ConversationSettingsFragment : DSLSettingsFragment(
       if (!state.recipient.isSelf) {
         // ADD2APP: Opens native Sounds & Notifications screen which uses the same
         // Pigeon KeyValueStorage. From there a button launches the Flutter entrypoint
-        // (SoundsNotificationsFlutterActivity) so both screens share state.
+        // via Add2AppNavigator so both screens share state.
         clickPref(
           title = DSLSettingsText.from(R.string.ConversationSettingsFragment__sounds_and_notifications),
           icon = DSLSettingsIcon.from(R.drawable.symbol_speaker_24),
