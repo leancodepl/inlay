@@ -1,0 +1,22 @@
+name: leancode_add2app
+description: >
+  A cross-platform add2app framework for Flutter. Provides navigation
+  (push/pop via FlutterEngineGroup) and shared key-value storage with
+  real-time synchronization across multiple Flutter isolates and native code.
+publish_to: none
+
+version: 0.1.0
+
+environment:
+  sdk: ^3.10.1
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  pigeon: ^26.1.0
+
+flutter:

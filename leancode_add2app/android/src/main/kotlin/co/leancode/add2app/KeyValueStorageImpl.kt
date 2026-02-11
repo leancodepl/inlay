@@ -1,11 +1,11 @@
-package org.thoughtcrime.securesms.flutter
+package co.leancode.add2app
 
 import android.os.Handler
 import android.os.Looper
-import co.leancode.signal_module.KeyValueStorageFlutterApi
-import co.leancode.signal_module.KeyValueStorageHostApi
-import co.leancode.signal_module.StorageChangeEvent
-import co.leancode.signal_module.StorageEntry
+import co.leancode.add2app.storage.KeyValueStorageFlutterApi
+import co.leancode.add2app.storage.KeyValueStorageHostApi
+import co.leancode.add2app.storage.StorageChangeEvent
+import co.leancode.add2app.storage.StorageEntry
 import io.flutter.embedding.engine.FlutterEngine
 import java.util.concurrent.ConcurrentHashMap
 
@@ -18,8 +18,7 @@ import java.util.concurrent.ConcurrentHashMap
  * Design decisions:
  * - **Self-notification suppression**: when a write originates from a specific
  *   source (a Flutter engine or an Android observer), that source is *not*
- *   notified back about its own change.  This eliminates the need for
- *   `updatingUi` guard flags in every consumer.
+ *   notified back about its own change.
  * - **Main-thread dispatch**: all observer callbacks (Flutter and Android) are
  *   posted to the main looper so consumers never need `runOnUiThread`.
  * - **Thread-safe store**: [ConcurrentHashMap] for the data, synchronized
@@ -33,21 +32,8 @@ object KeyValueStorageImpl : KeyValueStorageHostApi {
 
     // ── Flutter engine registry ──────────────────────────────────────────
 
-    /** Maps engine identity-hash → FlutterApi handle. */
     private val flutterApis = mutableMapOf<Int, KeyValueStorageFlutterApi>()
-
-    /** Main-thread handler — FlutterApi channel.send() requires the UI thread. */
     private val mainHandler = Handler(Looper.getMainLooper())
-
-    /**
-     * Thread-local that holds the engine identity-hash of the Flutter engine
-     * currently executing a host-api call.  Used by [notifyChanged] to skip
-     * notifying the originating engine.
-     *
-     * This works because Pigeon dispatches each host method on a per-engine
-     * serial background thread, and we set/clear the value around the actual
-     * host-api body via [attachToEngine].
-     */
     private val callingEngineId = ThreadLocal<Int>()
 
     // ── Android observer registry ────────────────────────────────────────
@@ -62,8 +48,6 @@ object KeyValueStorageImpl : KeyValueStorageHostApi {
 
     fun attachToEngine(engine: FlutterEngine) {
         val engineId = System.identityHashCode(engine)
-        // Wrap `this` in a proxy that sets [callingEngineId] so [notifyChanged]
-        // can skip the originating engine.
         val proxy = object : KeyValueStorageHostApi {
             private fun <T> withOrigin(block: () -> T): T {
                 callingEngineId.set(engineId)
@@ -89,11 +73,6 @@ object KeyValueStorageImpl : KeyValueStorageHostApi {
         synchronized(flutterApis) { flutterApis.remove(engineId) }
     }
 
-    /**
-     * Register an Android observer.  Returns a handle that must be passed to
-     * [removeAndroidObserver].  The handle is also used internally to suppress
-     * self-notification when calling [putFromAndroid].
-     */
     fun addAndroidObserver(observer: AndroidStorageObserver): Int {
         val id = System.identityHashCode(observer)
         synchronized(androidObservers) { androidObservers[id] = observer }
@@ -155,16 +134,9 @@ object KeyValueStorageImpl : KeyValueStorageHostApi {
 
     // ── Direct access for Android code ───────────────────────────────────
 
-    /**
-     * Write a value from Android code.
-     *
-     * @param excludeObserver  the observer handle returned by
-     *   [addAndroidObserver] that should NOT be notified (the caller itself).
-     *   Pass `null` to notify everyone.
-     */
     fun putFromAndroid(key: String, value: String, excludeObserver: Int? = null) {
         val old = store.put(key, value)
-        if (old == value) return  // no-op — skip notification if value unchanged
+        if (old == value) return
         notifyChanged(listOf(StorageEntry(key, value)), excludeAndroidObserver = excludeObserver)
     }
 
@@ -177,12 +149,9 @@ object KeyValueStorageImpl : KeyValueStorageHostApi {
         excludeAndroidObserver: Int? = null
     ) {
         val event = StorageChangeEvent(entries)
-        // Capture the calling engine id before posting to main (ThreadLocal
-        // only valid on the current thread).
         val originEngineId = callingEngineId.get()
 
         mainHandler.post {
-            // Flutter isolates — skip the one that originated the write.
             synchronized(flutterApis) {
                 for ((id, api) in flutterApis) {
                     if (id == originEngineId) continue
@@ -190,7 +159,6 @@ object KeyValueStorageImpl : KeyValueStorageHostApi {
                 }
             }
 
-            // Android observers — skip the one that originated the write.
             synchronized(androidObservers) {
                 for ((id, observer) in androidObservers) {
                     if (id == excludeAndroidObserver) continue

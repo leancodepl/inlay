@@ -283,6 +283,13 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.0.2"
+  leancode_add2app:
+    dependency: "direct main"
+    description:
+      path: "../leancode_add2app"
+      relative: true
+    source: path
+    version: "0.1.0"
   leancode_lint:
     dependency: "direct dev"
     description:

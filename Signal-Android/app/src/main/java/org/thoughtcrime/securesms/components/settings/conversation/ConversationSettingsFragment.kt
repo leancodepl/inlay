@@ -106,8 +106,8 @@ import org.thoughtcrime.securesms.util.navigation.safeNavigate
 import org.thoughtcrime.securesms.util.views.SimpleProgressDialog
 import org.thoughtcrime.securesms.verify.VerifyIdentityActivity
 import org.thoughtcrime.securesms.wallpaper.ChatWallpaperActivity
-import co.leancode.signal_module.navigator.PageSettings
-import org.thoughtcrime.securesms.flutter.Add2AppNavigator
+import co.leancode.add2app.Add2AppNavigator
+import co.leancode.add2app.navigator.PageSettings
 import org.thoughtcrime.securesms.flutter.NativeSoundsNotificationsActivity
 import java.util.Locale
 
@@ -575,7 +575,7 @@ class ConversationSettingsFragment : DSLSettingsFragment(
         clickPref(
           title = DSLSettingsText.from(R.string.ConversationSettingsFragment__sounds_and_notifications),
           icon = DSLSettingsIcon.from(R.drawable.symbol_speaker_24),
-          isEnabled = !state.isDeprecatedOrUnregistered,
+//          isEnabled = !state.isDeprecatedOrUnregistered,
           onClick = {
             startActivity(NativeSoundsNotificationsActivity.createIntent(requireContext(), state.recipient.id.serialize()))
           }

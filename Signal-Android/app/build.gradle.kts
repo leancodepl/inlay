@@ -128,6 +128,11 @@ android {
   }
 
   sourceSets {
+    getByName("main") {
+      // ADD2APP: Include leancode_add2app framework Kotlin sources.
+      java.srcDir("${rootProject.projectDir}/../leancode_add2app/android/src/main/kotlin")
+    }
+
     getByName("test") {
       java.srcDir("$projectDir/src/testShared")
     }

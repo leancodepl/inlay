@@ -852,7 +852,7 @@
 
     <!-- ADD2APP: Generic Flutter Activity used by Add2AppNavigator for all pages. -->
     <activity
-        android:name=".flutter.Add2AppFlutterActivity"
+        android:name="co.leancode.add2app.Add2AppFlutterActivity"
         android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|layoutDirection|fontScale|screenLayout|density"
         android:hardwareAccelerated="true"
         android:exported="false"

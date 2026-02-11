@@ -36,19 +36,15 @@ final class KeyValueStorageImpl: NSObject, KeyValueStorageHostApi {
 
     // MARK: - Data store (serial queue for thread safety)
 
-    private let storeQueue = DispatchQueue(label: "co.leancode.signal_module.KeyValueStorage", attributes: .concurrent)
+    private let storeQueue = DispatchQueue(label: "co.leancode.add2app.KeyValueStorage", attributes: .concurrent)
     private var store: [String: String] = [:]
 
     // MARK: - Flutter engine registry
 
-    /// Maps engine object-id → FlutterApi handle.
     private var flutterApis: [ObjectIdentifier: KeyValueStorageFlutterApi] = [:]
     private let flutterApisLock = NSLock()
 
-    /// Identifies the engine that is currently executing a host-api call
-    /// so `notifyChanged` can skip notifying the originating engine.
-    /// Thread-local equivalent of Android's `ThreadLocal<Int>`.
-    private let callingEngineIdKey = "co.leancode.KeyValueStorage.callingEngineId"
+    private let callingEngineIdKey = "co.leancode.add2app.KeyValueStorage.callingEngineId"
 
     // MARK: - Native observer registry
 
@@ -61,14 +57,10 @@ final class KeyValueStorageImpl: NSObject, KeyValueStorageHostApi {
 
     // MARK: - Engine lifecycle
 
-    /// Attach Pigeon APIs to a Flutter engine.
-    /// Called by `Add2AppNavigator.configureEngine`.
     func attachToEngine(_ engine: FlutterEngine) {
         let engineId = ObjectIdentifier(engine)
         let messenger = engine.binaryMessenger
 
-        // Wrap `self` in a proxy that tags the calling engine so
-        // `notifyChanged` can suppress self-notification.
         let proxy = KeyValueStorageHostApiProxy(impl: self, engineId: engineId)
         KeyValueStorageHostApiSetup.setUp(binaryMessenger: messenger, api: proxy)
 
@@ -78,8 +70,6 @@ final class KeyValueStorageImpl: NSObject, KeyValueStorageHostApi {
         flutterApisLock.unlock()
     }
 
-    /// Detach Pigeon APIs from a Flutter engine.
-    /// Called by `Add2AppNavigator.cleanUpEngine`.
     func detachFromEngine(_ engine: FlutterEngine) {
         let engineId = ObjectIdentifier(engine)
         let messenger = engine.binaryMessenger
@@ -92,8 +82,6 @@ final class KeyValueStorageImpl: NSObject, KeyValueStorageHostApi {
 
     // MARK: - Native observer registration
 
-    /// Register a native observer. Returns a handle for removal and
-    /// self-notification suppression in `putFromNative`.
     @discardableResult
     func addNativeObserver(_ observer: NativeStorageObserver) -> Int {
         let id = ObjectIdentifier(observer).hashValue
@@ -178,18 +166,13 @@ final class KeyValueStorageImpl: NSObject, KeyValueStorageHostApi {
 
     // MARK: - Direct access for native iOS code
 
-    /// Write a value from native iOS code.
-    ///
-    /// - Parameter excludeObserver: the observer handle returned by
-    ///   `addNativeObserver` that should NOT be notified (the caller itself).
-    ///   Pass `nil` to notify everyone.
     func putFromNative(key: String, value: String, excludeObserver: Int? = nil) {
         let old: String? = storeQueue.sync(flags: .barrier) {
             let prev = store[key]
             store[key] = value
             return prev
         }
-        guard old != value else { return } // no-op — skip if unchanged
+        guard old != value else { return }
         notifyChanged(
             entries: [StorageEntry(key: key, value: value)],
             excludeNativeObserver: excludeObserver
@@ -202,7 +185,6 @@ final class KeyValueStorageImpl: NSObject, KeyValueStorageHostApi {
 
     // MARK: - Change notification dispatch
 
-    /// Set by the proxy in `attachToEngine` before each write call.
     fileprivate func setCallingEngineId(_ id: ObjectIdentifier?) {
         Thread.current.threadDictionary[callingEngineIdKey] = id
     }
@@ -221,7 +203,6 @@ final class KeyValueStorageImpl: NSObject, KeyValueStorageHostApi {
         DispatchQueue.main.async { [weak self] in
             guard let self else { return }
 
-            // Notify Flutter engines (skip the originating one).
             self.flutterApisLock.lock()
             let apis = self.flutterApis
             self.flutterApisLock.unlock()
@@ -231,7 +212,6 @@ final class KeyValueStorageImpl: NSObject, KeyValueStorageHostApi {
                 api.onStorageChanged(event: event) { _ in /* fire-and-forget */ }
             }
 
-            // Notify native observers (skip the originating one).
             self.nativeObserversLock.lock()
             let observers = self.nativeObservers
             self.nativeObserversLock.unlock()
@@ -246,8 +226,6 @@ final class KeyValueStorageImpl: NSObject, KeyValueStorageHostApi {
 
 // MARK: - Host API proxy (for self-notification suppression)
 
-/// Wraps `KeyValueStorageImpl` and tags the calling engine before each write
-/// so `notifyChanged` can skip notifying the originating engine.
 private class KeyValueStorageHostApiProxy: KeyValueStorageHostApi {
 
     private let impl: KeyValueStorageImpl

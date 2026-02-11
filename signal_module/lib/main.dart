@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:signal_module/src/navigator/add2app_navigator.dart';
+import 'package:leancode_add2app/leancode_add2app.dart';
 import 'package:signal_module/src/routes.dart';
-import 'package:signal_module/src/storage/key_value_storage.dart';
 
 void main() {
   runApp(const MyApp());

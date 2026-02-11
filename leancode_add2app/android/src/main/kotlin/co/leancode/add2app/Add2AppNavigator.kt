@@ -1,10 +1,10 @@
-package org.thoughtcrime.securesms.flutter
+package co.leancode.add2app
 
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
-import co.leancode.signal_module.navigator.Add2AppNavigatorHostApi
-import co.leancode.signal_module.navigator.PageSettings
+import co.leancode.add2app.navigator.Add2AppNavigatorHostApi
+import co.leancode.add2app.navigator.PageSettings
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.embedding.engine.FlutterEngineGroup
@@ -26,9 +26,8 @@ import io.flutter.embedding.engine.FlutterEngineGroupCache
  *
  * Usage from Flutter (via Pigeon-generated [Add2AppNavigatorHostApi]):
  * ```dart
- * final nav = Add2AppNavigator();
- * nav.push(SoundsNotificationsPageSettings(contactId: '42'));
- * nav.pop();
+ * Add2AppNavigator.instance.push(SoundsNotificationsPage(contactId: '42'));
+ * Add2AppNavigator.instance.pop();
  * ```
  *
  * The navigator automatically:
@@ -88,8 +87,6 @@ object Add2AppNavigator {
 
     internal fun createIntent(context: Context, page: PageSettings): Intent {
         init(context)
-        // Encode PageSettings into the initial route so the Dart entrypoint
-        // can decode it without any extra channel call.
         val initialRoute = encodePageSettings(page)
         return FlutterActivity.NewEngineInGroupIntentBuilder(
             Add2AppFlutterActivity::class.java,
@@ -107,7 +104,6 @@ object Add2AppNavigator {
      * Registers Pigeon APIs + storage on the engine.
      */
     internal fun configureEngine(engine: FlutterEngine, activity: Activity) {
-        // Register navigation HostApi so Flutter can push/pop.
         val hostApi = object : Add2AppNavigatorHostApi {
             override fun push(page: PageSettings) {
                 activity.startActivity(createIntent(activity, page))
@@ -117,8 +113,6 @@ object Add2AppNavigator {
             }
         }
         Add2AppNavigatorHostApi.setUp(engine.dartExecutor.binaryMessenger, hostApi)
-
-        // Attach key-value storage.
         KeyValueStorageImpl.attachToEngine(engine)
     }
 
@@ -132,10 +126,6 @@ object Add2AppNavigator {
 
     // ── Encoding ─────────────────────────────────────────────────────────
 
-    /**
-     * Encode [PageSettings] into a single string suitable for `initialRoute`.
-     * Format: `routeId?key1=value1&key2=value2`
-     */
     internal fun encodePageSettings(page: PageSettings): String {
         val params = page.params
         if (params.isNullOrEmpty()) return page.routeId
@@ -143,7 +133,6 @@ object Add2AppNavigator {
         return "${page.routeId}?$query"
     }
 
-    /** Decode the `initialRoute` string back into [PageSettings]. */
     internal fun decodePageSettings(initialRoute: String): PageSettings {
         val questionMark = initialRoute.indexOf('?')
         if (questionMark < 0) return PageSettings(initialRoute, null)
@@ -159,7 +148,6 @@ object Add2AppNavigator {
         return PageSettings(routeId, params)
     }
 
-    // URI encoding helpers (avoid pulling in java.net.URLEncoder)
     private object Uri {
         fun encode(s: String): String = java.net.URLEncoder.encode(s, "UTF-8")
         fun decode(s: String): String = java.net.URLDecoder.decode(s, "UTF-8")

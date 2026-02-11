@@ -3,13 +3,12 @@ import 'package:pigeon/pigeon.dart';
 @ConfigurePigeon(
   PigeonOptions(
     dartOut: 'lib/src/navigator/add2app_navigator.g.dart',
-    kotlinOut:
-        '../Signal-Android/app/src/main/java/co/leancode/signal_module/navigator/Add2AppNavigatorApi.g.kt',
+    kotlinOut: 'android/src/main/kotlin/co/leancode/add2app/navigator/Add2AppNavigatorApi.g.kt',
     kotlinOptions: KotlinOptions(
-      package: 'co.leancode.signal_module.navigator',
+      package: 'co.leancode.add2app.navigator',
     ),
-    swiftOut: '../Signal-iOS/Signal/Flutter/Add2AppNavigatorApi.g.swift',
-    dartPackageName: 'signal_module',
+    swiftOut: 'ios/Classes/Add2AppNavigatorApi.g.swift',
+    dartPackageName: 'leancode_add2app',
   ),
 )
 
@@ -29,16 +28,16 @@ class PageSettings {
   Map<String, String>? params;
 }
 
-/// Host API — Flutter asks the platform to push a new Activity.
+/// Host API — Flutter asks the platform to push a new Activity/ViewController.
 ///
-/// The platform side owns the Activity stack; Flutter cannot start
-/// Activities directly.  This API hides FlutterEngine / EngineGroup /
-/// Activity internals from the developer.
+/// The platform side owns the Activity/ViewController stack; Flutter cannot
+/// start them directly. This API hides FlutterEngine / EngineGroup /
+/// Activity/ViewController internals from the developer.
 @HostApi()
 abstract class Add2AppNavigatorHostApi {
-  /// Push a new Flutter Activity for the given page.
+  /// Push a new Flutter Activity/ViewController for the given page.
   void push(PageSettings page);
 
-  /// Pop the current Flutter Activity (finishes the Activity).
+  /// Pop the current Flutter Activity/ViewController.
   void pop();
 }
