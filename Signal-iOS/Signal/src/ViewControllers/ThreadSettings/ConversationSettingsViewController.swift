@@ -7,7 +7,7 @@ import ContactsUI
 import LibSignalClient
 import SignalServiceKit
 import SignalUI
-import flutter_boost
+import Flutter
 
 public enum ConversationSettingsPresentationMode: UInt {
     case `default`
@@ -383,29 +383,22 @@ class ConversationSettingsViewController: OWSTableViewController2, BadgeCollecti
     }
 
     func showColorAndWallpaperSettingsView() {
-        // ADD2APP: Flutter integration - Navigate to Flutter SetWallpaperScreen
-        let options = FlutterBoostRouteOptions()
-        options.pageName = "setWallpaper"
-        options.arguments = [
-            "recipientId": thread.uniqueId,
-            "isAnimated": true
-        ]
-        options.opaque = true
-        
-        FlutterBoost.instance().open(options)
+        // ADD2APP: Flutter Set Wallpaper — uses Add2AppNavigator (engine group).
+        Add2AppNavigator.shared.push(
+            from: self,
+            page: PageSettings(
+                routeId: "setWallpaper",
+                params: ["recipientId": thread.uniqueId]
+            )
+        )
     }
 
     func showSoundAndNotificationsSettingsView() {
-        // ADD2APP: Flutter integration - Navigate to Flutter SoundsNotificationsScreen
-        let options = FlutterBoostRouteOptions()
-        options.pageName = "soundsNotifications"
-        options.arguments = [
-            "recipientId": thread.uniqueId,
-            "isAnimated": true
-        ]
-        options.opaque = true
-        
-        FlutterBoost.instance().open(options)
+        // ADD2APP: Opens native Sounds & Notifications screen which uses the same
+        // Pigeon KeyValueStorage. From there a button launches the Flutter entrypoint
+        // via Add2AppNavigator so both screens share state.
+        let vc = NativeSoundsNotificationsViewController.create(recipientId: thread.uniqueId)
+        navigationController?.pushViewController(vc, animated: true)
     }
 
     func showPermissionsSettingsView() {

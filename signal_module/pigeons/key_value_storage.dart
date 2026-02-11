@@ -8,6 +8,7 @@ import 'package:pigeon/pigeon.dart';
     kotlinOptions: KotlinOptions(
       package: 'co.leancode.signal_module',
     ),
+    swiftOut: '../Signal-iOS/Signal/Flutter/KeyValueStorageApi.g.swift',
     dartPackageName: 'signal_module',
   ),
 )

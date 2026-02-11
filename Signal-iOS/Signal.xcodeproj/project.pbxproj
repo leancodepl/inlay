@@ -7,6 +7,12 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A2F00001FLUTTER0001000001 /* Add2AppNavigator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2F00002FLUTTER0001000001 /* Add2AppNavigator.swift */; };
+		A2F00001FLUTTER0002000002 /* Add2AppFlutterViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2F00002FLUTTER0002000002 /* Add2AppFlutterViewController.swift */; };
+		A2F00001FLUTTER0003000003 /* Add2AppNavigatorApi.g.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2F00002FLUTTER0003000003 /* Add2AppNavigatorApi.g.swift */; };
+		A2F00001FLUTTER0004000004 /* KeyValueStorageApi.g.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2F00002FLUTTER0004000004 /* KeyValueStorageApi.g.swift */; };
+		A2F00001FLUTTER0005000005 /* KeyValueStorageImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2F00002FLUTTER0005000005 /* KeyValueStorageImpl.swift */; };
+		A2F00001FLUTTER0006000006 /* NativeSoundsNotificationsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2F00002FLUTTER0006000006 /* NativeSoundsNotificationsViewController.swift */; };
 		041A5F072E05B3F900FAED05 /* BackupEnablementMegaphone.swift in Sources */ = {isa = PBXBuildFile; fileRef = 041A5F062E05B3F000FAED05 /* BackupEnablementMegaphone.swift */; };
 		041C24ED2DF782AF0065B685 /* OutgoingGroupUpdateMessageTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9BC9C6428B7C00A0077D442 /* OutgoingGroupUpdateMessageTest.swift */; };
 		042223BA2EDF30BA00158556 /* OutgoingUnpinMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 042223B92EDF30B300158556 /* OutgoingUnpinMessage.swift */; };
@@ -1465,7 +1471,6 @@
 		76F4B581293ACCD200A7CF2F /* UIKit+Animations.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76F4B580293ACCD200A7CF2F /* UIKit+Animations.swift */; };
 		76F958632A09A5AE00B43E63 /* DebugUIDiskUsage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76F958622A09A5AE00B43E63 /* DebugUIDiskUsage.swift */; };
 		76FCCDBC27AB8FBE00BAA7F0 /* MediaControls.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76FCCDBB27AB8FBE00BAA7F0 /* MediaControls.swift */; };
-		7F9DC2932F35F033001E948A /* BoostDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F9DC2922F35F033001E948A /* BoostDelegate.swift */; };
 		83B9573927C9A1FA00A678FD /* CaptchaView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83B9573827C9A1FA00A678FD /* CaptchaView.swift */; };
 		8803FF6628EF89B50023574A /* StorySharingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88F5FA9528EF7E02007AA1BF /* StorySharingTests.swift */; };
 		8806EF19248DBD7200E764C7 /* NotificationPermissionReminderMegaphone.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8806EF18248DBD7200E764C7 /* NotificationPermissionReminderMegaphone.swift */; };
@@ -4048,6 +4053,12 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		A2F00002FLUTTER0001000001 /* Add2AppNavigator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Add2AppNavigator.swift; sourceTree = "<group>"; };
+		A2F00002FLUTTER0002000002 /* Add2AppFlutterViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Add2AppFlutterViewController.swift; sourceTree = "<group>"; };
+		A2F00002FLUTTER0003000003 /* Add2AppNavigatorApi.g.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Add2AppNavigatorApi.g.swift; sourceTree = "<group>"; };
+		A2F00002FLUTTER0004000004 /* KeyValueStorageApi.g.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyValueStorageApi.g.swift; sourceTree = "<group>"; };
+		A2F00002FLUTTER0005000005 /* KeyValueStorageImpl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyValueStorageImpl.swift; sourceTree = "<group>"; };
+		A2F00002FLUTTER0006000006 /* NativeSoundsNotificationsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeSoundsNotificationsViewController.swift; sourceTree = "<group>"; };
 		041A5F062E05B3F000FAED05 /* BackupEnablementMegaphone.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupEnablementMegaphone.swift; sourceTree = "<group>"; };
 		041A5F082E05D3AC00FAED05 /* BackupEnablementReminderMegaphoneTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupEnablementReminderMegaphoneTests.swift; sourceTree = "<group>"; };
 		042223B92EDF30B300158556 /* OutgoingUnpinMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OutgoingUnpinMessage.swift; sourceTree = "<group>"; };
@@ -5553,7 +5564,6 @@
 		76F958622A09A5AE00B43E63 /* DebugUIDiskUsage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DebugUIDiskUsage.swift; sourceTree = "<group>"; };
 		76FCCDBB27AB8FBE00BAA7F0 /* MediaControls.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaControls.swift; sourceTree = "<group>"; };
 		7F965533D71CA51BE6704CC4 /* Pods_SignalNSE.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_SignalNSE.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		7F9DC2922F35F033001E948A /* BoostDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoostDelegate.swift; sourceTree = "<group>"; };
 		7FF88FB580BC19B240EEB86A /* Pods_Signal.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Signal.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		83B9573827C9A1FA00A678FD /* CaptchaView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptchaView.swift; sourceTree = "<group>"; };
 		8806EF18248DBD7200E764C7 /* NotificationPermissionReminderMegaphone.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationPermissionReminderMegaphone.swift; sourceTree = "<group>"; };
@@ -9477,7 +9487,6 @@
 			isa = PBXGroup;
 			children = (
 				F92074752888648A00B7F087 /* AppDelegate.swift */,
-				7F9DC2922F35F033001E948A /* BoostDelegate.swift */,
 				34D99CE3217509C1000AFB39 /* AppEnvironment.swift */,
 				349C3636233D198300D52012 /* LaunchJobs.swift */,
 				4542DF53208D40AC007B4E76 /* LoadingViewController.swift */,
@@ -9656,6 +9665,19 @@
 				F93BCB9929EDE86400E3C6A0 /* UIDevice+CanUpgradeOperatingSystem.swift */,
 			);
 			path = Expiration;
+			sourceTree = "<group>";
+		};
+		A2F00003FLUTTER0000000000 /* Flutter */ = {
+			isa = PBXGroup;
+			children = (
+				A2F00002FLUTTER0001000001 /* Add2AppNavigator.swift */,
+				A2F00002FLUTTER0002000002 /* Add2AppFlutterViewController.swift */,
+				A2F00002FLUTTER0003000003 /* Add2AppNavigatorApi.g.swift */,
+				A2F00002FLUTTER0004000004 /* KeyValueStorageApi.g.swift */,
+				A2F00002FLUTTER0005000005 /* KeyValueStorageImpl.swift */,
+				A2F00002FLUTTER0006000006 /* NativeSoundsNotificationsViewController.swift */,
+			);
+			path = Flutter;
 			sourceTree = "<group>";
 		};
 		50E7E1CD2BACBE7D00A94861 /* UserInterface */ = {
@@ -11859,6 +11881,7 @@
 				88C4E38124671F9D009C9B97 /* DeviceTransfer */,
 				3428576F26BD8777005A2A96 /* Emoji */,
 				50E7E1CC2BACBDE000A94861 /* Expiration */,
+				A2F00003FLUTTER0000000000 /* Flutter */,
 				88BFD4712335C2A4001797D7 /* Lottie */,
 				88A505F523DBA0C70005C012 /* Megaphones */,
 				50E7E1CE2BACBF3300A94861 /* Notifications */,
@@ -17080,7 +17103,6 @@
 				"${BUILT_PRODUCTS_DIR}/Logging/Logging.framework",
 				"${BUILT_PRODUCTS_DIR}/MobileCoin/MobileCoin.framework",
 				"${BUILT_PRODUCTS_DIR}/PureLayout/PureLayout.framework",
-				"${BUILT_PRODUCTS_DIR}/flutter_boost/flutter_boost.framework",
 				"${BUILT_PRODUCTS_DIR}/lottie-ios/Lottie.framework",
 				"${BUILT_PRODUCTS_DIR}/CocoaLumberjack/CocoaLumberjack.framework",
 				"${PODS_XCFRAMEWORKS_BUILD_DIR}/SignalRingRTC/WebRTC/WebRTC.framework/WebRTC",
@@ -17104,7 +17126,6 @@
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Logging.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/MobileCoin.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/PureLayout.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/flutter_boost.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Lottie.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/CocoaLumberjack.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/WebRTC.framework",
@@ -17627,6 +17648,12 @@
 				45D49115296F69AA00B92BB1 /* AllMediaViewController.swift in Sources */,
 				32E958AA25C12B3800BF12AD /* AnimatedProgressView.swift in Sources */,
 				50A76F562AF573CE00FCF02D /* AppActivePrecondition.swift in Sources */,
+				A2F00001FLUTTER0001000001 /* Add2AppNavigator.swift in Sources */,
+				A2F00001FLUTTER0002000002 /* Add2AppFlutterViewController.swift in Sources */,
+				A2F00001FLUTTER0003000003 /* Add2AppNavigatorApi.g.swift in Sources */,
+				A2F00001FLUTTER0004000004 /* KeyValueStorageApi.g.swift in Sources */,
+				A2F00001FLUTTER0005000005 /* KeyValueStorageImpl.swift in Sources */,
+				A2F00001FLUTTER0006000006 /* NativeSoundsNotificationsViewController.swift in Sources */,
 				F92074762888648A00B7F087 /* AppDelegate.swift in Sources */,
 				8827004E23208A1900F01C46 /* AppearanceSettingsTableViewController.swift in Sources */,
 				34D99CE4217509C2000AFB39 /* AppEnvironment.swift in Sources */,
@@ -17810,7 +17837,6 @@
 				8851DB4324CCF0EB001EACD2 /* ConversationInputTextView.swift in Sources */,
 				76182F122EA734F3003B3799 /* ConversationInputToolbar+LinkPreview.swift in Sources */,
 				457F671B20746193000EABCD /* ConversationInputToolbar+QuotedReplyPreview.swift in Sources */,
-				7F9DC2932F35F033001E948A /* BoostDelegate.swift in Sources */,
 				76A066EA2EA99D1F009B3ED5 /* ConversationInputToolbar+VoiceMemo.swift in Sources */,
 				76725D2D29143CEC000E8AE1 /* ConversationInputToolbar.swift in Sources */,
 				34EB0DF52628D3B300B62DC3 /* ConversationInternalViewController.swift in Sources */,

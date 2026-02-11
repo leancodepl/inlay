@@ -8,6 +8,7 @@ import 'package:pigeon/pigeon.dart';
     kotlinOptions: KotlinOptions(
       package: 'co.leancode.signal_module.navigator',
     ),
+    swiftOut: '../Signal-iOS/Signal/Flutter/Add2AppNavigatorApi.g.swift',
     dartPackageName: 'signal_module',
   ),
 )

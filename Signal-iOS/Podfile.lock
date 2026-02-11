@@ -5,11 +5,8 @@ PODS:
     - CocoaLumberjack/Core (= 3.7.4)
   - CocoaLumberjack/Core (3.7.4)
   - Flutter (1.0.0)
-  - flutter_boost (0.0.2):
-    - Flutter
   - FlutterPluginRegistrant (0.0.1):
     - Flutter
-    - flutter_boost
   - GRDB.swift/SQLCipher (5.26.0):
     - SQLCipher (>= 3.4.0)
   - LibMobileCoin/CoreHTTP (6.0.2):
@@ -60,7 +57,6 @@ DEPENDENCIES:
   - BonMot
   - CocoaLumberjack
   - Flutter (from `../signal_module/.ios/Flutter`)
-  - flutter_boost (from `../signal_module/.ios/.symlinks/plugins/flutter_boost/ios`)
   - FlutterPluginRegistrant (from `../signal_module/.ios/Flutter/FlutterPluginRegistrant`)
   - GRDB.swift/SQLCipher
   - LibMobileCoin/CoreHTTP (from `https://github.com/signalapp/libmobilecoin-ios-artifacts`, tag `signal/6.0.2`)
@@ -98,8 +94,6 @@ EXTERNAL SOURCES:
     :podspec: "./ThirdParty/blurhash.podspec"
   Flutter:
     :path: "../signal_module/.ios/Flutter"
-  flutter_boost:
-    :path: "../signal_module/.ios/.symlinks/plugins/flutter_boost/ios"
   FlutterPluginRegistrant:
     :path: "../signal_module/.ios/Flutter/FlutterPluginRegistrant"
   LibMobileCoin:
@@ -153,16 +147,15 @@ CHECKOUT OPTIONS:
     :tag: v4.6.1-f_barrierfsync
 
 SPEC CHECKSUMS:
-  blurhash: f588a9d659f4c742a325bbbbd438d1ef3c34af19
+  blurhash: 4b3b2b8909cf41ab59fa349788654b8387284ff4
   BonMot: fb2b6a2209cb3149aca37b7131d49c051c04ae86
   CocoaLumberjack: 543c79c114dadc3b1aba95641d8738b06b05b646
   Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
-  flutter_boost: 3e8a6e28c86d24c83be5b2fab067746dc77a1ad6
-  FlutterPluginRegistrant: c1e4018cb4870fb31b5b657cc13e09b71e1286a3
+  FlutterPluginRegistrant: 1bf2b93dcc6a731089dfe77f7a867be153c5008f
   GRDB.swift: 1395cb3556df6b16ed69dfc74c3886abc75d2825
-  LibMobileCoin: 8503f567fa32184a5be7bc038fbd727747dd9991
+  LibMobileCoin: 4c76066a0aa8c614099da08e38562fd7b4b2d246
   libPhoneNumber-iOS: 1a34106b49dc6e12a7f37eb9aee7c64011509547
-  LibSignalClient: 0b5361cc0b37efb982f00bbc023f023f20be6b70
+  LibSignalClient: 172263cf9acdabc665a5face100badcd6ddf331c
   libwebp: 02b23773aedb6ff1fd38cec7a77b81414c6842a8
   Logging: beeb016c9c80cf77042d62e83495816847ef108b
   lottie-ios: fcb5e73e17ba4c983140b7d21095c834b3087418
@@ -172,8 +165,8 @@ SPEC CHECKSUMS:
   Reachability: fd0ecd23705e2599e4cceeb943222ae02296cbc6
   SDWebImage: 9f177d83116802728e122410fb25ad88f5c7608a
   SDWebImageWebPCoder: e38c0a70396191361d60c092933e22c20d5b1380
-  SignalRingRTC: f45daa496bca31d6dad7dbcfc184eaa249aa34e0
-  SQLCipher: 77fbe633cd84db04b07876dd50766b4924b57d61
+  SignalRingRTC: 67d2762636cb3d5d799f19beb19cf2bed164dd25
+  SQLCipher: ff2f045b20d675a73a70f7329395ddd4a2580063
   SwiftProtobuf: e02f51c8c2df5845657aee2d4de9d61bf50ef788
 
 PODFILE CHECKSUM: 296f945bd5f243a349b114aeb6e94ed13b1997d7
