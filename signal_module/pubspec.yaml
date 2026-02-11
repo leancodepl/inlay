@@ -11,6 +11,8 @@ dependencies:
   cupertino_icons: ^1.0.8
   flutter:
     sdk: flutter
+  leancode_add2app:
+    path: ../leancode_add2app
 
 dev_dependencies:
   custom_lint: ^0.7.6

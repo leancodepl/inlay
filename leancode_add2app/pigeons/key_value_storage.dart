@@ -3,13 +3,12 @@ import 'package:pigeon/pigeon.dart';
 @ConfigurePigeon(
   PigeonOptions(
     dartOut: 'lib/src/storage/key_value_storage.g.dart',
-    kotlinOut:
-        '../Signal-Android/app/src/main/java/co/leancode/signal_module/KeyValueStorageApi.g.kt',
+    kotlinOut: 'android/src/main/kotlin/co/leancode/add2app/storage/KeyValueStorageApi.g.kt',
     kotlinOptions: KotlinOptions(
-      package: 'co.leancode.signal_module',
+      package: 'co.leancode.add2app.storage',
     ),
-    swiftOut: '../Signal-iOS/Signal/Flutter/KeyValueStorageApi.g.swift',
-    dartPackageName: 'signal_module',
+    swiftOut: 'ios/Classes/KeyValueStorageApi.g.swift',
+    dartPackageName: 'leancode_add2app',
   ),
 )
 
@@ -73,10 +72,9 @@ abstract class KeyValueStorageHostApi {
 
 /// Flutter API — Platform calls into Flutter to notify about changes.
 /// Each Flutter engine isolate registers this so it gets notified when
-/// any other engine (or Android itself) changes storage.
+/// any other engine (or native code) changes storage.
 @FlutterApi()
 abstract class KeyValueStorageFlutterApi {
   /// Called when entries in the storage have changed.
-  /// The Flutter side should update its local cache.
   void onStorageChanged(StorageChangeEvent event);
 }

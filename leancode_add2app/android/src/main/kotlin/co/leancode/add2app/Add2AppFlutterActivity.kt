@@ -1,4 +1,4 @@
-package org.thoughtcrime.securesms.flutter
+package co.leancode.add2app
 
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine

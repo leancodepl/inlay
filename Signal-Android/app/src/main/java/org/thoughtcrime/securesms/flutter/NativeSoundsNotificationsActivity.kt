@@ -11,8 +11,10 @@ import android.widget.Switch
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import co.leancode.signal_module.navigator.PageSettings
-import co.leancode.signal_module.StorageEntry
+import co.leancode.add2app.Add2AppNavigator
+import co.leancode.add2app.KeyValueStorageImpl
+import co.leancode.add2app.navigator.PageSettings
+import co.leancode.add2app.storage.StorageEntry
 
 /**
  * ADD2APP: Native Android duplicate of the Sounds & Notifications screen.

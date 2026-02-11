@@ -96,7 +96,6 @@ final class Add2AppNavigator {
     /// Called by `Add2AppFlutterViewController.viewDidLoad`.
     /// Registers Pigeon APIs + storage on the engine.
     func configureEngine(_ engine: FlutterEngine, viewController: UIViewController) {
-        // Register navigation HostApi so Flutter can push/pop.
         let hostApi = Add2AppNavigatorHostApiImpl(
             navigator: self,
             viewController: viewController
@@ -105,8 +104,6 @@ final class Add2AppNavigator {
             binaryMessenger: engine.binaryMessenger,
             api: hostApi
         )
-
-        // Attach key-value storage.
         KeyValueStorageImpl.shared.attachToEngine(engine)
     }
 
@@ -128,7 +125,7 @@ final class Add2AppNavigator {
             return page.routeId
         }
         let query = params
-            .sorted(by: { $0.key < $1.key }) // deterministic order
+            .sorted(by: { $0.key < $1.key })
             .map { "\($0.key.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? $0.key)=\($0.value.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? $0.value)" }
             .joined(separator: "&")
         return "\(page.routeId)?\(query)"

@@ -6,6 +6,7 @@ import androidx.annotation.NonNull
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.embedding.engine.FlutterEngineGroup
+import co.leancode.add2app.KeyValueStorageImpl
 import io.flutter.embedding.engine.FlutterEngineGroupCache
 
 /**

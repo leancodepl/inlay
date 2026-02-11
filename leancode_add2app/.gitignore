@@ -1,0 +1,21 @@
+# Dart/Flutter
+.dart_tool/
+.packages
+build/
+pubspec.lock
+
+# Flutter auto-generated platform scaffolding
+ios/Flutter/
+ios/Runner/
+android/app/
+android/local.properties
+android/.gradle/
+android/build/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# macOS
+.DS_Store
