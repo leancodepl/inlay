@@ -84,7 +84,7 @@ class Add2AppNavigator {
     return builder(page.params ?? {});
   }
 
-  // ── Navigation (Flutter → platform) ───────────────────────────────
+  // ── Navigation (Flutter → Flutter via platform) ─────────────────────
 
   /// Push a new Flutter Activity/ViewController for [page].
   Future<void> push(Add2AppPage page) async {
@@ -94,6 +94,23 @@ class Add2AppNavigator {
   /// Pop (finish) the current Flutter Activity/ViewController.
   Future<void> pop() async {
     await _hostApi.pop();
+  }
+
+  // ── Navigation (Flutter → native) ─────────────────────────────────
+
+  /// Open a native Activity/ViewController identified by [page].
+  ///
+  /// The platform side dispatches to a native route handler registered via
+  /// `Add2AppNavigator.registerNativeRoute(...)` on Android/iOS.
+  ///
+  /// Example:
+  /// ```dart
+  /// Add2AppNavigator.instance.pushNativeRoute(
+  ///   NativeSettingsPage(section: 'notifications'),
+  /// );
+  /// ```
+  Future<void> pushNativeRoute(Add2AppPage page) async {
+    await _hostApi.pushNativeRoute(page.toPageSettings());
   }
 
   // ── Initial route parsing ─────────────────────────────────────────

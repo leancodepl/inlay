@@ -1,6 +1,13 @@
 import Foundation
 import Flutter
 
+/// Callback invoked when Flutter requests navigation to a native screen.
+///
+/// - Parameters:
+///   - viewController: The current UIViewController to present from.
+///   - params: The route parameters (may be nil).
+typealias NativeRouteHandler = (_ viewController: UIViewController, _ params: [String: String]?) -> Void
+
 /// Framework-level navigator that hides all Flutter internals
 /// (`FlutterEngine`, `FlutterEngineGroup`, `FlutterViewController`, platform channels)
 /// from the developer.
@@ -23,6 +30,19 @@ import Flutter
 /// Add2AppNavigator.instance.pop();
 /// ```
 ///
+/// Navigation from Flutter to native screens:
+/// ```swift
+/// // Register native routes (e.g. AppDelegate.didFinishLaunching)
+/// Add2AppNavigator.shared.registerNativeRoute("nativeSettings") { viewController, params in
+///     let settingsVC = NativeSettingsViewController()
+///     viewController.navigationController?.pushViewController(settingsVC, animated: true)
+/// }
+/// ```
+/// ```dart
+/// // From Flutter:
+/// Add2AppNavigator.instance.pushNativeRoute(NativeSettingsPage());
+/// ```
+///
 /// The navigator automatically:
 /// - Manages the `FlutterEngineGroup` singleton.
 /// - Creates a generic `Add2AppFlutterViewController` for every push.
@@ -43,6 +63,9 @@ final class Add2AppNavigator {
 
     /// The single Dart entrypoint used by all add2app pages.
     private static let dartEntrypoint = "add2appMain"
+
+    /// Registry: routeId → native route handler.
+    private var nativeRoutes: [String: NativeRouteHandler] = [:]
 
     // MARK: - Initialisation
 
@@ -71,6 +94,40 @@ final class Add2AppNavigator {
         start()
         let flutterVC = createFlutterViewController(page: page)
         viewController.present(flutterVC, animated: animated)
+    }
+
+    // MARK: - Native route registration
+
+    /// Register a handler for a native route that Flutter can navigate to.
+    ///
+    /// When Flutter calls `Add2AppNavigator.instance.pushNativeRoute(...)`,
+    /// the handler registered here for the matching `routeId` is invoked.
+    ///
+    /// ```swift
+    /// Add2AppNavigator.shared.registerNativeRoute("nativeSettings") { viewController, params in
+    ///     let settingsVC = NativeSettingsViewController()
+    ///     if let section = params?["section"] {
+    ///         settingsVC.section = section
+    ///     }
+    ///     viewController.navigationController?.pushViewController(settingsVC, animated: true)
+    /// }
+    /// ```
+    func registerNativeRoute(_ routeId: String, handler: @escaping NativeRouteHandler) {
+        nativeRoutes[routeId] = handler
+    }
+
+    /// Dispatch a native route request. Called by the Pigeon HostApi impl.
+    /// Throws if no handler is registered for the route.
+    func dispatchNativeRoute(from viewController: UIViewController, route: PageSettings) throws {
+        guard let handler = nativeRoutes[route.routeId] else {
+            throw PigeonError(
+                code: "UNREGISTERED_NATIVE_ROUTE",
+                message: "No native route handler registered for '\(route.routeId)'. "
+                    + "Call Add2AppNavigator.shared.registerNativeRoute(\"\(route.routeId)\", handler:) first.",
+                details: nil
+            )
+        }
+        handler(viewController, route.params)
     }
 
     // MARK: - ViewController factory
@@ -196,6 +253,13 @@ private class Add2AppNavigatorHostApiImpl: Add2AppNavigatorHostApi {
                     vc.dismiss(animated: true)
                 }
             }
+        }
+    }
+
+    func pushNativeRoute(route: PageSettings) throws {
+        DispatchQueue.main.async { [weak self] in
+            guard let self, let vc = self.viewController, let nav = self.navigator else { return }
+            try? nav.dispatchNativeRoute(from: vc, route: route)
         }
     }
 }

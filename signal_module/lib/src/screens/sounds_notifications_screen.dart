@@ -252,6 +252,32 @@ class _SoundsNotificationsScreenState extends State<SoundsNotificationsScreen> {
                     ),
                   ),
 
+                  // ADD2APP: Open NATIVE Sounds & Notifications screen
+                  // (Flutter → native navigation via pushNativeRoute)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
+                    child: OutlinedButton.icon(
+                      icon: const Icon(Icons.phone_android, size: 20),
+                      label: const Text(
+                        'Open native Sounds & Notifications',
+                      ),
+                      onPressed: () async {
+                        try {
+                          await Add2AppNavigator.instance.pushNativeRoute(
+                            NativeEditProfilePage(
+                              contactId: widget.contactId,
+                            ),
+                          );
+                        } on PlatformException catch (e) {
+                          debugPrint('pushNativeRoute: $e');
+                        }
+                      },
+                    ),
+                  ),
+
                   const SizedBox(height: 48),
                 ],
               ),

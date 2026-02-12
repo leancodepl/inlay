@@ -12,6 +12,16 @@ import io.flutter.embedding.engine.FlutterEngineGroup
 import io.flutter.embedding.engine.FlutterEngineGroupCache
 
 /**
+ * Callback invoked when Flutter requests navigation to a native screen.
+ *
+ * @param context The Activity context to launch from.
+ * @param params  The route parameters (may be null).
+ */
+fun interface NativeRouteHandler {
+    fun handle(context: Context, params: Map<String, String>?)
+}
+
+/**
  * Framework-level navigator that hides all Flutter internals
  * (FlutterEngine, FlutterEngineGroup, FlutterActivity, method channels)
  * from the developer.
@@ -31,6 +41,18 @@ import io.flutter.embedding.engine.FlutterEngineGroupCache
  * Add2AppNavigator.instance.pop();
  * ```
  *
+ * Navigation from Flutter to native screens:
+ * ```kotlin
+ * // Register native routes (e.g. Application.onCreate)
+ * Add2AppNavigator.registerNativeRoute("nativeSettings") { context, params ->
+ *     context.startActivity(Intent(context, NativeSettingsActivity::class.java))
+ * }
+ * ```
+ * ```dart
+ * // From Flutter:
+ * Add2AppNavigator.instance.pushNativeRoute(NativeSettingsPage());
+ * ```
+ *
  * The navigator automatically:
  * - Manages the [FlutterEngineGroup] singleton.
  * - Creates a generic [Add2AppFlutterActivity] (or [Add2AppFlutterFragment]) for every page.
@@ -45,6 +67,9 @@ object Add2AppNavigator {
     private const val DART_ENTRYPOINT = "add2appMain"
 
     private lateinit var appContext: Context
+
+    /** Registry: routeId → native route handler. */
+    private val nativeRoutes = mutableMapOf<String, NativeRouteHandler>()
 
     // ── Initialisation ───────────────────────────────────────────────────
 
@@ -82,6 +107,40 @@ object Add2AppNavigator {
      */
     fun push(context: Context, routeId: String, params: Map<String, String>? = null) {
         push(context, PageSettings(routeId, params))
+    }
+
+    // ── Native route registration ────────────────────────────────────────
+
+    /**
+     * Register a handler for a native route that Flutter can navigate to.
+     *
+     * When Flutter calls `Add2AppNavigator.instance.pushNativeRoute(...)`,
+     * the handler registered here for the matching `routeId` is invoked.
+     *
+     * ```kotlin
+     * Add2AppNavigator.registerNativeRoute("nativeSettings") { context, params ->
+     *     val intent = Intent(context, NativeSettingsActivity::class.java).apply {
+     *         params?.forEach { (k, v) -> putExtra(k, v) }
+     *     }
+     *     context.startActivity(intent)
+     * }
+     * ```
+     */
+    fun registerNativeRoute(routeId: String, handler: NativeRouteHandler) {
+        nativeRoutes[routeId] = handler
+    }
+
+    /**
+     * Dispatch a native route request. Called by the Pigeon HostApi impl.
+     * Throws if no handler is registered for the route.
+     */
+    internal fun dispatchNativeRoute(context: Context, route: PageSettings) {
+        val handler = nativeRoutes[route.routeId]
+            ?: throw IllegalArgumentException(
+                "No native route handler registered for '${route.routeId}'. " +
+                "Call Add2AppNavigator.registerNativeRoute(\"${route.routeId}\", handler) first."
+            )
+        handler.handle(context, route.params)
     }
 
     // ── Fragment factory ──────────────────────────────────────────────────
@@ -151,6 +210,9 @@ object Add2AppNavigator {
             }
             override fun pop() {
                 onPop?.invoke() ?: activity.finish()
+            }
+            override fun pushNativeRoute(route: PageSettings) {
+                dispatchNativeRoute(activity, route)
             }
         }
         Add2AppNavigatorHostApi.setUp(engine.dartExecutor.binaryMessenger, hostApi)

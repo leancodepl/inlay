@@ -173,4 +173,31 @@ class Add2AppNavigatorHostApi {
       return;
     }
   }
+
+  /// Open a native Activity/ViewController identified by [route].
+  ///
+  /// The platform side dispatches to a registered native route handler.
+  /// If no handler is registered for the given `routeId`, this is a no-op
+  /// (or throws, depending on platform configuration).
+  Future<void> pushNativeRoute(PageSettings route) async {
+    final pigeonVar_channelName = 'dev.flutter.pigeon.leancode_add2app.Add2AppNavigatorHostApi.pushNativeRoute$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[route]);
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+    if (pigeonVar_replyList == null) {
+      throw _createConnectionError(pigeonVar_channelName);
+    } else if (pigeonVar_replyList.length > 1) {
+      throw PlatformException(
+        code: pigeonVar_replyList[0]! as String,
+        message: pigeonVar_replyList[1] as String?,
+        details: pigeonVar_replyList[2],
+      );
+    } else {
+      return;
+    }
+  }
 }

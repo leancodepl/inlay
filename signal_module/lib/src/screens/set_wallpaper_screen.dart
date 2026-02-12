@@ -177,6 +177,27 @@ class _SetWallpaperScreenState extends State<SetWallpaperScreen>
               ),
             ),
 
+            // ADD2APP: Open NATIVE comparison screen
+            // (Flutter → native navigation via pushNativeRoute)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: OutlinedButton.icon(
+                icon: const Icon(Icons.phone_android, size: 20),
+                label: const Text('Open native comparison screen'),
+                onPressed: () async {
+                  try {
+                    await Add2AppNavigator.instance.pushNativeRoute(
+                      NativeMediaViewerPage(
+                        mediaId: widget.recipientId ?? '1',
+                      ),
+                    );
+                  } on PlatformException catch (e) {
+                    debugPrint('pushNativeRoute: $e');
+                  }
+                },
+              ),
+            ),
+
             // Set wallpaper button
             SafeArea(
               child: Padding(

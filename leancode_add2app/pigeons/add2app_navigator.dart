@@ -40,4 +40,11 @@ abstract class Add2AppNavigatorHostApi {
 
   /// Pop the current Flutter Activity/ViewController.
   void pop();
+
+  /// Open a native Activity/ViewController identified by [route].
+  ///
+  /// The platform side dispatches to a registered native route handler.
+  /// If no handler is registered for the given `routeId`, this is a no-op
+  /// (or throws, depending on platform configuration).
+  void pushNativeRoute(PageSettings route);
 }

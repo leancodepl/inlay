@@ -187,6 +187,10 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
         // ADD2APP: Initialize the navigator framework (FlutterEngineGroup).
         Add2AppNavigator.shared.start()
 
+        // ADD2APP: Register native route handlers so Flutter can navigate to
+        // native iOS ViewControllers via Add2AppNavigator.pushNativeRoute(...).
+        registerNativeRoutes()
+
         BenchEventStart(title: "Presenting HomeView", eventId: "AppStart", logInProduction: true)
         appReadiness.runNowOrWhenUIDidBecomeReadySync { BenchEventComplete(eventId: "AppStart") }
 
@@ -366,6 +370,57 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
     }
 
     var window: UIWindow?
+
+    // MARK: - ADD2APP: Native route handlers
+
+    /// Register native route handlers so Flutter can navigate to native iOS screens
+    /// via `Add2AppNavigator.instance.pushNativeRoute(...)`.
+    private func registerNativeRoutes() {
+
+        // ── nativeEditProfile ────────────────────────────────────────────
+        // Opens NativeSoundsNotificationsViewController — a native UIKit screen
+        // that shares state with Flutter via Pigeon KeyValueStorage.
+        //
+        // Flutter side:
+        //   Add2AppNavigator.instance.pushNativeRoute(
+        //     NativeEditProfilePage(contactId: '42'),
+        //   );
+        Add2AppNavigator.shared.registerNativeRoute("nativeEditProfile") { viewController, params in
+            let contactId = params?["contactId"] ?? "1"
+            let nativeVC = NativeSoundsNotificationsViewController.create(recipientId: contactId)
+            if let nav = viewController.navigationController {
+                nav.pushViewController(nativeVC, animated: true)
+            } else {
+                viewController.present(
+                    UINavigationController(rootViewController: nativeVC),
+                    animated: true
+                )
+            }
+        }
+
+        // ── nativeMediaViewer ────────────────────────────────────────────
+        // Opens SwiftUIFlutterComparisonViewController — a SwiftUI screen that
+        // demonstrates native/Flutter side-by-side comparison.
+        //
+        // Flutter side:
+        //   Add2AppNavigator.instance.pushNativeRoute(
+        //     NativeMediaViewerPage(mediaId: '123', mediaType: 'photo'),
+        //   );
+        if #available(iOS 16.0, *) {
+            Add2AppNavigator.shared.registerNativeRoute("nativeMediaViewer") { viewController, params in
+                let mediaId = params?["mediaId"] ?? "1"
+                let comparisonVC = SwiftUIFlutterComparisonViewController(recipientId: mediaId)
+                if let nav = viewController.navigationController {
+                    nav.pushViewController(comparisonVC, animated: true)
+                } else {
+                    viewController.present(
+                        UINavigationController(rootViewController: comparisonVC),
+                        animated: true
+                    )
+                }
+            }
+        }
+    }
 
     private func initializeWindow(mainAppContext: MainAppContext, rootViewController: UIViewController) -> UIWindow {
         let window = OWSWindow()

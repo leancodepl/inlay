@@ -198,6 +198,12 @@ protocol Add2AppNavigatorHostApi {
   func push(page: PageSettings) throws
   /// Pop the current Flutter Activity/ViewController.
   func pop() throws
+  /// Open a native Activity/ViewController identified by [route].
+  ///
+  /// The platform side dispatches to a registered native route handler.
+  /// If no handler is registered for the given `routeId`, this is a no-op
+  /// (or throws, depending on platform configuration).
+  func pushNativeRoute(route: PageSettings) throws
 }
 
 /// Generated setup class from Pigeon to handle messages through the `binaryMessenger`.
@@ -235,6 +241,26 @@ class Add2AppNavigatorHostApiSetup {
       }
     } else {
       popChannel.setMessageHandler(nil)
+    }
+    /// Open a native Activity/ViewController identified by [route].
+    ///
+    /// The platform side dispatches to a registered native route handler.
+    /// If no handler is registered for the given `routeId`, this is a no-op
+    /// (or throws, depending on platform configuration).
+    let pushNativeRouteChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.leancode_add2app.Add2AppNavigatorHostApi.pushNativeRoute\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      pushNativeRouteChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let routeArg = args[0] as! PageSettings
+        do {
+          try api.pushNativeRoute(route: routeArg)
+          reply(wrapResult(nil))
+        } catch {
+          reply(wrapError(error))
+        }
+      }
+    } else {
+      pushNativeRouteChannel.setMessageHandler(nil)
     }
   }
 }
