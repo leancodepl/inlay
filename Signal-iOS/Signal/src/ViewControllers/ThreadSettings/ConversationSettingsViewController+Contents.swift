@@ -48,6 +48,7 @@ extension ConversationSettingsViewController {
         addNicknameItemIfNecessary(to: mainSection)
         addColorAndWallpaperSettingsItem(to: mainSection)
         if !isNoteToSelf { addSoundAndNotificationSettingsItem(to: mainSection) }
+        if !isNoteToSelf { addSwiftUIFlutterComparisonItem(to: mainSection) }
         addSafetyNumberItemIfNecessary(to: mainSection)
 
         contents.add(mainSection)
@@ -454,6 +455,27 @@ extension ConversationSettingsViewController {
         },
         actionBlock: { [weak self] in
             self?.showSoundAndNotificationsSettingsView()
+        }))
+    }
+
+    // ADD2APP: SwiftUI NavigationStack comparison (native SwiftUI vs Flutter via Add2AppFlutterView)
+    private func addSwiftUIFlutterComparisonItem(to section: OWSTableSection) {
+        section.add(OWSTableItem(customCellBlock: { [weak self] in
+            guard let self = self else {
+                owsFailDebug("Missing self")
+                return OWSTableItem.newCell()
+            }
+
+            let cell = OWSTableItem.buildCell(
+                icon: .chatSettingsMessageSound,
+                itemName: "Sounds & Notifications (SwiftUI NavigationStack)",
+                accessoryType: .disclosureIndicator,
+                accessibilityIdentifier: UIView.accessibilityIdentifier(in: self, name: "swiftui_flutter_comparison")
+            )
+            return cell
+        },
+        actionBlock: { [weak self] in
+            self?.showSwiftUIFlutterComparisonView()
         }))
     }
 

@@ -401,6 +401,16 @@ class ConversationSettingsViewController: OWSTableViewController2, BadgeCollecti
         navigationController?.pushViewController(vc, animated: true)
     }
 
+    func showSwiftUIFlutterComparisonView() {
+        // ADD2APP: Opens SwiftUI NavigationStack that demonstrates Add2AppFlutterView
+        // alongside a native SwiftUI screen. Both implementations share state via
+        // Pigeon KeyValueStorage — equivalent of the Android Compose NavHost comparison.
+        if #available(iOS 16.0, *) {
+            let vc = SwiftUIFlutterComparisonViewController(recipientId: thread.uniqueId)
+            navigationController?.pushViewController(vc, animated: true)
+        }
+    }
+
     func showPermissionsSettingsView() {
         let vc = GroupPermissionsSettingsViewController(threadViewModel: threadViewModel, delegate: self)
         presentFormSheet(OWSNavigationController(rootViewController: vc), animated: true)
