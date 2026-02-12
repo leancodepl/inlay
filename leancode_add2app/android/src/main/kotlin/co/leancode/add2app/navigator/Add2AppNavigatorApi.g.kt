@@ -157,6 +157,14 @@ interface Add2AppNavigatorHostApi {
   fun push(page: PageSettings)
   /** Pop the current Flutter Activity/ViewController. */
   fun pop()
+  /**
+   * Open a native Activity/ViewController identified by [route].
+   *
+   * The platform side dispatches to a registered native route handler.
+   * If no handler is registered for the given `routeId`, this is a no-op
+   * (or throws, depending on platform configuration).
+   */
+  fun pushNativeRoute(route: PageSettings)
 
   companion object {
     /** The codec used by Add2AppNavigatorHostApi. */
@@ -191,6 +199,24 @@ interface Add2AppNavigatorHostApi {
           channel.setMessageHandler { _, reply ->
             val wrapped: List<Any?> = try {
               api.pop()
+              listOf(null)
+            } catch (exception: Throwable) {
+              Add2AppNavigatorApiPigeonUtils.wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.leancode_add2app.Add2AppNavigatorHostApi.pushNativeRoute$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val routeArg = args[0] as PageSettings
+            val wrapped: List<Any?> = try {
+              api.pushNativeRoute(routeArg)
               listOf(null)
             } catch (exception: Throwable) {
               Add2AppNavigatorApiPigeonUtils.wrapError(exception)
