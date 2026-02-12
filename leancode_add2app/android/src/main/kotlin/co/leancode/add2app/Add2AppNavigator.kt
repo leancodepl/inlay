@@ -134,14 +134,23 @@ object Add2AppNavigator {
      * Called by [Add2AppFlutterActivity.configureFlutterEngine] and
      * [Add2AppFlutterFragment.configureFlutterEngine].
      * Registers Pigeon APIs + storage on the engine.
+     *
+     * @param onPop optional override for the pop behaviour. When `null`
+     *   (the default), `activity.finish()` is called. Supply a custom
+     *   lambda to integrate with Compose Navigation, Fragment back stack,
+     *   or any other navigation mechanism.
      */
-    internal fun configureEngine(engine: FlutterEngine, activity: Activity) {
+    internal fun configureEngine(
+        engine: FlutterEngine,
+        activity: Activity,
+        onPop: (() -> Unit)? = null,
+    ) {
         val hostApi = object : Add2AppNavigatorHostApi {
             override fun push(page: PageSettings) {
                 activity.startActivity(createIntent(activity, page))
             }
             override fun pop() {
-                activity.finish()
+                onPop?.invoke() ?: activity.finish()
             }
         }
         Add2AppNavigatorHostApi.setUp(engine.dartExecutor.binaryMessenger, hostApi)

@@ -872,6 +872,14 @@
         android:exported="false"
         android:theme="@style/Signal.DayNight.NoActionBar"/>
 
+    <!-- ADD2APP: Compose NavHost comparison — native Compose + Flutter via Add2AppFlutterScreen. -->
+    <activity
+        android:name=".flutter.ComposeFlutterComparisonActivity"
+        android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|layoutDirection|fontScale|screenLayout|density"
+        android:hardwareAccelerated="true"
+        android:exported="false"
+        android:theme="@style/Signal.DayNight.NoActionBar"/>
+
     <activity
         android:name=".wallpaper.ChatWallpaperPreviewActivity"
         android:configChanges="touchscreen|keyboard|keyboardHidden|orientation|screenLayout|screenSize"

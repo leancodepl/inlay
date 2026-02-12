@@ -108,6 +108,7 @@ import org.thoughtcrime.securesms.verify.VerifyIdentityActivity
 import org.thoughtcrime.securesms.wallpaper.ChatWallpaperActivity
 import co.leancode.add2app.Add2AppNavigator
 import co.leancode.add2app.navigator.PageSettings
+import org.thoughtcrime.securesms.flutter.ComposeFlutterComparisonActivity
 import org.thoughtcrime.securesms.flutter.FlutterSoundsNotificationsFragmentActivity
 import org.thoughtcrime.securesms.flutter.NativeSoundsNotificationsActivity
 import java.util.Locale
@@ -591,6 +592,17 @@ class ConversationSettingsFragment : DSLSettingsFragment(
           icon = DSLSettingsIcon.from(R.drawable.symbol_speaker_24),
           onClick = {
             startActivity(FlutterSoundsNotificationsFragmentActivity.createIntent(requireContext(), state.recipient.id.serialize()))
+          }
+        )
+
+        // ADD2APP: Opens a Compose NavHost with both a native Compose and a Flutter
+        // version of the Sounds & Notifications screen. Demonstrates Add2AppFlutterScreen
+        // composable — Flutter screens as regular NavHost destinations alongside Compose.
+        clickPref(
+          title = DSLSettingsText.from("Sounds & Notifications (Compose NavHost)"),
+          icon = DSLSettingsIcon.from(R.drawable.symbol_speaker_24),
+          onClick = {
+            startActivity(ComposeFlutterComparisonActivity.createIntent(requireContext(), state.recipient.id.serialize()))
           }
         )
       }
