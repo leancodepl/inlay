@@ -108,6 +108,7 @@ import org.thoughtcrime.securesms.verify.VerifyIdentityActivity
 import org.thoughtcrime.securesms.wallpaper.ChatWallpaperActivity
 import co.leancode.add2app.Add2AppNavigator
 import co.leancode.add2app.navigator.PageSettings
+import org.thoughtcrime.securesms.flutter.FlutterSoundsNotificationsFragmentActivity
 import org.thoughtcrime.securesms.flutter.NativeSoundsNotificationsActivity
 import java.util.Locale
 
@@ -578,6 +579,18 @@ class ConversationSettingsFragment : DSLSettingsFragment(
 //          isEnabled = !state.isDeprecatedOrUnregistered,
           onClick = {
             startActivity(NativeSoundsNotificationsActivity.createIntent(requireContext(), state.recipient.id.serialize()))
+          }
+        )
+
+        // ADD2APP: Opens Flutter Sounds & Notifications via Add2AppFlutterFragment
+        // (Fragment-based approach). The Flutter content is embedded as a Fragment
+        // inside a host Activity, demonstrating the Fragment alternative to the
+        // full FlutterActivity approach used by Add2AppNavigator.push().
+        clickPref(
+          title = DSLSettingsText.from("Sounds & Notifications (Flutter Fragment)"),
+          icon = DSLSettingsIcon.from(R.drawable.symbol_speaker_24),
+          onClick = {
+            startActivity(FlutterSoundsNotificationsFragmentActivity.createIntent(requireContext(), state.recipient.id.serialize()))
           }
         )
       }

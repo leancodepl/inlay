@@ -6,6 +6,7 @@ import android.content.Intent
 import co.leancode.add2app.navigator.Add2AppNavigatorHostApi
 import co.leancode.add2app.navigator.PageSettings
 import io.flutter.embedding.android.FlutterActivity
+import io.flutter.embedding.android.FlutterFragment
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.embedding.engine.FlutterEngineGroup
 import io.flutter.embedding.engine.FlutterEngineGroupCache
@@ -32,7 +33,7 @@ import io.flutter.embedding.engine.FlutterEngineGroupCache
  *
  * The navigator automatically:
  * - Manages the [FlutterEngineGroup] singleton.
- * - Creates a generic [Add2AppFlutterActivity] for every push.
+ * - Creates a generic [Add2AppFlutterActivity] (or [Add2AppFlutterFragment]) for every page.
  * - Registers the Pigeon HostApi on each engine so Flutter can push/pop too.
  * - Attaches [KeyValueStorageImpl] to each engine.
  */
@@ -83,6 +84,36 @@ object Add2AppNavigator {
         push(context, PageSettings(routeId, params))
     }
 
+    // ── Fragment factory ──────────────────────────────────────────────────
+
+    /**
+     * Create an [Add2AppFlutterFragment] configured to display the page
+     * described by [page].
+     *
+     * The returned fragment can be added to any Activity via a
+     * FragmentTransaction:
+     * ```kotlin
+     * val fragment = Add2AppNavigator.createFragment(context, page)
+     * supportFragmentManager.beginTransaction()
+     *     .replace(R.id.container, fragment)
+     *     .commit()
+     * ```
+     *
+     * Engine configuration (Pigeon APIs, storage) is set up automatically
+     * when the fragment attaches — no manual wiring needed.
+     */
+    fun createFragment(context: Context, page: PageSettings): Add2AppFlutterFragment {
+        init(context)
+        val initialRoute = encodePageSettings(page)
+        return FlutterFragment.NewEngineInGroupFragmentBuilder(
+            Add2AppFlutterFragment::class.java,
+            ENGINE_GROUP_ID
+        )
+            .dartEntrypoint(DART_ENTRYPOINT)
+            .initialRoute(initialRoute)
+            .build<Add2AppFlutterFragment>()
+    }
+
     // ── Intent factory ───────────────────────────────────────────────────
 
     internal fun createIntent(context: Context, page: PageSettings): Intent {
@@ -97,10 +128,11 @@ object Add2AppNavigator {
             .build(context)
     }
 
-    // ── Engine configuration (called by Add2AppFlutterActivity) ──────────
+    // ── Engine configuration (called by Add2AppFlutterActivity / Fragment) ─
 
     /**
-     * Called by [Add2AppFlutterActivity.configureFlutterEngine].
+     * Called by [Add2AppFlutterActivity.configureFlutterEngine] and
+     * [Add2AppFlutterFragment.configureFlutterEngine].
      * Registers Pigeon APIs + storage on the engine.
      */
     internal fun configureEngine(engine: FlutterEngine, activity: Activity) {
@@ -117,7 +149,8 @@ object Add2AppNavigator {
     }
 
     /**
-     * Called by [Add2AppFlutterActivity.cleanUpFlutterEngine].
+     * Called by [Add2AppFlutterActivity.cleanUpFlutterEngine] and
+     * [Add2AppFlutterFragment.cleanUpFlutterEngine].
      */
     internal fun cleanUpEngine(engine: FlutterEngine) {
         Add2AppNavigatorHostApi.setUp(engine.dartExecutor.binaryMessenger, null)
