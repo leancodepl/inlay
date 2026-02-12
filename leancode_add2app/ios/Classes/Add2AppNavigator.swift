@@ -95,10 +95,23 @@ final class Add2AppNavigator {
 
     /// Called by `Add2AppFlutterViewController.viewDidLoad`.
     /// Registers Pigeon APIs + storage on the engine.
-    func configureEngine(_ engine: FlutterEngine, viewController: UIViewController) {
+    ///
+    /// - Parameters:
+    ///   - engine: The `FlutterEngine` to configure.
+    ///   - viewController: The hosting view controller.
+    ///   - onPop: Optional custom pop handler. When provided, Flutter's `pop()`
+    ///            calls this closure instead of the default navigation-controller
+    ///            pop / modal dismiss. Used by `Add2AppFlutterView` to integrate
+    ///            with SwiftUI's `NavigationStack`.
+    func configureEngine(
+        _ engine: FlutterEngine,
+        viewController: UIViewController,
+        onPop: (() -> Void)? = nil
+    ) {
         let hostApi = Add2AppNavigatorHostApiImpl(
             navigator: self,
-            viewController: viewController
+            viewController: viewController,
+            onPop: onPop
         )
         Add2AppNavigatorHostApiSetup.setUp(
             binaryMessenger: engine.binaryMessenger,
@@ -157,10 +170,12 @@ private class Add2AppNavigatorHostApiImpl: Add2AppNavigatorHostApi {
 
     private weak var navigator: Add2AppNavigator?
     private weak var viewController: UIViewController?
+    private var onPop: (() -> Void)?
 
-    init(navigator: Add2AppNavigator, viewController: UIViewController) {
+    init(navigator: Add2AppNavigator, viewController: UIViewController, onPop: (() -> Void)? = nil) {
         self.navigator = navigator
         self.viewController = viewController
+        self.onPop = onPop
     }
 
     func push(page: PageSettings) throws {
@@ -172,11 +187,14 @@ private class Add2AppNavigatorHostApiImpl: Add2AppNavigatorHostApi {
 
     func pop() throws {
         DispatchQueue.main.async { [weak self] in
-            guard let vc = self?.viewController else { return }
-            if let nav = vc.navigationController {
-                nav.popViewController(animated: true)
-            } else {
-                vc.dismiss(animated: true)
+            if let onPop = self?.onPop {
+                onPop()
+            } else if let vc = self?.viewController {
+                if let nav = vc.navigationController {
+                    nav.popViewController(animated: true)
+                } else {
+                    vc.dismiss(animated: true)
+                }
             }
         }
     }

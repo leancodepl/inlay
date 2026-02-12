@@ -13,11 +13,20 @@ final class Add2AppFlutterViewController: FlutterViewController {
     /// The page this VC is displaying (set by `Add2AppNavigator`).
     var page: PageSettings?
 
+    /// Optional custom pop handler. When set (e.g. by `Add2AppFlutterView`),
+    /// Flutter's `pop()` invokes this closure instead of the default
+    /// navigation-controller pop / modal dismiss.
+    var onPop: (() -> Void)?
+
     // MARK: - Lifecycle
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        Add2AppNavigator.shared.configureEngine(engine, viewController: self)
+        Add2AppNavigator.shared.configureEngine(
+            engine,
+            viewController: self,
+            onPop: onPop
+        )
     }
 
     deinit {
