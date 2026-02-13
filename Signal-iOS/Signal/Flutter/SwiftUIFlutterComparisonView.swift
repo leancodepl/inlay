@@ -153,7 +153,7 @@ private struct NativeSwiftUISoundsNotifications: View {
 
     let recipientId: String
 
-    // ── State ──
+    // ── State (initialised from real storage values) ──
     @State private var muteNotifications: Bool
     @State private var showPreviews: Bool
     @State private var notificationSound: String
@@ -162,29 +162,21 @@ private struct NativeSwiftUISoundsNotifications: View {
     @State private var showSoundPicker = false
     @State private var showVibrationPicker = false
 
-    /// Framework-provided observer — `@StateObject` keeps it alive and the
-    /// weak reference inside `KeyValueStorageImpl` stays valid.
-    @StateObject private var observer = Add2AppStorageObserver()
+    /// Framework-provided observer with built-in read/write/observe.
+    /// Self-notification suppression is automatic.
+    @StateObject private var storage = Add2AppStorageObserver()
 
     init(recipientId: String) {
         self.recipientId = recipientId
 
-        // Initialise from storage
+        let storage = KeyValueStorageImpl.shared.createScope()
         func key(_ field: String) -> String {
             "sounds_notifications/\(recipientId)/\(field)"
         }
-        _muteNotifications = State(
-            initialValue: KeyValueStorageImpl.shared.getFromNative(key: key("mute")) == "true"
-        )
-        _showPreviews = State(
-            initialValue: KeyValueStorageImpl.shared.getFromNative(key: key("previews")) != "false"
-        )
-        _notificationSound = State(
-            initialValue: KeyValueStorageImpl.shared.getFromNative(key: key("sound")) ?? "Default"
-        )
-        _vibrationPattern = State(
-            initialValue: KeyValueStorageImpl.shared.getFromNative(key: key("vibration")) ?? "Default"
-        )
+        _muteNotifications = State(initialValue: storage.get(key: key("mute")) == "true")
+        _showPreviews = State(initialValue: storage.get(key: key("previews")) != "false")
+        _notificationSound = State(initialValue: storage.get(key: key("sound")) ?? "Default")
+        _vibrationPattern = State(initialValue: storage.get(key: key("vibration")) ?? "Default")
     }
 
     private func key(_ field: String) -> String {
@@ -193,19 +185,12 @@ private struct NativeSwiftUISoundsNotifications: View {
 
     // MARK: - Custom bindings (write to storage only on user interaction)
 
-    /// Custom `Binding` that writes to `KeyValueStorageImpl` in the setter.
-    /// The observer callback updates `@State` directly without going through
-    /// the binding, so there is no feedback loop.
     private var muteBinding: Binding<Bool> {
         Binding(
             get: { muteNotifications },
             set: { newValue in
                 muteNotifications = newValue
-                KeyValueStorageImpl.shared.putFromNative(
-                    key: key("mute"),
-                    value: String(newValue),
-                    excludeObserver: observer.observerId
-                )
+                storage.put(key: key("mute"), value: String(newValue))
             }
         )
     }
@@ -215,11 +200,7 @@ private struct NativeSwiftUISoundsNotifications: View {
             get: { showPreviews },
             set: { newValue in
                 showPreviews = newValue
-                KeyValueStorageImpl.shared.putFromNative(
-                    key: key("previews"),
-                    value: String(newValue),
-                    excludeObserver: observer.observerId
-                )
+                storage.put(key: key("previews"), value: String(newValue))
             }
         )
     }
@@ -336,16 +317,9 @@ private struct NativeSwiftUISoundsNotifications: View {
         .navigationTitle("Sounds & Notifications")
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
-            // Re-read latest values (may have changed while off-screen)
-            muteNotifications = KeyValueStorageImpl.shared.getFromNative(key: key("mute")) == "true"
-            showPreviews = KeyValueStorageImpl.shared.getFromNative(key: key("previews")) != "false"
-            notificationSound = KeyValueStorageImpl.shared.getFromNative(key: key("sound")) ?? "Default"
-            vibrationPattern = KeyValueStorageImpl.shared.getFromNative(key: key("vibration")) ?? "Default"
-
             // Register observer for changes from Flutter / other sources.
-            // The observer updates @State directly — no onChange, no feedback loop.
             let prefix = "sounds_notifications/\(recipientId)/"
-            observer.startObserving { entries in
+            storage.startObserving { entries in
                 for entry in entries {
                     guard entry.key.hasPrefix(prefix) else { continue }
                     let field = String(entry.key.dropFirst(prefix.count))
@@ -363,19 +337,21 @@ private struct NativeSwiftUISoundsNotifications: View {
                     }
                 }
             }
+
+            // Re-read when view reappears (values may have changed while off-screen).
+            muteNotifications = storage.get(key: key("mute")) == "true"
+            showPreviews = storage.get(key: key("previews")) != "false"
+            notificationSound = storage.get(key: key("sound")) ?? "Default"
+            vibrationPattern = storage.get(key: key("vibration")) ?? "Default"
         }
         .onDisappear {
-            observer.stopObserving()
+            storage.stopObserving()
         }
         .confirmationDialog("Notification Sound", isPresented: $showSoundPicker) {
             ForEach(["Default", "Signal", "Pulse", "Chime", "Bamboo", "None"], id: \.self) { sound in
                 Button(sound) {
                     notificationSound = sound
-                    KeyValueStorageImpl.shared.putFromNative(
-                        key: key("sound"),
-                        value: sound,
-                        excludeObserver: observer.observerId
-                    )
+                    storage.put(key: key("sound"), value: sound)
                 }
             }
             Button("Cancel", role: .cancel) {}
@@ -384,15 +360,10 @@ private struct NativeSwiftUISoundsNotifications: View {
             ForEach(["Default", "Short", "Long", "Double", "None"], id: \.self) { pattern in
                 Button(pattern) {
                     vibrationPattern = pattern
-                    KeyValueStorageImpl.shared.putFromNative(
-                        key: key("vibration"),
-                        value: pattern,
-                        excludeObserver: observer.observerId
-                    )
+                    storage.put(key: key("vibration"), value: pattern)
                 }
             }
             Button("Cancel", role: .cancel) {}
         }
     }
 }
-
