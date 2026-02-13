@@ -1,55 +1,33 @@
 package org.thoughtcrime.securesms.flutter
 
-import android.content.Intent
-import co.leancode.add2app.Add2AppNavigator
+import android.content.Context
+import co.leancode.signal_module.navigator.NativeEditProfilePage
+import co.leancode.signal_module.navigator.NativeMediaViewerPage
+import co.leancode.signal_module.navigator.NativeRouteHandler
 
 /**
- * Registers native Android screens that Flutter can navigate to via
- * [Add2AppNavigator.instance.pushNativeRoute(...)][co.leancode.add2app.NativeRouteHandler].
+ * Typed native route handler for Signal-Android.
  *
- * Call [registerAll] once at app startup (e.g. `Application.onCreate`) — before
- * any Flutter engine could send a `pushNativeRoute` message.
+ * Extends the generated [NativeRouteHandler] from signal_module so each
+ * native route is handled via a compile-time checked `on*` method with
+ * the pigeon-generated page object already decoded.
  *
- * Each route maps a `routeId` (matching a Dart [Add2AppPage.routeId]) to a
- * lambda that launches the corresponding Android Activity.
+ * Set once at app startup:
+ * ```kotlin
+ * Add2AppNavigator.setNativeRouteHandler(NativeRouteRegistry)
+ * ```
  */
-object NativeRouteRegistry {
+object NativeRouteRegistry : NativeRouteHandler() {
 
-    /**
-     * Register all native route handlers.
-     * Idempotent — safe to call multiple times (handlers are overwritten).
-     */
-    @JvmStatic
-    fun registerAll() {
+    override fun onNativeEditProfile(page: NativeEditProfilePage, context: Context) {
+        context.startActivity(
+            NativeSoundsNotificationsActivity.createIntent(context, page.contactId)
+        )
+    }
 
-        // ── nativeEditProfile ────────────────────────────────────────────
-        // Opens NativeSoundsNotificationsActivity — a native Android screen
-        // that shares state with Flutter via Pigeon KeyValueStorage.
-        //
-        // Flutter side:
-        //   Add2AppNavigator.instance.pushNativeRoute(
-        //     NativeEditProfilePage(contactId: '42'),
-        //   );
-        Add2AppNavigator.registerNativeRoute("nativeEditProfile") { context, params ->
-            val contactId = params?.get("contactId") ?: "1"
-            context.startActivity(
-                NativeSoundsNotificationsActivity.createIntent(context, contactId)
-            )
-        }
-
-        // ── nativeMediaViewer ────────────────────────────────────────────
-        // Opens ComposeFlutterComparisonActivity — a Jetpack Compose screen
-        // that demonstrates native/Flutter side-by-side comparison.
-        //
-        // Flutter side:
-        //   Add2AppNavigator.instance.pushNativeRoute(
-        //     NativeMediaViewerPage(mediaId: '123', mediaType: 'photo'),
-        //   );
-        Add2AppNavigator.registerNativeRoute("nativeMediaViewer") { context, params ->
-            val mediaId = params?.get("mediaId") ?: "1"
-            context.startActivity(
-                ComposeFlutterComparisonActivity.createIntent(context, mediaId)
-            )
-        }
+    override fun onNativeMediaViewer(page: NativeMediaViewerPage, context: Context) {
+        context.startActivity(
+            ComposeFlutterComparisonActivity.createIntent(context, page.mediaId)
+        )
     }
 }

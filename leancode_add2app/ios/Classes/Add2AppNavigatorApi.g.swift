@@ -11,7 +11,23 @@ import Foundation
   #error("Unsupported platform.")
 #endif
 
-// PigeonError is defined in KeyValueStorageApi.g.swift (shared across Pigeon files).
+/// Error class for passing custom error details to Dart side.
+final class PigeonError: Error {
+  let code: String
+  let message: String?
+  let details: Sendable?
+
+  init(code: String, message: String?, details: Sendable?) {
+    self.code = code
+    self.message = message
+    self.details = details
+  }
+
+  var localizedDescription: String {
+    return
+      "PigeonError(code: \(code), message: \(message ?? "<nil>"), details: \(details ?? "<nil>")"
+  }
+}
 
 private func wrapResult(_ result: Any?) -> [Any?] {
   return [result]
@@ -112,25 +128,28 @@ func deepHashAdd2AppNavigatorApi(value: Any?, hasher: inout Hasher) {
 
     
 
-/// Describes a Flutter page to navigate to.
+/// Describes a page to navigate to (Flutter or native).
 ///
-/// On the Dart side developers create typed subclasses with named fields.
-/// For transport over Pigeon, everything is flattened into [routeId] +
-/// a string-keyed [params] map.
+/// [routeId] identifies the screen. [params] carries the page data
+/// using pigeon's `encode()` output — the native side decodes it with
+/// the matching pigeon-generated class's `fromList()` / `decode()`.
+///
+/// For Flutter pages pushed from native, [params] is a `Map<String, String>`
+/// (produced by URL-decoding the `initialRoute` string).
 ///
 /// Generated class from Pigeon that represents data sent in messages.
 struct PageSettings: Hashable {
   /// Identifies which screen to show (e.g. "soundsNotifications").
   var routeId: String
-  /// Immutable parameters for the page (e.g. {"contactId": "42"}).
-  /// Nullable — pages with no parameters can omit this.
-  var params: [String: String]? = nil
+  /// Page parameters. For native pages this is the pigeon-encoded object
+  /// (via `encode()`). For Flutter pages this is a `Map<String, String>`.
+  var params: Any? = nil
 
 
   // swift-format-ignore: AlwaysUseLowerCamelCase
   static func fromList(_ pigeonVar_list: [Any?]) -> PageSettings? {
     let routeId = pigeonVar_list[0] as! String
-    let params: [String: String]? = nilOrValue(pigeonVar_list[1])
+    let params: Any? = pigeonVar_list[1]
 
     return PageSettings(
       routeId: routeId,

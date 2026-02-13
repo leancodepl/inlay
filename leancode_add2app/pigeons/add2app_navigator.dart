@@ -3,29 +3,30 @@ import 'package:pigeon/pigeon.dart';
 @ConfigurePigeon(
   PigeonOptions(
     dartOut: 'lib/src/navigator/add2app_navigator.g.dart',
-    kotlinOut: 'android/src/main/kotlin/co/leancode/add2app/navigator/Add2AppNavigatorApi.g.kt',
-    kotlinOptions: KotlinOptions(
-      package: 'co.leancode.add2app.navigator',
-    ),
+    kotlinOut:
+        'android/src/main/kotlin/co/leancode/add2app/navigator/Add2AppNavigatorApi.g.kt',
+    kotlinOptions: KotlinOptions(package: 'co.leancode.add2app.navigator'),
     swiftOut: 'ios/Classes/Add2AppNavigatorApi.g.swift',
     dartPackageName: 'leancode_add2app',
   ),
 )
-
-/// Describes a Flutter page to navigate to.
+/// Describes a page to navigate to (Flutter or native).
 ///
-/// On the Dart side developers create typed subclasses with named fields.
-/// For transport over Pigeon, everything is flattened into [routeId] +
-/// a string-keyed [params] map.
+/// [routeId] identifies the screen. [params] carries the page data
+/// using pigeon's `encode()` output — the native side decodes it with
+/// the matching pigeon-generated class's `fromList()` / `decode()`.
+///
+/// For Flutter pages pushed from native, [params] is a `Map<String, String>`
+/// (produced by URL-decoding the `initialRoute` string).
 class PageSettings {
   PageSettings({required this.routeId, this.params});
 
   /// Identifies which screen to show (e.g. "soundsNotifications").
   String routeId;
 
-  /// Immutable parameters for the page (e.g. {"contactId": "42"}).
-  /// Nullable — pages with no parameters can omit this.
-  Map<String, String>? params;
+  /// Page parameters. For native pages this is the pigeon-encoded object
+  /// (via `encode()`). For Flutter pages this is a `Map<String, String>`.
+  Object? params;
 }
 
 /// Host API — Flutter asks the platform to push a new Activity/ViewController.

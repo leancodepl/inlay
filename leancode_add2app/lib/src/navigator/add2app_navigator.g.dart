@@ -29,11 +29,14 @@ bool _deepEquals(Object? a, Object? b) {
 }
 
 
-/// Describes a Flutter page to navigate to.
+/// Describes a page to navigate to (Flutter or native).
 ///
-/// On the Dart side developers create typed subclasses with named fields.
-/// For transport over Pigeon, everything is flattened into [routeId] +
-/// a string-keyed [params] map.
+/// [routeId] identifies the screen. [params] carries the page data
+/// using pigeon's `encode()` output — the native side decodes it with
+/// the matching pigeon-generated class's `fromList()` / `decode()`.
+///
+/// For Flutter pages pushed from native, [params] is a `Map<String, String>`
+/// (produced by URL-decoding the `initialRoute` string).
 class PageSettings {
   PageSettings({
     required this.routeId,
@@ -43,9 +46,9 @@ class PageSettings {
   /// Identifies which screen to show (e.g. "soundsNotifications").
   String routeId;
 
-  /// Immutable parameters for the page (e.g. {"contactId": "42"}).
-  /// Nullable — pages with no parameters can omit this.
-  Map<String, String>? params;
+  /// Page parameters. For native pages this is the pigeon-encoded object
+  /// (via `encode()`). For Flutter pages this is a `Map<String, String>`.
+  Object? params;
 
   List<Object?> _toList() {
     return <Object?>[
@@ -61,7 +64,7 @@ class PageSettings {
     result as List<Object?>;
     return PageSettings(
       routeId: result[0]! as String,
-      params: (result[1] as Map<Object?, Object?>?)?.cast<String, String>(),
+      params: result[1],
     );
   }
 

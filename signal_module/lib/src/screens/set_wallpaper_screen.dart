@@ -3,7 +3,10 @@ import 'package:flutter/services.dart';
 
 import '../models/wallpaper.dart';
 import '../navigator/add2app_navigator.dart';
-import '../navigator/pages.dart';
+import '../navigator/native_routes.g.dart'
+    show NativeMediaViewerPageToPageSettings;
+import '../navigator/pages.dart' show SetWallpaperPage;
+import '../navigator/pages.g.dart' show NativeMediaViewerPage;
 import '../theme/signal_theme.dart';
 import '../widgets/wallpaper_preview.dart';
 
@@ -189,7 +192,7 @@ class _SetWallpaperScreenState extends State<SetWallpaperScreen>
                     await Add2AppNavigator.instance.pushNativeRoute(
                       NativeMediaViewerPage(
                         mediaId: widget.recipientId ?? '1',
-                      ),
+                      ).toPageSettings(),
                     );
                   } on PlatformException catch (e) {
                     debugPrint('pushNativeRoute: $e');

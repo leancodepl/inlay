@@ -174,9 +174,11 @@ public class ApplicationContext extends Application implements AppForegroundObse
 //    }, engine -> {
 //    });
 
-    // ADD2APP: Register native route handlers so Flutter can navigate to
+    // ADD2APP: Set the typed native route handler so Flutter can navigate to
     // native Android Activities via Add2AppNavigator.pushNativeRoute(...).
-    org.thoughtcrime.securesms.flutter.NativeRouteRegistry.registerAll();
+    co.leancode.add2app.Add2AppNavigator.INSTANCE.setNativeRouteHandler(
+        org.thoughtcrime.securesms.flutter.NativeRouteRegistry.INSTANCE
+    );
 
     AppStartup.getInstance().addBlocking("sqlcipher-init", () -> {
                 SqlCipherLibraryLoader.load();

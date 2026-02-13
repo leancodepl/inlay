@@ -4,7 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../navigator/add2app_navigator.dart';
-import '../navigator/pages.dart';
+import '../navigator/native_routes.g.dart'
+    show NativeEditProfilePageToPageSettings;
+import '../navigator/pages.dart' show SoundsNotificationsPage;
+import '../navigator/pages.g.dart' show NativeEditProfilePage;
 import '../storage/key_value_storage.dart';
 import '../theme/signal_theme.dart';
 import '../widgets/settings_tile.dart';
@@ -57,10 +60,12 @@ class _SoundsNotificationsScreenState extends State<SoundsNotificationsScreen> {
   Future<void> _loadFromStorage() async {
     final mute = await _storage.getString(_key(widget.contactId, 'mute'));
     final sound = await _storage.getString(_key(widget.contactId, 'sound'));
-    final vibration =
-        await _storage.getString(_key(widget.contactId, 'vibration'));
-    final previews =
-        await _storage.getString(_key(widget.contactId, 'previews'));
+    final vibration = await _storage.getString(
+      _key(widget.contactId, 'vibration'),
+    );
+    final previews = await _storage.getString(
+      _key(widget.contactId, 'previews'),
+    );
 
     if (!mounted) {
       return;
@@ -261,15 +266,13 @@ class _SoundsNotificationsScreenState extends State<SoundsNotificationsScreen> {
                     ),
                     child: OutlinedButton.icon(
                       icon: const Icon(Icons.phone_android, size: 20),
-                      label: const Text(
-                        'Open native Sounds & Notifications',
-                      ),
+                      label: const Text('Open native Sounds & Notifications'),
                       onPressed: () async {
                         try {
                           await Add2AppNavigator.instance.pushNativeRoute(
                             NativeEditProfilePage(
                               contactId: widget.contactId,
-                            ),
+                            ).toPageSettings(),
                           );
                         } on PlatformException catch (e) {
                           debugPrint('pushNativeRoute: $e');
