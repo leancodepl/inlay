@@ -3,29 +3,29 @@ import UIKit
 /// ADD2APP: Native iOS duplicate of the Sounds & Notifications screen.
 ///
 /// Reads/writes the same `KeyValueStorageImpl` that the Flutter screen uses
-/// via Pigeon. The framework handles:
-/// - **Self-notification suppression**: writes via `putFromNative` with our
-///   `observerId` do not trigger our own observer callback.
+/// via Pigeon. Uses `NativeStorageScope` which handles:
+/// - **Self-notification suppression**: writes through the scope do not trigger
+///   the scope's own observer callback, so there is no need for `updatingUI`
+///   guard flags or manual `observerId` tracking.
 /// - **Main-thread delivery**: observer callbacks always arrive on the main queue.
 ///
 /// Also provides a button to launch the Flutter equivalent via `Add2AppNavigator`.
 ///
 /// Equivalent of Android's `NativeSoundsNotificationsActivity`.
-final class NativeSoundsNotificationsViewController: UIViewController, NativeStorageObserver {
+final class NativeSoundsNotificationsViewController: UIViewController {
 
     // MARK: - Properties
 
     private let recipientId: String
-    private var observerId: Int = 0
+
+    /// Scoped storage handle — read, write, and observe with auto-suppression.
+    private var storage: NativeStorageScope!
 
     // UI references
     private let muteSwitch = UISwitch()
     private let previewsSwitch = UISwitch()
     private let soundValueLabel = UILabel()
     private let vibrationValueLabel = UILabel()
-
-    // Suppress observer callbacks during programmatic UI updates
-    private var updatingUI = false
 
     // MARK: - Init
 
@@ -51,8 +51,13 @@ final class NativeSoundsNotificationsViewController: UIViewController, NativeSto
         title = "Sounds & Notifications"
         view.backgroundColor = .systemBackground
         buildUI()
+
+        storage = KeyValueStorageImpl.shared.createScope()
         loadState()
-        observerId = KeyValueStorageImpl.shared.addNativeObserver(self)
+
+        storage.startObserving { [weak self] entries in
+            self?.onStorageChanged(entries: entries)
+        }
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -61,7 +66,7 @@ final class NativeSoundsNotificationsViewController: UIViewController, NativeSto
     }
 
     deinit {
-        KeyValueStorageImpl.shared.removeNativeObserver(observerId)
+        storage?.dispose()
     }
 
     // MARK: - Storage key helpers
@@ -73,19 +78,16 @@ final class NativeSoundsNotificationsViewController: UIViewController, NativeSto
     // MARK: - Load from storage
 
     private func loadState() {
-        updatingUI = true
-        muteSwitch.isOn = KeyValueStorageImpl.shared.getFromNative(key: key("mute")) == "true"
-        previewsSwitch.isOn = KeyValueStorageImpl.shared.getFromNative(key: key("previews")) != "false"
-        soundValueLabel.text = KeyValueStorageImpl.shared.getFromNative(key: key("sound")) ?? "Default"
-        vibrationValueLabel.text = KeyValueStorageImpl.shared.getFromNative(key: key("vibration")) ?? "Default"
-        updatingUI = false
+        muteSwitch.isOn = storage.get(key: key("mute")) == "true"
+        previewsSwitch.isOn = storage.get(key: key("previews")) != "false"
+        soundValueLabel.text = storage.get(key: key("sound")) ?? "Default"
+        vibrationValueLabel.text = storage.get(key: key("vibration")) ?? "Default"
     }
 
-    // MARK: - NativeStorageObserver (only fires for changes from OTHER sources)
+    // MARK: - Observer callback (only fires for changes from OTHER sources)
 
-    func onStorageChanged(entries: [StorageEntry]) {
+    private func onStorageChanged(entries: [StorageEntry]) {
         let prefix = "sounds_notifications/\(recipientId)/"
-        updatingUI = true
         for entry in entries {
             guard entry.key.hasPrefix(prefix) else { continue }
             let field = String(entry.key.dropFirst(prefix.count))
@@ -102,19 +104,16 @@ final class NativeSoundsNotificationsViewController: UIViewController, NativeSto
                 break
             }
         }
-        updatingUI = false
     }
 
     // MARK: - Actions
 
     @objc private func muteChanged(_ sender: UISwitch) {
-        guard !updatingUI else { return }
-        KeyValueStorageImpl.shared.putFromNative(key: key("mute"), value: String(sender.isOn), excludeObserver: observerId)
+        storage.put(key: key("mute"), value: String(sender.isOn))
     }
 
     @objc private func previewsChanged(_ sender: UISwitch) {
-        guard !updatingUI else { return }
-        KeyValueStorageImpl.shared.putFromNative(key: key("previews"), value: String(sender.isOn), excludeObserver: observerId)
+        storage.put(key: key("previews"), value: String(sender.isOn))
     }
 
     @objc private func showSoundPicker() {
@@ -123,7 +122,7 @@ final class NativeSoundsNotificationsViewController: UIViewController, NativeSto
         for sound in sounds {
             alert.addAction(UIAlertAction(title: sound, style: .default) { [weak self] _ in
                 guard let self else { return }
-                KeyValueStorageImpl.shared.putFromNative(key: self.key("sound"), value: sound, excludeObserver: self.observerId)
+                self.storage.put(key: self.key("sound"), value: sound)
                 self.soundValueLabel.text = sound
             })
         }
@@ -137,7 +136,7 @@ final class NativeSoundsNotificationsViewController: UIViewController, NativeSto
         for pattern in patterns {
             alert.addAction(UIAlertAction(title: pattern, style: .default) { [weak self] _ in
                 guard let self else { return }
-                KeyValueStorageImpl.shared.putFromNative(key: self.key("vibration"), value: pattern, excludeObserver: self.observerId)
+                self.storage.put(key: self.key("vibration"), value: pattern)
                 self.vibrationValueLabel.text = pattern
             })
         }

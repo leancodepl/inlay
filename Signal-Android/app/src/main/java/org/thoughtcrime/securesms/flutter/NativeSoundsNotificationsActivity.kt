@@ -13,6 +13,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import co.leancode.add2app.Add2AppNavigator
 import co.leancode.add2app.KeyValueStorageImpl
+import co.leancode.add2app.NativeStorageScope
 import co.leancode.add2app.navigator.PageSettings
 import co.leancode.add2app.storage.StorageEntry
 
@@ -20,10 +21,10 @@ import co.leancode.add2app.storage.StorageEntry
  * ADD2APP: Native Android duplicate of the Sounds & Notifications screen.
  *
  * Reads/writes the same [KeyValueStorageImpl] that the Flutter screen uses
- * via Pigeon.  The framework handles:
- * - **Self-notification suppression**: writes via [putFromAndroid] with our
- *   [observerId] do not trigger our own observer callback, so there is no
- *   need for `updatingUi` guard flags.
+ * via Pigeon.  Uses [NativeStorageScope] which handles:
+ * - **Self-notification suppression**: writes through the scope do not trigger
+ *   the scope's own observer callback, so there is no need for `updatingUi`
+ *   guard flags or manual `observerId` tracking.
  * - **Main-thread delivery**: observer callbacks always arrive on the UI
  *   thread.
  *
@@ -39,17 +40,19 @@ class NativeSoundsNotificationsActivity : AppCompatActivity() {
     private lateinit var soundValue: TextView
     private lateinit var vibrationValue: TextView
 
-    /** Handle returned by [KeyValueStorageImpl.addAndroidObserver]. */
-    private var observerId: Int = 0
+    /** Scoped storage handle — read, write, and observe with auto-suppression. */
+    private lateinit var storage: NativeStorageScope
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         recipientId = intent.getStringExtra(EXTRA_RECIPIENT_ID) ?: "1"
 
         buildUi()
+
+        storage = KeyValueStorageImpl.createScope()
         loadState()
 
-        observerId = KeyValueStorageImpl.addAndroidObserver { entries ->
+        storage.startObserving { entries ->
             onStorageChanged(entries)
         }
     }
@@ -61,7 +64,7 @@ class NativeSoundsNotificationsActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        KeyValueStorageImpl.removeAndroidObserver(observerId)
+        storage.dispose()
     }
 
     // ── Storage key helpers ──────────────────────────────────────────────
@@ -71,10 +74,10 @@ class NativeSoundsNotificationsActivity : AppCompatActivity() {
     // ── Load from storage ────────────────────────────────────────────────
 
     private fun loadState() {
-        muteSwitch.isChecked = KeyValueStorageImpl.getFromAndroid(key("mute")) == "true"
-        previewsSwitch.isChecked = KeyValueStorageImpl.getFromAndroid(key("previews")) != "false"
-        soundValue.text = KeyValueStorageImpl.getFromAndroid(key("sound")) ?: "Default"
-        vibrationValue.text = KeyValueStorageImpl.getFromAndroid(key("vibration")) ?: "Default"
+        muteSwitch.isChecked = storage.get(key("mute")) == "true"
+        previewsSwitch.isChecked = storage.get(key("previews")) != "false"
+        soundValue.text = storage.get(key("sound")) ?: "Default"
+        vibrationValue.text = storage.get(key("vibration")) ?: "Default"
     }
 
     // ── Observer callback (only fires for changes from OTHER sources) ───
@@ -134,7 +137,7 @@ class NativeSoundsNotificationsActivity : AppCompatActivity() {
             textSize = 16f
             setPadding(0, dp(12), 0, dp(12))
             setOnCheckedChangeListener { _, isChecked ->
-                KeyValueStorageImpl.putFromAndroid(key("mute"), isChecked.toString(), observerId)
+                storage.put(key("mute"), isChecked.toString())
             }
         }
         content.addView(muteSwitch)
@@ -189,7 +192,7 @@ class NativeSoundsNotificationsActivity : AppCompatActivity() {
             textSize = 16f
             setPadding(0, dp(12), 0, dp(12))
             setOnCheckedChangeListener { _, isChecked ->
-                KeyValueStorageImpl.putFromAndroid(key("previews"), isChecked.toString(), observerId)
+                storage.put(key("previews"), isChecked.toString())
             }
         }
         content.addView(previewsSwitch)
@@ -247,7 +250,7 @@ class NativeSoundsNotificationsActivity : AppCompatActivity() {
         AlertDialog.Builder(this)
             .setTitle("Notification Sound")
             .setItems(sounds) { _, which ->
-                KeyValueStorageImpl.putFromAndroid(key("sound"), sounds[which], observerId)
+                storage.put(key("sound"), sounds[which])
                 soundValue.text = sounds[which]
             }
             .show()
@@ -258,7 +261,7 @@ class NativeSoundsNotificationsActivity : AppCompatActivity() {
         AlertDialog.Builder(this)
             .setTitle("Vibration Pattern")
             .setItems(patterns) { _, which ->
-                KeyValueStorageImpl.putFromAndroid(key("vibration"), patterns[which], observerId)
+                storage.put(key("vibration"), patterns[which])
                 vibrationValue.text = patterns[which]
             }
             .show()

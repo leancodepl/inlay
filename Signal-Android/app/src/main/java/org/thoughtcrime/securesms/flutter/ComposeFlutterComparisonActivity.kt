@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.AlertDialog
@@ -33,7 +32,6 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -267,29 +265,33 @@ private fun NativeComposeSoundsNotifications(
     // ── Key helper ──
     fun key(field: String) = "sounds_notifications/$recipientId/$field"
 
-    // ── State (initialised from storage) ──
+    // ── Storage scope — created once per recipientId, during composition.
+    //    Read/write works immediately; observation starts in DisposableEffect. ──
+    val storage = remember(recipientId) {
+        KeyValueStorageImpl.createScope()
+    }
+
+    // ── State — initialised from real storage values, no guessed defaults ──
     var muteNotifications by remember(recipientId) {
-        mutableStateOf(KeyValueStorageImpl.getFromAndroid(key("mute")) == "true")
+        mutableStateOf(storage.get(key("mute")) == "true")
     }
     var showPreviews by remember(recipientId) {
-        mutableStateOf(KeyValueStorageImpl.getFromAndroid(key("previews")) != "false")
+        mutableStateOf(storage.get(key("previews")) != "false")
     }
     var notificationSound by remember(recipientId) {
-        mutableStateOf(KeyValueStorageImpl.getFromAndroid(key("sound")) ?: "Default")
+        mutableStateOf(storage.get(key("sound")) ?: "Default")
     }
     var vibrationPattern by remember(recipientId) {
-        mutableStateOf(KeyValueStorageImpl.getFromAndroid(key("vibration")) ?: "Default")
+        mutableStateOf(storage.get(key("vibration")) ?: "Default")
     }
 
     var showSoundPicker by remember { mutableStateOf(false) }
     var showVibrationPicker by remember { mutableStateOf(false) }
 
-    // ── Storage observer (changes from Flutter / other sources) ──
-    var observerId by remember { mutableIntStateOf(0) }
-
+    // ── Start observing after state is declared (runs after composition) ──
     DisposableEffect(recipientId) {
         val prefix = "sounds_notifications/$recipientId/"
-        val id = KeyValueStorageImpl.addAndroidObserver { entries ->
+        storage.startObserving { entries ->
             for (entry in entries) {
                 if (!entry.key.startsWith(prefix)) continue
                 when (entry.key.removePrefix(prefix)) {
@@ -300,8 +302,7 @@ private fun NativeComposeSoundsNotifications(
                 }
             }
         }
-        observerId = id
-        onDispose { KeyValueStorageImpl.removeAndroidObserver(id) }
+        onDispose { storage.dispose() }
     }
 
     // ── UI ──
@@ -364,9 +365,7 @@ private fun NativeComposeSoundsNotifications(
                             checked = muteNotifications,
                             onCheckedChange = { checked ->
                                 muteNotifications = checked
-                                KeyValueStorageImpl.putFromAndroid(
-                                    key("mute"), checked.toString(), observerId,
-                                )
+                                storage.put(key("mute"), checked.toString())
                             },
                         )
                     },
@@ -423,9 +422,7 @@ private fun NativeComposeSoundsNotifications(
                             checked = showPreviews,
                             onCheckedChange = { checked ->
                                 showPreviews = checked
-                                KeyValueStorageImpl.putFromAndroid(
-                                    key("previews"), checked.toString(), observerId,
-                                )
+                                storage.put(key("previews"), checked.toString())
                             },
                         )
                     },
@@ -466,9 +463,7 @@ private fun NativeComposeSoundsNotifications(
                                 .fillMaxWidth()
                                 .clickable {
                                     notificationSound = sound
-                                    KeyValueStorageImpl.putFromAndroid(
-                                        key("sound"), sound, observerId,
-                                    )
+                                    storage.put(key("sound"), sound)
                                     showSoundPicker = false
                                 }
                                 .padding(vertical = 12.dp, horizontal = 8.dp),
@@ -502,9 +497,7 @@ private fun NativeComposeSoundsNotifications(
                                 .fillMaxWidth()
                                 .clickable {
                                     vibrationPattern = pattern
-                                    KeyValueStorageImpl.putFromAndroid(
-                                        key("vibration"), pattern, observerId,
-                                    )
+                                    storage.put(key("vibration"), pattern)
                                     showVibrationPicker = false
                                 }
                                 .padding(vertical = 12.dp, horizontal = 8.dp),
