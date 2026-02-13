@@ -9,5 +9,4 @@ library;
 
 export 'src/navigator/add2app_navigator.dart'
     show Add2AppNavigator, Add2AppPage, PageBuilder, PageSettings;
-export 'src/storage/key_value_storage.dart'
-    show KeyValueStorage, StorageEntry;
+export 'src/storage/key_value_storage.dart' show KeyValueStorage, StorageEntry;

@@ -1,0 +1,17 @@
+name: leancode_add2app_gen
+description: CLI tool for generating add2app Dart, Kotlin, and Swift code from Pigeon schema files.
+version: 1.0.0
+# repository: https://github.com/my_org/my_repo
+
+environment:
+  sdk: ^3.10.8
+
+# Add regular dependencies here.
+dependencies:
+  path: ^1.9.0
+  args: ^2.7.0
+  analyzer: ^10.0.2
+
+dev_dependencies:
+  lints: ^6.0.0
+  test: ^1.25.6

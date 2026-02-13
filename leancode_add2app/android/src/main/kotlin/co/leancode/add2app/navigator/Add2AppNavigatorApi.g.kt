@@ -79,11 +79,14 @@ class FlutterError (
 ) : Throwable()
 
 /**
- * Describes a Flutter page to navigate to.
+ * Describes a page to navigate to (Flutter or native).
  *
- * On the Dart side developers create typed subclasses with named fields.
- * For transport over Pigeon, everything is flattened into [routeId] +
- * a string-keyed [params] map.
+ * [routeId] identifies the screen. [params] carries the page data
+ * using pigeon's `encode()` output — the native side decodes it with
+ * the matching pigeon-generated class's `fromList()` / `decode()`.
+ *
+ * For Flutter pages pushed from native, [params] is a `Map<String, String>`
+ * (produced by URL-decoding the `initialRoute` string).
  *
  * Generated class from Pigeon that represents data sent in messages.
  */
@@ -91,16 +94,16 @@ data class PageSettings (
   /** Identifies which screen to show (e.g. "soundsNotifications"). */
   val routeId: String,
   /**
-   * Immutable parameters for the page (e.g. {"contactId": "42"}).
-   * Nullable — pages with no parameters can omit this.
+   * Page parameters. For native pages this is the pigeon-encoded object
+   * (via `encode()`). For Flutter pages this is a `Map<String, String>`.
    */
-  val params: Map<String, String>? = null
+  val params: Any? = null
 )
  {
   companion object {
     fun fromList(pigeonVar_list: List<Any?>): PageSettings {
       val routeId = pigeonVar_list[0] as String
-      val params = pigeonVar_list[1] as Map<String, String>?
+      val params = pigeonVar_list[1]
       return PageSettings(routeId, params)
     }
   }

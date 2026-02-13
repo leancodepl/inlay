@@ -131,6 +131,8 @@ android {
     getByName("main") {
       // ADD2APP: Include leancode_add2app framework Kotlin sources.
       java.srcDir("${rootProject.projectDir}/../leancode_add2app/android/src/main/kotlin")
+      // ADD2APP: Include signal_module generated Kotlin sources (Pigeon + gen tool).
+      java.srcDir("${rootProject.projectDir}/../signal_module/android/src/main/kotlin")
     }
 
     getByName("test") {

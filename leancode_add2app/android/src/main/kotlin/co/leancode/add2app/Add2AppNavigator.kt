@@ -12,13 +12,14 @@ import io.flutter.embedding.engine.FlutterEngineGroup
 import io.flutter.embedding.engine.FlutterEngineGroupCache
 
 /**
- * Callback invoked when Flutter requests navigation to a native screen.
+ * Interface for handling native route requests dispatched from Flutter.
  *
- * @param context The Activity context to launch from.
- * @param params  The route parameters (may be null).
+ * The generated `NativeRouteHandler` abstract class implements this interface,
+ * dispatching [PageSettings] to typed `on*` methods. Developers extend the
+ * generated class rather than implementing this interface directly.
  */
 fun interface NativeRouteHandler {
-    fun handle(context: Context, params: Map<String, String>?)
+    fun handle(context: Context, route: PageSettings)
 }
 
 /**
@@ -43,14 +44,17 @@ fun interface NativeRouteHandler {
  *
  * Navigation from Flutter to native screens:
  * ```kotlin
- * // Register native routes (e.g. Application.onCreate)
- * Add2AppNavigator.registerNativeRoute("nativeSettings") { context, params ->
- *     context.startActivity(Intent(context, NativeSettingsActivity::class.java))
- * }
+ * // Set the generated native route handler (e.g. Application.onCreate)
+ * Add2AppNavigator.setNativeRouteHandler(object : NativeRouteHandler() {
+ *     override fun onNativeEditProfile(route: NativeEditProfileRoute, ctx: Context) { ... }
+ *     override fun onNativeMediaViewer(route: NativeMediaViewerRoute, ctx: Context) { ... }
+ * })
  * ```
  * ```dart
  * // From Flutter:
- * Add2AppNavigator.instance.pushNativeRoute(NativeSettingsPage());
+ * Add2AppNavigator.instance.pushNativeRoute(
+ *   NativeEditProfilePage(contactId: '42').toPageSettings(),
+ * );
  * ```
  *
  * The navigator automatically:
@@ -68,8 +72,8 @@ object Add2AppNavigator {
 
     private lateinit var appContext: Context
 
-    /** Registry: routeId → native route handler. */
-    private val nativeRoutes = mutableMapOf<String, NativeRouteHandler>()
+    /** The single native route handler set by the app. */
+    private var nativeRouteHandler: NativeRouteHandler? = null
 
     // ── Initialisation ───────────────────────────────────────────────────
 
@@ -109,38 +113,44 @@ object Add2AppNavigator {
         push(context, PageSettings(routeId, params))
     }
 
-    // ── Native route registration ────────────────────────────────────────
+    // ── Native route handler ────────────────────────────────────────────
 
     /**
-     * Register a handler for a native route that Flutter can navigate to.
+     * Set the native route handler that processes Flutter → native navigation.
      *
-     * When Flutter calls `Add2AppNavigator.instance.pushNativeRoute(...)`,
-     * the handler registered here for the matching `routeId` is invoked.
+     * Typically you pass an instance of the generated `NativeRouteHandler`
+     * subclass. The generated base class dispatches `PageSettings` to typed
+     * `on*` methods — you only implement those.
      *
      * ```kotlin
-     * Add2AppNavigator.registerNativeRoute("nativeSettings") { context, params ->
-     *     val intent = Intent(context, NativeSettingsActivity::class.java).apply {
-     *         params?.forEach { (k, v) -> putExtra(k, v) }
+     * // In Application.onCreate:
+     * Add2AppNavigator.setNativeRouteHandler(object : NativeRouteHandler() {
+     *     override fun onNativeEditProfile(route: NativeEditProfileRoute, context: Context) {
+     *         context.startActivity(Intent(context, EditProfileActivity::class.java).apply {
+     *             putExtra("contactId", route.contactId)
+     *         })
      *     }
-     *     context.startActivity(intent)
-     * }
+     *     override fun onNativeMediaViewer(route: NativeMediaViewerRoute, context: Context) {
+     *         context.startActivity(Intent(context, MediaViewerActivity::class.java))
+     *     }
+     * })
      * ```
      */
-    fun registerNativeRoute(routeId: String, handler: NativeRouteHandler) {
-        nativeRoutes[routeId] = handler
+    fun setNativeRouteHandler(handler: NativeRouteHandler) {
+        nativeRouteHandler = handler
     }
 
     /**
      * Dispatch a native route request. Called by the Pigeon HostApi impl.
-     * Throws if no handler is registered for the route.
+     * Throws if no handler has been set.
      */
     internal fun dispatchNativeRoute(context: Context, route: PageSettings) {
-        val handler = nativeRoutes[route.routeId]
-            ?: throw IllegalArgumentException(
-                "No native route handler registered for '${route.routeId}'. " +
-                "Call Add2AppNavigator.registerNativeRoute(\"${route.routeId}\", handler) first."
+        val handler = nativeRouteHandler
+            ?: throw IllegalStateException(
+                "No native route handler set. " +
+                "Call Add2AppNavigator.setNativeRouteHandler() in your Application.onCreate()."
             )
-        handler.handle(context, route.params)
+        handler.handle(context, route)
     }
 
     // ── Fragment factory ──────────────────────────────────────────────────
@@ -232,9 +242,20 @@ object Add2AppNavigator {
 
     internal fun encodePageSettings(page: PageSettings): String {
         val params = page.params
-        if (params.isNullOrEmpty()) return page.routeId
-        val query = params.entries.joinToString("&") { "${Uri.encode(it.key)}=${Uri.encode(it.value)}" }
-        return "${page.routeId}?$query"
+        if (params == null) return page.routeId
+
+        // Flutter pages use Map<String, String> params — URL-encode them.
+        if (params is Map<*, *>) {
+            val mapParams = params.filterValues { it != null }
+            if (mapParams.isEmpty()) return page.routeId
+            val query = mapParams.entries.joinToString("&") {
+                "${Uri.encode(it.key.toString())}=${Uri.encode(it.value.toString())}"
+            }
+            return "${page.routeId}?$query"
+        }
+
+        // Native pages carry pigeon-encoded List params — no URL encoding.
+        return page.routeId
     }
 
     internal fun decodePageSettings(initialRoute: String): PageSettings {

@@ -81,7 +81,10 @@ class Add2AppNavigator {
     if (builder == null) {
       return Center(child: Text('Unknown route: ${page.routeId}'));
     }
-    return builder(page.params ?? {});
+    final params = page.params;
+    return builder(
+      params is Map ? Map<String, String>.from(params) : <String, String>{},
+    );
   }
 
   // ── Navigation (Flutter → Flutter via platform) ─────────────────────
@@ -100,17 +103,18 @@ class Add2AppNavigator {
 
   /// Open a native Activity/ViewController identified by [page].
   ///
-  /// The platform side dispatches to a native route handler registered via
-  /// `Add2AppNavigator.registerNativeRoute(...)` on Android/iOS.
+  /// The platform side dispatches to the `NativeRouteHandler` set via
+  /// `Add2AppNavigator.setNativeRouteHandler(...)` on Android/iOS.
   ///
-  /// Example:
+  /// Use the generated `.toPageSettings()` extension on pigeon page classes:
+  ///
   /// ```dart
   /// Add2AppNavigator.instance.pushNativeRoute(
-  ///   NativeSettingsPage(section: 'notifications'),
+  ///   NativeEditProfilePage(contactId: '42').toPageSettings(),
   /// );
   /// ```
-  Future<void> pushNativeRoute(Add2AppPage page) async {
-    await _hostApi.pushNativeRoute(page.toPageSettings());
+  Future<void> pushNativeRoute(PageSettings page) async {
+    await _hostApi.pushNativeRoute(page);
   }
 
   // ── Initial route parsing ─────────────────────────────────────────
