@@ -1,12 +1,14 @@
 import Foundation
 import Flutter
 
-/// Callback invoked when Flutter requests navigation to a native screen.
+/// Protocol for handling native route requests dispatched from Flutter.
 ///
-/// - Parameters:
-///   - viewController: The current UIViewController to present from.
-///   - params: The route parameters (may be nil).
-typealias NativeRouteHandler = (_ viewController: UIViewController, _ params: [String: String]?) -> Void
+/// The generated `NativeRouteHandler` class conforms to this protocol,
+/// dispatching `PageSettings` to typed `on*` methods. Developers subclass
+/// the generated class rather than implementing this protocol directly.
+protocol NativeRouteHandling: AnyObject {
+    func handle(viewController: UIViewController, route: PageSettings)
+}
 
 /// Framework-level navigator that hides all Flutter internals
 /// (`FlutterEngine`, `FlutterEngineGroup`, `FlutterViewController`, platform channels)
@@ -32,15 +34,14 @@ typealias NativeRouteHandler = (_ viewController: UIViewController, _ params: [S
 ///
 /// Navigation from Flutter to native screens:
 /// ```swift
-/// // Register native routes (e.g. AppDelegate.didFinishLaunching)
-/// Add2AppNavigator.shared.registerNativeRoute("nativeSettings") { viewController, params in
-///     let settingsVC = NativeSettingsViewController()
-///     viewController.navigationController?.pushViewController(settingsVC, animated: true)
-/// }
+/// // Set the generated native route handler (e.g. AppDelegate.didFinishLaunching)
+/// Add2AppNavigator.shared.setNativeRouteHandler(SignalNativeRouteHandler())
 /// ```
 /// ```dart
 /// // From Flutter:
-/// Add2AppNavigator.instance.pushNativeRoute(NativeSettingsPage());
+/// Add2AppNavigator.instance.pushNativeRoute(
+///   NativeEditProfilePage(contactId: '42').toPageSettings(),
+/// );
 /// ```
 ///
 /// The navigator automatically:
@@ -64,8 +65,8 @@ final class Add2AppNavigator {
     /// The single Dart entrypoint used by all add2app pages.
     private static let dartEntrypoint = "add2appMain"
 
-    /// Registry: routeId → native route handler.
-    private var nativeRoutes: [String: NativeRouteHandler] = [:]
+    /// The single native route handler set by the app.
+    private var nativeRouteHandler: NativeRouteHandling?
 
     // MARK: - Initialisation
 
@@ -96,38 +97,34 @@ final class Add2AppNavigator {
         viewController.present(flutterVC, animated: animated)
     }
 
-    // MARK: - Native route registration
+    // MARK: - Native route handler
 
-    /// Register a handler for a native route that Flutter can navigate to.
+    /// Set the native route handler that processes Flutter → native navigation.
     ///
-    /// When Flutter calls `Add2AppNavigator.instance.pushNativeRoute(...)`,
-    /// the handler registered here for the matching `routeId` is invoked.
+    /// Typically you pass an instance of the generated `NativeRouteHandler`
+    /// subclass. The generated base class dispatches `PageSettings` to typed
+    /// `on*` methods — you only implement those.
     ///
     /// ```swift
-    /// Add2AppNavigator.shared.registerNativeRoute("nativeSettings") { viewController, params in
-    ///     let settingsVC = NativeSettingsViewController()
-    ///     if let section = params?["section"] {
-    ///         settingsVC.section = section
-    ///     }
-    ///     viewController.navigationController?.pushViewController(settingsVC, animated: true)
-    /// }
+    /// // In AppDelegate.didFinishLaunching:
+    /// Add2AppNavigator.shared.setNativeRouteHandler(SignalNativeRouteHandler())
     /// ```
-    func registerNativeRoute(_ routeId: String, handler: @escaping NativeRouteHandler) {
-        nativeRoutes[routeId] = handler
+    func setNativeRouteHandler(_ handler: NativeRouteHandling) {
+        nativeRouteHandler = handler
     }
 
     /// Dispatch a native route request. Called by the Pigeon HostApi impl.
-    /// Throws if no handler is registered for the route.
+    /// Throws if no handler is set.
     func dispatchNativeRoute(from viewController: UIViewController, route: PageSettings) throws {
-        guard let handler = nativeRoutes[route.routeId] else {
+        guard let handler = nativeRouteHandler else {
             throw PigeonError(
-                code: "UNREGISTERED_NATIVE_ROUTE",
-                message: "No native route handler registered for '\(route.routeId)'. "
-                    + "Call Add2AppNavigator.shared.registerNativeRoute(\"\(route.routeId)\", handler:) first.",
+                code: "NO_NATIVE_ROUTE_HANDLER",
+                message: "No native route handler set. "
+                    + "Call Add2AppNavigator.shared.setNativeRouteHandler(...) in AppDelegate first.",
                 details: nil
             )
         }
-        handler(viewController, route.params)
+        handler.handle(viewController: viewController, route: route)
     }
 
     // MARK: - ViewController factory
@@ -190,15 +187,25 @@ final class Add2AppNavigator {
 
     /// Encode `PageSettings` into a single string suitable for `initialRoute`.
     /// Format: `routeId?key1=value1&key2=value2`
+    ///
+    /// For Flutter pages (Map params) the params are URL-encoded into the query string.
+    /// For native pages (pigeon-encoded List params) only the routeId is used.
     static func encodePageSettings(_ page: PageSettings) -> String {
-        guard let params = page.params, !params.isEmpty else {
+        guard let params = page.params else {
             return page.routeId
         }
-        let query = params
-            .sorted(by: { $0.key < $1.key })
-            .map { "\($0.key.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? $0.key)=\($0.value.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? $0.value)" }
-            .joined(separator: "&")
-        return "\(page.routeId)?\(query)"
+
+        // Flutter pages use [String: String] params — URL-encode them.
+        if let mapParams = params as? [String: String], !mapParams.isEmpty {
+            let query = mapParams
+                .sorted(by: { $0.key < $1.key })
+                .map { "\($0.key.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? $0.key)=\($0.value.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? $0.value)" }
+                .joined(separator: "&")
+            return "\(page.routeId)?\(query)"
+        }
+
+        // Native pages carry pigeon-encoded List params — no URL encoding.
+        return page.routeId
     }
 
     /// Decode the `initialRoute` string back into `PageSettings`.

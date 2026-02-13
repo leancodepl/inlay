@@ -16,6 +16,8 @@
 		A2F00001FLUTTER0007000007 /* Add2AppFlutterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2F00002FLUTTER0007000007 /* Add2AppFlutterView.swift */; };
 		A2F00001FLUTTER0008000008 /* SwiftUIFlutterComparisonView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2F00002FLUTTER0008000008 /* SwiftUIFlutterComparisonView.swift */; };
 		A2F00001FLUTTER0009000009 /* Add2AppStorageObserver.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2F00002FLUTTER0009000009 /* Add2AppStorageObserver.swift */; };
+		A2F00001SIGNAL0001000001 /* Pages.g.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2F00002SIGNAL0001000001 /* Pages.g.swift */; };
+		A2F00001SIGNAL0002000002 /* NativeRouteHandler.g.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2F00002SIGNAL0002000002 /* NativeRouteHandler.g.swift */; };
 		041A5F072E05B3F900FAED05 /* BackupEnablementMegaphone.swift in Sources */ = {isa = PBXBuildFile; fileRef = 041A5F062E05B3F000FAED05 /* BackupEnablementMegaphone.swift */; };
 		041C24ED2DF782AF0065B685 /* OutgoingGroupUpdateMessageTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9BC9C6428B7C00A0077D442 /* OutgoingGroupUpdateMessageTest.swift */; };
 		042223BA2EDF30BA00158556 /* OutgoingUnpinMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 042223B92EDF30B300158556 /* OutgoingUnpinMessage.swift */; };
@@ -4065,6 +4067,8 @@
 		A2F00002FLUTTER0007000007 /* Add2AppFlutterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = Add2AppFlutterView.swift; path = "../leancode_add2app/ios/Classes/Add2AppFlutterView.swift"; sourceTree = SOURCE_ROOT; };
 		A2F00002FLUTTER0008000008 /* SwiftUIFlutterComparisonView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftUIFlutterComparisonView.swift; sourceTree = "<group>"; };
 		A2F00002FLUTTER0009000009 /* Add2AppStorageObserver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = Add2AppStorageObserver.swift; path = "../leancode_add2app/ios/Classes/Add2AppStorageObserver.swift"; sourceTree = SOURCE_ROOT; };
+		A2F00002SIGNAL0001000001 /* Pages.g.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = Pages.g.swift; path = "../signal_module/ios/Classes/Pages.g.swift"; sourceTree = SOURCE_ROOT; };
+		A2F00002SIGNAL0002000002 /* NativeRouteHandler.g.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = NativeRouteHandler.g.swift; path = "../signal_module/ios/Classes/NativeRouteHandler.g.swift"; sourceTree = SOURCE_ROOT; };
 		041A5F062E05B3F000FAED05 /* BackupEnablementMegaphone.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupEnablementMegaphone.swift; sourceTree = "<group>"; };
 		041A5F082E05D3AC00FAED05 /* BackupEnablementReminderMegaphoneTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupEnablementReminderMegaphoneTests.swift; sourceTree = "<group>"; };
 		042223B92EDF30B300158556 /* OutgoingUnpinMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OutgoingUnpinMessage.swift; sourceTree = "<group>"; };
@@ -9685,6 +9689,8 @@
 				A2F00002FLUTTER0007000007 /* Add2AppFlutterView.swift */,
 				A2F00002FLUTTER0009000009 /* Add2AppStorageObserver.swift */,
 				A2F00002FLUTTER0008000008 /* SwiftUIFlutterComparisonView.swift */,
+				A2F00002SIGNAL0001000001 /* Pages.g.swift */,
+				A2F00002SIGNAL0002000002 /* NativeRouteHandler.g.swift */,
 			);
 			path = Flutter;
 			sourceTree = "<group>";
@@ -17666,6 +17672,8 @@
 				A2F00001FLUTTER0007000007 /* Add2AppFlutterView.swift in Sources */,
 				A2F00001FLUTTER0009000009 /* Add2AppStorageObserver.swift in Sources */,
 				A2F00001FLUTTER0008000008 /* SwiftUIFlutterComparisonView.swift in Sources */,
+				A2F00001SIGNAL0001000001 /* Pages.g.swift in Sources */,
+				A2F00001SIGNAL0002000002 /* NativeRouteHandler.g.swift in Sources */,
 				F92074762888648A00B7F087 /* AppDelegate.swift in Sources */,
 				8827004E23208A1900F01C46 /* AppearanceSettingsTableViewController.swift in Sources */,
 				34D99CE4217509C2000AFB39 /* AppEnvironment.swift in Sources */,

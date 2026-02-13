@@ -5,6 +5,7 @@ import 'package:path/path.dart' as p;
 import 'package:leancode_add2app_gen/src/generator_config.dart';
 import 'package:leancode_add2app_gen/src/generators/dart_native_pages_generator.dart';
 import 'package:leancode_add2app_gen/src/generators/kotlin_native_route_handler_generator.dart';
+import 'package:leancode_add2app_gen/src/generators/swift_native_route_handler_generator.dart';
 import 'package:leancode_add2app_gen/src/models/page_tag.dart';
 import 'package:leancode_add2app_gen/src/schema_parser.dart';
 import 'package:leancode_add2app_gen/src/utils/pigeon_config.dart';
@@ -97,10 +98,19 @@ void runGenerator(GeneratorConfig config) {
     stdout.writeln('  Kotlin: ${kotlinFile.path}');
   }
 
-  // ── Generate Swift (TODO) ──────────────────────────────────────────
+  // ── Generate Swift ───────────────────────────────────────────────
 
   if (config.swiftOutput != null) {
-    stdout.writeln('  Swift:  (not yet implemented)');
+    final swiftCode = generateSwiftNativeRouteHandler(
+      nativePages: nativePages,
+    );
+
+    final swiftFile = File(
+      p.join(config.swiftOutput!, 'NativeRouteHandler.g.swift'),
+    );
+    swiftFile.parent.createSync(recursive: true);
+    swiftFile.writeAsStringSync(swiftCode);
+    stdout.writeln('  Swift:  ${swiftFile.path}');
   }
 
   stdout.writeln();
