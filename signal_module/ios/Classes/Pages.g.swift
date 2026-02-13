@@ -11,23 +11,8 @@ import Foundation
   #error("Unsupported platform.")
 #endif
 
-/// Error class for passing custom error details to Dart side.
-final class PigeonError: Error {
-  let code: String
-  let message: String?
-  let details: Sendable?
-
-  init(code: String, message: String?, details: Sendable?) {
-    self.code = code
-    self.message = message
-    self.details = details
-  }
-
-  var localizedDescription: String {
-    return
-      "PigeonError(code: \(code), message: \(message ?? "<nil>"), details: \(details ?? "<nil>")"
-  }
-}
+// PigeonError is defined in Add2AppNavigatorApi.g.swift — shared across
+// all pigeon-generated files compiled in the same target.
 
 private func isNullish(_ value: Any?) -> Bool {
   return value is NSNull || value == nil
