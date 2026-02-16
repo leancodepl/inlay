@@ -102,4 +102,41 @@ class TaggedPage {
     expect(pages, hasLength(1));
     expect(pages.first.className, 'TaggedPage');
   });
+
+  test('generates Add2AppFlutterRoute wrappers for flutter_page classes', () {
+    final pages = parser.parse(_schemaSource);
+    final flutterPages =
+        pages.where((p) => p.tag == PageTag.flutterPage).toList();
+
+    final output = generateDartFlutterPages(flutterPages: flutterPages);
+
+    expect(
+      output,
+      contains('class SoundsNotificationsPage extends Add2AppFlutterRoute'),
+    );
+    expect(output, contains("String get routeId => 'soundsNotifications';"));
+    expect(output, contains("'contactId': contactId"));
+  });
+
+  test('generates nullable params as optional map entries', () {
+    const source = '''
+// add2app: flutter_page
+class OptionalPage {
+  OptionalPage({this.recipientId});
+
+  final String? recipientId;
+}
+''';
+
+    final pages = parser.parse(source);
+    final flutterPages =
+        pages.where((p) => p.tag == PageTag.flutterPage).toList();
+
+    final output = generateDartFlutterPages(flutterPages: flutterPages);
+
+    expect(
+      output,
+      contains("...?recipientId != null ? {'recipientId': recipientId!} : null"),
+    );
+  });
 }

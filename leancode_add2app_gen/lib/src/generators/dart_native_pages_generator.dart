@@ -2,15 +2,17 @@ import 'package:leancode_add2app_gen/src/models/page_definition.dart';
 import 'package:leancode_add2app_gen/src/utils/naming.dart';
 
 /// Generates Dart extensions on pigeon-generated native_page classes that
-/// add `.toPageSettings()` using pigeon's own `encode()`.
+/// add `.toNativeRoute()` using pigeon's own `encode()`.
 ///
 /// Example output:
 /// ```dart
-/// extension NativeEditProfilePageToPageSettings on NativeEditProfilePage {
+/// extension NativeEditProfilePageToNativeRoute on NativeEditProfilePage {
 ///   static const String routeId = 'nativeEditProfile';
 ///
-///   PageSettings toPageSettings() {
-///     return PageSettings(routeId: routeId, params: encode());
+///   Add2AppNativeRoute toNativeRoute() {
+///     return Add2AppNativeRoute(
+///       PageSettings(routeId: routeId, params: encode()),
+///     );
 ///   }
 /// }
 /// ```
@@ -24,7 +26,7 @@ String generateDartNativePages({
     ..writeln()
     ..writeln(
       "import 'package:leancode_add2app/leancode_add2app.dart' "
-      'show PageSettings;',
+      'show Add2AppNativeRoute, PageSettings;',
     )
     ..writeln("import '$pigeonDartImport';")
     ..writeln();
@@ -42,12 +44,14 @@ void _writeExtension(StringBuffer buffer, PageDefinition page) {
 
   buffer
     ..writeln(
-      'extension ${page.className}ToPageSettings on ${page.className} {',
+      'extension ${page.className}ToNativeRoute on ${page.className} {',
     )
     ..writeln("  static const String routeId = '$routeId';")
     ..writeln()
-    ..writeln('  PageSettings toPageSettings() {')
-    ..writeln("    return PageSettings(routeId: '$routeId', params: encode());")
+    ..writeln('  Add2AppNativeRoute toNativeRoute() {')
+    ..writeln('    return Add2AppNativeRoute(')
+    ..writeln("      PageSettings(routeId: '$routeId', params: encode()),")
+    ..writeln('    );')
     ..writeln('  }')
     ..writeln('}');
 }

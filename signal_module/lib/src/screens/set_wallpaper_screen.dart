@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:leancode_add2app/leancode_add2app.dart';
 
 import '../models/wallpaper.dart';
-import '../navigator/add2app_navigator.dart';
-import '../navigator/native_routes.g.dart'
-    show NativeMediaViewerPageToPageSettings;
-import '../navigator/pages.dart' show SetWallpaperPage;
-import '../navigator/pages.g.dart' show NativeMediaViewerPage;
+import '../navigator/flutter_routes.g.dart';
+import '../navigator/native_routes.g.dart';
+import '../navigator/pages.g.dart' hide SetWallpaperPage;
 import '../theme/signal_theme.dart';
 import '../widgets/wallpaper_preview.dart';
 
@@ -189,10 +188,10 @@ class _SetWallpaperScreenState extends State<SetWallpaperScreen>
                 label: const Text('Open native comparison screen'),
                 onPressed: () async {
                   try {
-                    await Add2AppNavigator.instance.pushNativeRoute(
+                    await Add2AppNavigator.instance.push(
                       NativeMediaViewerPage(
                         mediaId: widget.recipientId ?? '1',
-                      ).toPageSettings(),
+                      ).toNativeRoute(),
                     );
                   } on PlatformException catch (e) {
                     debugPrint('pushNativeRoute: $e');
