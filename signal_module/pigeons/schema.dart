@@ -7,8 +7,10 @@ import 'package:pigeon/pigeon.dart';
         'android/src/main/kotlin/co/leancode/signal_module/navigator/Pages.g.kt',
     kotlinOptions: KotlinOptions(
       package: 'co.leancode.signal_module.navigator',
+      errorClassName: 'SignalModuleError',
     ),
     swiftOut: 'ios/Classes/Pages.g.swift',
+    swiftOptions: SwiftOptions(errorClassName: 'SignalModuleError'),
     dartPackageName: 'signal_module',
   ),
 )

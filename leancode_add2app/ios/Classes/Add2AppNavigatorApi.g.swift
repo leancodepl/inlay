@@ -12,7 +12,7 @@ import Foundation
 #endif
 
 /// Error class for passing custom error details to Dart side.
-final class PigeonError: Error {
+final class Add2AppNavigatorError: Error {
   let code: String
   let message: String?
   let details: Sendable?
@@ -25,7 +25,7 @@ final class PigeonError: Error {
 
   var localizedDescription: String {
     return
-      "PigeonError(code: \(code), message: \(message ?? "<nil>"), details: \(details ?? "<nil>")"
+      "Add2AppNavigatorError(code: \(code), message: \(message ?? "<nil>"), details: \(details ?? "<nil>")"
   }
 }
 
@@ -34,7 +34,7 @@ private func wrapResult(_ result: Any?) -> [Any?] {
 }
 
 private func wrapError(_ error: Any) -> [Any?] {
-  if let pigeonError = error as? PigeonError {
+  if let pigeonError = error as? Add2AppNavigatorError {
     return [
       pigeonError.code,
       pigeonError.message,

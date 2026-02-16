@@ -11,15 +11,30 @@ import Foundation
   #error("Unsupported platform.")
 #endif
 
-// PigeonError is defined in Add2AppNavigatorApi.g.swift — shared across
-// all pigeon-generated files in this module.
+/// Error class for passing custom error details to Dart side.
+final class Add2AppKeyValueStorageError: Error {
+  let code: String
+  let message: String?
+  let details: Sendable?
+
+  init(code: String, message: String?, details: Sendable?) {
+    self.code = code
+    self.message = message
+    self.details = details
+  }
+
+  var localizedDescription: String {
+    return
+      "Add2AppKeyValueStorageError(code: \(code), message: \(message ?? "<nil>"), details: \(details ?? "<nil>")"
+  }
+}
 
 private func wrapResult(_ result: Any?) -> [Any?] {
   return [result]
 }
 
 private func wrapError(_ error: Any) -> [Any?] {
-  if let pigeonError = error as? PigeonError {
+  if let pigeonError = error as? Add2AppKeyValueStorageError {
     return [
       pigeonError.code,
       pigeonError.message,
@@ -40,8 +55,8 @@ private func wrapError(_ error: Any) -> [Any?] {
   ]
 }
 
-private func createConnectionError(withChannelName channelName: String) -> PigeonError {
-  return PigeonError(code: "channel-error", message: "Unable to establish connection on channel: '\(channelName)'.", details: "")
+private func createConnectionError(withChannelName channelName: String) -> Add2AppKeyValueStorageError {
+  return Add2AppKeyValueStorageError(code: "channel-error", message: "Unable to establish connection on channel: '\(channelName)'.", details: "")
 }
 
 private func isNullish(_ value: Any?) -> Bool {
@@ -404,7 +419,7 @@ class KeyValueStorageHostApiSetup {
 /// Generated protocol from Pigeon that represents Flutter messages that can be called from Swift.
 protocol KeyValueStorageFlutterApiProtocol {
   /// Called when entries in the storage have changed.
-  func onStorageChanged(event eventArg: StorageChangeEvent, completion: @escaping (Result<Void, PigeonError>) -> Void)
+  func onStorageChanged(event eventArg: StorageChangeEvent, completion: @escaping (Result<Void, Add2AppKeyValueStorageError>) -> Void)
 }
 class KeyValueStorageFlutterApi: KeyValueStorageFlutterApiProtocol {
   private let binaryMessenger: FlutterBinaryMessenger
@@ -417,7 +432,7 @@ class KeyValueStorageFlutterApi: KeyValueStorageFlutterApiProtocol {
     return KeyValueStorageApiPigeonCodec.shared
   }
   /// Called when entries in the storage have changed.
-  func onStorageChanged(event eventArg: StorageChangeEvent, completion: @escaping (Result<Void, PigeonError>) -> Void) {
+  func onStorageChanged(event eventArg: StorageChangeEvent, completion: @escaping (Result<Void, Add2AppKeyValueStorageError>) -> Void) {
     let channelName: String = "dev.flutter.pigeon.leancode_add2app.KeyValueStorageFlutterApi.onStorageChanged\(messageChannelSuffix)"
     let channel = FlutterBasicMessageChannel(name: channelName, binaryMessenger: binaryMessenger, codec: codec)
     channel.sendMessage([eventArg] as [Any?]) { response in
@@ -429,7 +444,7 @@ class KeyValueStorageFlutterApi: KeyValueStorageFlutterApiProtocol {
         let code: String = listResponse[0] as! String
         let message: String? = nilOrValue(listResponse[1])
         let details: String? = nilOrValue(listResponse[2])
-        completion(.failure(PigeonError(code: code, message: message, details: details)))
+        completion(.failure(Add2AppKeyValueStorageError(code: code, message: message, details: details)))
       } else {
         completion(.success(()))
       }

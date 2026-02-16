@@ -5,8 +5,12 @@ import 'package:pigeon/pigeon.dart';
     dartOut: 'lib/src/navigator/add2app_navigator.g.dart',
     kotlinOut:
         'android/src/main/kotlin/co/leancode/add2app/navigator/Add2AppNavigatorApi.g.kt',
-    kotlinOptions: KotlinOptions(package: 'co.leancode.add2app.navigator'),
+    kotlinOptions: KotlinOptions(
+      package: 'co.leancode.add2app.navigator',
+      errorClassName: 'Add2AppNavigatorError',
+    ),
     swiftOut: 'ios/Classes/Add2AppNavigatorApi.g.swift',
+    swiftOptions: SwiftOptions(errorClassName: 'Add2AppNavigatorError'),
     dartPackageName: 'leancode_add2app',
   ),
 )
