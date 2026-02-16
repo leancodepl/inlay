@@ -64,17 +64,44 @@ final class Add2AppNavigator {
 
     /// The single Dart entrypoint used by all add2app pages.
     private static let dartEntrypoint = "add2appMain"
+    /// Internal route used only for hidden engine warm-up.
+    private static let prewarmRouteId = "__add2app_prewarm__"
 
     /// The single native route handler set by the app.
     private var nativeRouteHandler: NativeRouteHandling?
+    /// Hidden warm-up engine kept alive for app lifetime.
+    private var prewarmedEngine: FlutterEngine?
 
     // MARK: - Initialisation
 
     /// Call once at app startup (e.g. `application(_:didFinishLaunchingWithOptions:)`).
     /// Idempotent — safe to call multiple times.
     func start() {
-        guard engineGroup == nil else { return }
-        engineGroup = FlutterEngineGroup(name: "add2app_engine_group", project: nil)
+        if engineGroup == nil {
+            engineGroup = FlutterEngineGroup(name: "add2app_engine_group", project: nil)
+        }
+        prewarmEngineIfNeeded()
+    }
+
+    /// Boots a hidden engine once so first visible add2app navigation is faster.
+    private func prewarmEngineIfNeeded() {
+        guard prewarmedEngine == nil, let engineGroup else { return }
+
+        let options = FlutterEngineGroupOptions()
+        options.entrypoint = Self.dartEntrypoint
+        options.initialRoute = Self.prewarmRouteId
+
+        let engine = engineGroup.makeEngine(with: options)
+
+        // The Dart entrypoint initializes Add2App services, so we must register
+        // HostApi + storage even for a hidden warm-up engine.
+        Add2AppNavigatorHostApiSetup.setUp(
+            binaryMessenger: engine.binaryMessenger,
+            api: Add2AppNavigatorPrewarmHostApi()
+        )
+        KeyValueStorageImpl.shared.attachToEngine(engine)
+
+        prewarmedEngine = engine
     }
 
     // MARK: - Public API (iOS side)
@@ -269,4 +296,11 @@ private class Add2AppNavigatorHostApiImpl: Add2AppNavigatorHostApi {
             try? nav.dispatchNativeRoute(from: vc, route: route)
         }
     }
+}
+
+/// No-op HostApi for the hidden warm-up engine.
+private class Add2AppNavigatorPrewarmHostApi: Add2AppNavigatorHostApi {
+    func push(page: PageSettings) throws {}
+    func pop() throws {}
+    func pushNativeRoute(route: PageSettings) throws {}
 }
