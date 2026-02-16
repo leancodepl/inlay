@@ -10,6 +10,8 @@ import io.flutter.embedding.android.FlutterFragment
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.embedding.engine.FlutterEngineGroup
 import io.flutter.embedding.engine.FlutterEngineGroupCache
+import io.flutter.embedding.engine.dart.DartExecutor
+import io.flutter.FlutterInjector
 
 /**
  * Interface for handling native route requests dispatched from Flutter.
@@ -66,6 +68,7 @@ fun interface NativeRouteHandler {
 object Add2AppNavigator {
 
     private const val ENGINE_GROUP_ID = "add2app_engine_group"
+    private const val PREWARM_ROUTE_ID = "__add2app_prewarm__"
 
     /** The single Dart entrypoint used by all add2app pages. */
     private const val DART_ENTRYPOINT = "add2appMain"
@@ -74,6 +77,8 @@ object Add2AppNavigator {
 
     /** The single native route handler set by the app. */
     private var nativeRouteHandler: NativeRouteHandler? = null
+    /** Hidden warm-up engine kept alive for app lifetime. */
+    private var prewarmedEngine: FlutterEngine? = null
 
     // ── Initialisation ───────────────────────────────────────────────────
 
@@ -84,6 +89,7 @@ object Add2AppNavigator {
     fun init(context: Context) {
         appContext = context.applicationContext
         ensureEngineGroup()
+        prewarmEngineIfNeeded()
     }
 
     private fun ensureEngineGroup() {
@@ -91,6 +97,33 @@ object Add2AppNavigator {
             FlutterEngineGroupCache.getInstance()
                 .put(ENGINE_GROUP_ID, FlutterEngineGroup(appContext))
         }
+    }
+
+    /**
+     * Boots a hidden engine once so first visible add2app navigation is faster.
+     */
+    @Synchronized
+    private fun prewarmEngineIfNeeded() {
+        if (prewarmedEngine != null) return
+
+        val engine = FlutterEngine(appContext)
+        engine.navigationChannel.setInitialRoute(PREWARM_ROUTE_ID)
+        val bundlePath = FlutterInjector.instance().flutterLoader().findAppBundlePath()
+        val entrypoint = DartExecutor.DartEntrypoint(bundlePath, DART_ENTRYPOINT)
+        engine.dartExecutor.executeDartEntrypoint(entrypoint)
+
+        // The Dart entrypoint initializes Add2App services, so we must register
+        // HostApi + storage even for a hidden warm-up engine.
+        Add2AppNavigatorHostApi.setUp(
+            engine.dartExecutor.binaryMessenger,
+            object : Add2AppNavigatorHostApi {
+                override fun push(page: PageSettings) {}
+                override fun pop() {}
+                override fun pushNativeRoute(route: PageSettings) {}
+            }
+        )
+        KeyValueStorageImpl.attachToEngine(engine)
+        prewarmedEngine = engine
     }
 
     // ── Public API (Android side) ────────────────────────────────────────
