@@ -144,7 +144,7 @@ final class Add2AppNavigator {
     /// Throws if no handler is set.
     func dispatchNativeRoute(from viewController: UIViewController, route: PageSettings) throws {
         guard let handler = nativeRouteHandler else {
-            throw PigeonError(
+            throw Add2AppNavigatorError(
                 code: "NO_NATIVE_ROUTE_HANDLER",
                 message: "No native route handler set. "
                     + "Call Add2AppNavigator.shared.setNativeRouteHandler(...) in AppDelegate first.",
