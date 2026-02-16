@@ -1,5 +1,6 @@
 export 'src/generator.dart';
 export 'src/generator_config.dart';
+export 'src/generators/dart_flutter_pages_generator.dart';
 export 'src/generators/dart_native_pages_generator.dart';
 export 'src/generators/kotlin_native_route_handler_generator.dart';
 export 'src/generators/swift_native_route_handler_generator.dart';

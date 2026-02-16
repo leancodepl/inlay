@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:path/path.dart' as p;
 
 import 'package:leancode_add2app_gen/src/generator_config.dart';
+import 'package:leancode_add2app_gen/src/generators/dart_flutter_pages_generator.dart';
 import 'package:leancode_add2app_gen/src/generators/dart_native_pages_generator.dart';
 import 'package:leancode_add2app_gen/src/generators/kotlin_native_route_handler_generator.dart';
 import 'package:leancode_add2app_gen/src/generators/swift_native_route_handler_generator.dart';
@@ -51,26 +52,43 @@ void runGenerator(GeneratorConfig config) {
 
   stdout.writeln();
 
-  if (nativePages.isEmpty) {
-    stdout.writeln('No native_page classes found — nothing to generate.');
+  if (flutterPages.isEmpty && nativePages.isEmpty) {
+    stdout.writeln(
+      'No flutter_page or native_page classes found — nothing to generate.',
+    );
     return;
   }
 
   // ── Generate Dart ──────────────────────────────────────────────────
 
   if (config.dartOutput != null) {
-    final pigeonImport = pigeonConfig.dartOutFilename ?? 'pages.g.dart';
-    final dartCode = generateDartNativePages(
-      nativePages: nativePages,
-      pigeonDartImport: pigeonImport,
-    );
+    if (flutterPages.isNotEmpty) {
+      final flutterPagesCode = generateDartFlutterPages(
+        flutterPages: flutterPages,
+      );
 
-    final dartFile = File(
-      p.join(config.dartOutput!, 'native_routes.g.dart'),
-    );
-    dartFile.parent.createSync(recursive: true);
-    dartFile.writeAsStringSync(dartCode);
-    stdout.writeln('  Dart:   ${dartFile.path}');
+      final flutterPagesFile = File(
+        p.join(config.dartOutput!, 'flutter_routes.g.dart'),
+      );
+      flutterPagesFile.parent.createSync(recursive: true);
+      flutterPagesFile.writeAsStringSync(flutterPagesCode);
+      stdout.writeln('  Dart:   ${flutterPagesFile.path}');
+    }
+
+    if (nativePages.isNotEmpty) {
+      final pigeonImport = pigeonConfig.dartOutFilename ?? 'pages.g.dart';
+      final nativeRoutesCode = generateDartNativePages(
+        nativePages: nativePages,
+        pigeonDartImport: pigeonImport,
+      );
+
+      final nativeRoutesFile = File(
+        p.join(config.dartOutput!, 'native_routes.g.dart'),
+      );
+      nativeRoutesFile.parent.createSync(recursive: true);
+      nativeRoutesFile.writeAsStringSync(nativeRoutesCode);
+      stdout.writeln('  Dart:   ${nativeRoutesFile.path}');
+    }
   }
 
   // ── Generate Kotlin ────────────────────────────────────────────────

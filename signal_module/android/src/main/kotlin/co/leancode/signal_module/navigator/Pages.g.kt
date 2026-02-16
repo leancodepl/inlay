@@ -92,12 +92,12 @@ data class SoundsNotificationsPage (
 
 /** Generated class from Pigeon that represents data sent in messages. */
 data class SetWallpaperPage (
-  val recipientId: String
+  val recipientId: String? = null
 )
  {
   companion object {
     fun fromList(pigeonVar_list: List<Any?>): SetWallpaperPage {
-      val recipientId = pigeonVar_list[0] as String
+      val recipientId = pigeonVar_list[0] as String?
       return SetWallpaperPage(recipientId)
     }
   }

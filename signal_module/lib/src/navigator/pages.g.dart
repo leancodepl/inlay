@@ -66,10 +66,10 @@ class SoundsNotificationsPage {
 
 class SetWallpaperPage {
   SetWallpaperPage({
-    required this.recipientId,
+    this.recipientId,
   });
 
-  String recipientId;
+  String? recipientId;
 
   List<Object?> _toList() {
     return <Object?>[
@@ -83,7 +83,7 @@ class SetWallpaperPage {
   static SetWallpaperPage decode(Object result) {
     result as List<Object?>;
     return SetWallpaperPage(
-      recipientId: result[0]! as String,
+      recipientId: result[0] as String?,
     );
   }
 

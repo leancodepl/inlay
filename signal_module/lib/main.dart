@@ -42,8 +42,8 @@ void add2appMain() {
 
 /// Central page registry.
 ///
-/// Every add2app screen is registered here once.  The key is the `routeId`
-/// that matches the `Add2AppPage.routeId`.
+/// Every add2app screen is registered here once. The key is the `routeId`
+/// that matches the `Add2AppFlutterRoute.routeId`.
 void _registerPages() {
   Add2AppNavigator.instance
     ..registerPage('soundsNotifications', (params) {

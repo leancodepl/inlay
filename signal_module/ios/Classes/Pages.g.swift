@@ -11,8 +11,23 @@ import Foundation
   #error("Unsupported platform.")
 #endif
 
-// PigeonError is defined in Add2AppNavigatorApi.g.swift — shared across
-// all pigeon-generated files compiled in the same target.
+/// Error class for passing custom error details to Dart side.
+final class PigeonError: Error {
+  let code: String
+  let message: String?
+  let details: Sendable?
+
+  init(code: String, message: String?, details: Sendable?) {
+    self.code = code
+    self.message = message
+    self.details = details
+  }
+
+  var localizedDescription: String {
+    return
+      "PigeonError(code: \(code), message: \(message ?? "<nil>"), details: \(details ?? "<nil>")"
+  }
+}
 
 private func isNullish(_ value: Any?) -> Bool {
   return value is NSNull || value == nil
@@ -116,12 +131,12 @@ struct SoundsNotificationsPage: Hashable {
 
 /// Generated class from Pigeon that represents data sent in messages.
 struct SetWallpaperPage: Hashable {
-  var recipientId: String
+  var recipientId: String? = nil
 
 
   // swift-format-ignore: AlwaysUseLowerCamelCase
   static func fromList(_ pigeonVar_list: [Any?]) -> SetWallpaperPage? {
-    let recipientId = pigeonVar_list[0] as! String
+    let recipientId: String? = nilOrValue(pigeonVar_list[0])
 
     return SetWallpaperPage(
       recipientId: recipientId

@@ -2,13 +2,12 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:leancode_add2app/leancode_add2app.dart';
 
-import '../navigator/add2app_navigator.dart';
+import '../navigator/flutter_routes.g.dart' show SoundsNotificationsPage;
 import '../navigator/native_routes.g.dart'
-    show NativeEditProfilePageToPageSettings;
-import '../navigator/pages.dart' show SoundsNotificationsPage;
+    show NativeEditProfilePageToNativeRoute;
 import '../navigator/pages.g.dart' show NativeEditProfilePage;
-import '../storage/key_value_storage.dart';
 import '../theme/signal_theme.dart';
 import '../widgets/settings_tile.dart';
 
@@ -269,10 +268,10 @@ class _SoundsNotificationsScreenState extends State<SoundsNotificationsScreen> {
                       label: const Text('Open native Sounds & Notifications'),
                       onPressed: () async {
                         try {
-                          await Add2AppNavigator.instance.pushNativeRoute(
+                          await Add2AppNavigator.instance.push(
                             NativeEditProfilePage(
                               contactId: widget.contactId,
-                            ).toPageSettings(),
+                            ).toNativeRoute(),
                           );
                         } on PlatformException catch (e) {
                           debugPrint('pushNativeRoute: $e');

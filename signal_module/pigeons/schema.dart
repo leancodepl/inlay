@@ -24,9 +24,9 @@ class SoundsNotificationsPage {
 
 // add2app: flutter_page
 class SetWallpaperPage {
-  SetWallpaperPage({required this.recipientId});
+  SetWallpaperPage({this.recipientId});
 
-  final String recipientId;
+  final String? recipientId;
 }
 
 // add2app: flutter_page

@@ -4,7 +4,24 @@ import 'add2app_navigator.g.dart';
 
 export 'add2app_navigator.g.dart' show PageSettings;
 
-/// A typed page description.
+/// Route target understood by [Add2AppNavigator].
+enum Add2AppRouteType {
+  flutter,
+  native,
+}
+
+/// Common abstraction for all pushable destinations.
+abstract class Add2AppRoute {
+  const Add2AppRoute();
+
+  /// Whether this route should open Flutter or native UI.
+  Add2AppRouteType get type;
+
+  /// Convert destination to transport-level page settings.
+  PageSettings toPageSettings();
+}
+
+/// A typed Flutter route description.
 ///
 /// Developers extend this for each screen, adding typed immutable fields.
 /// The framework serialises via [toPageSettings] so Pigeon only ever
@@ -13,7 +30,7 @@ export 'add2app_navigator.g.dart' show PageSettings;
 ///
 /// Example:
 /// ```dart
-/// class SoundsNotificationsPage extends Add2AppPage {
+/// class SoundsNotificationsPage extends Add2AppFlutterRoute {
 ///   const SoundsNotificationsPage({required this.contactId});
 ///   final String contactId;
 ///
@@ -24,8 +41,8 @@ export 'add2app_navigator.g.dart' show PageSettings;
 ///   Map<String, String> get params => {'contactId': contactId};
 /// }
 /// ```
-abstract class Add2AppPage {
-  const Add2AppPage();
+abstract class Add2AppFlutterRoute extends Add2AppRoute {
+  const Add2AppFlutterRoute();
 
   /// Unique route identifier (matches the key in the page registry).
   String get routeId;
@@ -33,10 +50,29 @@ abstract class Add2AppPage {
   /// Flat parameter map transported over Pigeon.
   Map<String, String> get params;
 
+  @override
+  Add2AppRouteType get type => Add2AppRouteType.flutter;
+
   /// Convert to the Pigeon-generated [PageSettings].
   PageSettings toPageSettings() {
     return PageSettings(routeId: routeId, params: params);
   }
+}
+
+/// Typed wrapper for native destinations.
+///
+/// Usually created by generated native page extensions, e.g.
+/// `NativeEditProfilePage(...).toNativeRoute()`.
+class Add2AppNativeRoute extends Add2AppRoute {
+  const Add2AppNativeRoute(this.page);
+
+  final PageSettings page;
+
+  @override
+  Add2AppRouteType get type => Add2AppRouteType.native;
+
+  @override
+  PageSettings toPageSettings() => page;
 }
 
 /// Signature for the factory that builds a [Widget] from the raw params map.
@@ -49,6 +85,14 @@ typedef PageBuilder = Widget Function(Map<String, String> params);
 ///
 /// ```dart
 /// Add2AppNavigator.instance.push(SoundsNotificationsPage(contactId: '42'));
+/// ```
+///
+/// For native pages, pass generated native `PageSettings`:
+///
+/// ```dart
+/// Add2AppNavigator.instance.push(
+///   NativeEditProfilePage(contactId: '42').toNativeRoute(),
+/// );
 /// ```
 ///
 /// On the Android side:
@@ -87,11 +131,19 @@ class Add2AppNavigator {
     );
   }
 
-  // ── Navigation (Flutter → Flutter via platform) ─────────────────────
+  // ── Navigation ───────────────────────────────────────────────────────
 
-  /// Push a new Flutter Activity/ViewController for [page].
-  Future<void> push(Add2AppPage page) async {
-    await _hostApi.push(page.toPageSettings());
+  /// Pushes either a Flutter route or a native route.
+  Future<void> push(Add2AppRoute route) async {
+    final page = route.toPageSettings();
+    switch (route.type) {
+      case Add2AppRouteType.flutter:
+        await pushFlutterRoute(page);
+        break;
+      case Add2AppRouteType.native:
+        await pushNativeRoute(page);
+        break;
+    }
   }
 
   /// Pop (finish) the current Flutter Activity/ViewController.
@@ -99,18 +151,23 @@ class Add2AppNavigator {
     await _hostApi.pop();
   }
 
-  // ── Navigation (Flutter → native) ─────────────────────────────────
+  // ── Internal route dispatch ───────────────────────────────────────
 
-  /// Open a native Activity/ViewController identified by [page].
+  /// Internal method: push a Flutter Activity/ViewController route.
+  Future<void> pushFlutterRoute(PageSettings page) async {
+    await _hostApi.push(page);
+  }
+
+  /// Internal method: open a native Activity/ViewController route.
   ///
   /// The platform side dispatches to the `NativeRouteHandler` set via
   /// `Add2AppNavigator.setNativeRouteHandler(...)` on Android/iOS.
   ///
-  /// Use the generated `.toPageSettings()` extension on pigeon page classes:
+  /// Use the generated `.toNativeRoute()` extension on pigeon page classes:
   ///
   /// ```dart
-  /// Add2AppNavigator.instance.pushNativeRoute(
-  ///   NativeEditProfilePage(contactId: '42').toPageSettings(),
+  /// Add2AppNavigator.instance.push(
+  ///   NativeEditProfilePage(contactId: '42').toNativeRoute(),
   /// );
   /// ```
   Future<void> pushNativeRoute(PageSettings page) async {
