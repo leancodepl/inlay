@@ -18,14 +18,36 @@ final class Add2AppFlutterViewController: FlutterViewController {
     /// navigation-controller pop / modal dismiss.
     var onPop: (() -> Void)?
 
+    /// Keep the previous nav-bar visibility so we can restore it when leaving.
+    private var previousNavigationBarHiddenState = false
+
     // MARK: - Lifecycle
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        // Match native background color during Flutter first-frame startup.
+        view.backgroundColor = .systemBackground
         Add2AppNavigator.shared.configureEngine(
             engine,
             viewController: self,
             onPop: onPop
+        )
+    }
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        guard let navigationController else { return }
+        previousNavigationBarHiddenState = navigationController.isNavigationBarHidden
+        // Flutter provides its own app bar, so hide UIKit's bar to avoid
+        // transient safe-area inset changes (content jump on first render).
+        navigationController.setNavigationBarHidden(true, animated: animated)
+    }
+
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        navigationController?.setNavigationBarHidden(
+            previousNavigationBarHiddenState,
+            animated: animated
         )
     }
 
