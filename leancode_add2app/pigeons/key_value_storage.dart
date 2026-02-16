@@ -3,15 +3,17 @@ import 'package:pigeon/pigeon.dart';
 @ConfigurePigeon(
   PigeonOptions(
     dartOut: 'lib/src/storage/key_value_storage.g.dart',
-    kotlinOut: 'android/src/main/kotlin/co/leancode/add2app/storage/KeyValueStorageApi.g.kt',
+    kotlinOut:
+        'android/src/main/kotlin/co/leancode/add2app/storage/KeyValueStorageApi.g.kt',
     kotlinOptions: KotlinOptions(
       package: 'co.leancode.add2app.storage',
+      errorClassName: 'Add2AppKeyValueStorageError',
     ),
     swiftOut: 'ios/Classes/KeyValueStorageApi.g.swift',
+    swiftOptions: SwiftOptions(errorClassName: 'Add2AppKeyValueStorageError'),
     dartPackageName: 'leancode_add2app',
   ),
 )
-
 /// A generic key-value entry stored on the platform side.
 class StorageEntry {
   StorageEntry({required this.key, required this.value});

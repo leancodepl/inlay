@@ -15,15 +15,15 @@ import java.io.ByteArrayOutputStream
 import java.nio.ByteBuffer
 private object KeyValueStorageApiPigeonUtils {
 
-  fun createConnectionError(channelName: String): FlutterError {
-    return FlutterError("channel-error",  "Unable to establish connection on channel: '$channelName'.", "")  }
+  fun createConnectionError(channelName: String): Add2AppKeyValueStorageError {
+    return Add2AppKeyValueStorageError("channel-error",  "Unable to establish connection on channel: '$channelName'.", "")  }
 
   fun wrapResult(result: Any?): List<Any?> {
     return listOf(result)
   }
 
   fun wrapError(exception: Throwable): List<Any?> {
-    return if (exception is FlutterError) {
+    return if (exception is Add2AppKeyValueStorageError) {
       listOf(
         exception.code,
         exception.message,
@@ -75,7 +75,7 @@ private object KeyValueStorageApiPigeonUtils {
  * @property message The error message.
  * @property details The error details. Must be a datatype supported by the api codec.
  */
-class FlutterError (
+class Add2AppKeyValueStorageError (
   val code: String,
   override val message: String? = null,
   val details: Any? = null
@@ -381,7 +381,7 @@ class KeyValueStorageFlutterApi(private val binaryMessenger: BinaryMessenger, pr
     channel.send(listOf(eventArg)) {
       if (it is List<*>) {
         if (it.size > 1) {
-          callback(Result.failure(FlutterError(it[0] as String, it[1] as String, it[2] as String?)))
+          callback(Result.failure(Add2AppKeyValueStorageError(it[0] as String, it[1] as String, it[2] as String?)))
         } else {
           callback(Result.success(Unit))
         }

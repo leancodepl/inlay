@@ -52,7 +52,7 @@ private object PagesPigeonUtils {
  * @property message The error message.
  * @property details The error details. Must be a datatype supported by the api codec.
  */
-class FlutterError (
+class SignalModuleError (
   val code: String,
   override val message: String? = null,
   val details: Any? = null
