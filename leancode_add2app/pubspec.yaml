@@ -4,6 +4,7 @@ description: >
   (push/pop via FlutterEngineGroup) and shared key-value storage with
   real-time synchronization across multiple Flutter isolates and native code.
 publish_to: none
+resolution: workspace
 
 version: 0.1.0
 

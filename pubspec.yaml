@@ -1,0 +1,10 @@
+name: add2app_framework_poc
+publish_to: none
+
+environment:
+  sdk: ^3.10.1
+
+workspace:
+  - leancode_add2app
+  - leancode_add2app_gen
+  - signal_module
