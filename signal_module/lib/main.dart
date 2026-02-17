@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:leancode_add2app/leancode_add2app.dart';
-import 'package:signal_module/src/routes.dart';
+import 'package:signal_module/src/navigator/flutter_routes.g.dart';
+import 'package:signal_module/src/screens/contact_details_screen.dart';
+import 'package:signal_module/src/screens/set_wallpaper_screen.dart';
+import 'package:signal_module/src/screens/sounds_notifications_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -12,49 +15,46 @@ void main() {
 ///
 /// The Android side always calls this entrypoint and encodes the target page
 /// in the `initialRoute`.  This function:
-/// 1. Registers all known pages in the navigator.
+/// 1. Uses generated typed route handlers.
 /// 2. Initialises framework services (e.g. [KeyValueStorage]).
 /// 3. Decodes the `initialRoute` to find out which page to show.
 /// 4. Builds the widget and runs the app.
 ///
-/// Developers only need to add a new page to the registry here — no need
+/// Developers only need to implement generated handler methods here — no need
 /// to create new entrypoints, Activities, method channels, etc.
 @pragma('vm:entry-point')
 void add2appMain() {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // ── 1. Register pages ──────────────────────────────────────────────
-  _registerPages();
+  const routeHandler = _SignalFlutterRouteHandler();
 
-  // ── 2. Init framework services ─────────────────────────────────────
+  // ── 1. Init framework services ─────────────────────────────────────
   KeyValueStorage().init();
 
-  // ── 3. Decode initial route ────────────────────────────────────────
-  final initialRoute =
-      WidgetsBinding.instance.platformDispatcher.defaultRouteName;
-  final page = Add2AppNavigator.decodeInitialRoute(initialRoute);
+  // ── 2. Decode initial route ────────────────────────────────────────
+  final page = Add2AppNavigator.initialPageFromPlatform();
 
-  // ── 4. Run ─────────────────────────────────────────────────────────
-  runApp(
-    MaterialApp(home: Add2AppNavigator.instance.buildPage(page)),
-  );
+  // ── 3. Run ─────────────────────────────────────────────────────────
+  runApp(MaterialApp(home: routeHandler.handle(page)));
 }
 
-/// Central page registry.
-///
-/// Every add2app screen is registered here once. The key is the `routeId`
-/// that matches the `Add2AppFlutterRoute.routeId`.
-void _registerPages() {
-  Add2AppNavigator.instance
-    ..registerPage('soundsNotifications', (params) {
-      return SoundsNotificationsScreen(contactId: params['contactId'] ?? '1');
-    })
-    ..registerPage('setWallpaper', (params) {
-      return SetWallpaperScreen(recipientId: params['recipientId']);
-    })
-    ..registerPage('contactDetails', (params) {
-      return ContactDetailsScreen(contactId: params['contactId'] ?? '1');
-    });
+class _SignalFlutterRouteHandler extends FlutterRouteHandler {
+  const _SignalFlutterRouteHandler();
+
+  @override
+  Widget onSoundsNotifications(SoundsNotificationsPage page) {
+    return SoundsNotificationsScreen(contactId: page.contactId);
+  }
+
+  @override
+  Widget onSetWallpaper(SetWallpaperPage page) {
+    return SetWallpaperScreen(recipientId: page.recipientId);
+  }
+
+  @override
+  Widget onContactDetails(ContactDetailsPage page) {
+    return ContactDetailsScreen(contactId: page.contactId);
+  }
 }
 
 // ── Legacy entrypoints (kept for backward compatibility) ─────────────

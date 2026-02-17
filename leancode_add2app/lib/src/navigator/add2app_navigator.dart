@@ -5,10 +5,7 @@ import 'add2app_navigator.g.dart';
 export 'add2app_navigator.g.dart' show PageSettings;
 
 /// Route target understood by [Add2AppNavigator].
-enum Add2AppRouteType {
-  flutter,
-  native,
-}
+enum Add2AppRouteType { flutter, native }
 
 /// Common abstraction for all pushable destinations.
 abstract class Add2AppRoute {
@@ -197,5 +194,14 @@ class Add2AppNavigator {
     }
 
     return PageSettings(routeId: routeId, params: params);
+  }
+
+  /// Reads platform `defaultRouteName` and decodes it into [PageSettings].
+  ///
+  /// Keeps Flutter platform-dispatcher details hidden from app modules.
+  static PageSettings initialPageFromPlatform() {
+    final initialRoute =
+        WidgetsBinding.instance.platformDispatcher.defaultRouteName;
+    return decodeInitialRoute(initialRoute);
   }
 }
