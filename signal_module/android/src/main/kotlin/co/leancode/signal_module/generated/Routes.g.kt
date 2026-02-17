@@ -5,7 +5,7 @@ package co.leancode.signal_module.generated
 
 import android.content.Context
 import co.leancode.add2app.NativeRouteHandler as NativeRouteHandling
-import co.leancode.add2app.PageSettings
+import co.leancode.add2app.navigator.PageSettings
 
 data class SoundsNotificationsPage(
     val contactId: String

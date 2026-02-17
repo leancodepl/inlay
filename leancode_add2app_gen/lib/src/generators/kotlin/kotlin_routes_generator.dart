@@ -28,7 +28,7 @@ String generateKotlinRoutes({
   buffer.writeln();
   buffer.writeln('import android.content.Context');
   buffer.writeln('import co.leancode.add2app.NativeRouteHandler as NativeRouteHandling');
-  buffer.writeln('import co.leancode.add2app.PageSettings');
+  buffer.writeln('import co.leancode.add2app.navigator.PageSettings');
   buffer.writeln();
 
   // Generate enums.

@@ -55,7 +55,7 @@ void _writeStoreClass(StringBuffer buffer, StoreDefinition store) {
 
   // Key helper.
   if (scopeFields.isEmpty) {
-    buffer.writeln(r'    private fun key(field: String) = "$storeKey/$field"');
+    buffer.writeln('    private fun key(field: String) = "$storeKey/\$field"');
   } else {
     final scopeParts = scopeFields.map((f) => '\$${f.name}').join('/');
     buffer.writeln('    private fun key(field: String) = "$storeKey/$scopeParts/\$field"');
@@ -77,7 +77,8 @@ void _writeStoreClass(StringBuffer buffer, StoreDefinition store) {
 void _writeProperty(StringBuffer buffer, FieldInfo field) {
   final baseName = field.type.baseName;
   final kotlinType = _kotlinPrimitiveType(baseName);
-  final defaultVal = field.defaultValue ?? _defaultValueForType(baseName);
+  final rawDefault = field.defaultValue ?? _defaultValueForType(baseName);
+  final defaultVal = _dartToKotlinLiteral(rawDefault, baseName);
 
   buffer.writeln('    var ${field.name}: $kotlinType');
 
@@ -146,4 +147,19 @@ String _defaultValueForType(String dartType) {
     default:
       return '""';
   }
+}
+
+/// Converts a Dart literal to its Kotlin equivalent.
+///
+/// Mainly handles string literals: Dart uses single quotes (`'hello'`),
+/// while Kotlin uses double quotes (`"hello"`).
+String _dartToKotlinLiteral(String dartLiteral, String dartType) {
+  if (dartType == 'String') {
+    // Convert Dart single-quoted strings to Kotlin double-quoted strings.
+    if (dartLiteral.startsWith("'") && dartLiteral.endsWith("'")) {
+      final content = dartLiteral.substring(1, dartLiteral.length - 1);
+      return '"$content"';
+    }
+  }
+  return dartLiteral;
 }
