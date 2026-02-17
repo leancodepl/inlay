@@ -1,0 +1,24 @@
+# add2app configuration for signal_module
+#
+# Run the generator:
+#   dart run build_runner build
+#
+# Schema files (routes.dart, stores.dart) are specs - don't import them directly.
+# Import the generated files from lib/src/generated/ instead.
+
+# Schema input files
+routes: lib/add2app/routes.dart
+stores: lib/add2app/stores.dart
+
+# Dart output directory (routes.g.dart and stores.g.dart will be generated here)
+dart:
+  output: lib/src/generated/
+
+# Kotlin output
+kotlin:
+  output: android/src/main/kotlin/co/leancode/signal_module/generated/
+  package: co.leancode.signal_module.generated
+
+# Swift output
+swift:
+  output: ios/Classes/Generated/

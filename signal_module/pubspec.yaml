@@ -15,9 +15,12 @@ dependencies:
     path: ../leancode_add2app
 
 dev_dependencies:
+  build_runner: ^2.4.0
   custom_lint: ^0.7.6
   flutter_test:
     sdk: flutter
+  leancode_add2app_gen:
+    path: ../leancode_add2app_gen
   leancode_lint: ^17.0.0
   pigeon: ^26.1.0
 

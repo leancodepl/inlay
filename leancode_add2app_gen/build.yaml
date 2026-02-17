@@ -1,0 +1,16 @@
+# build_runner configuration for leancode_add2app_gen
+#
+# This builder generates Dart, Kotlin, and Swift code from add2app schema files.
+# Schema files are specs (like Pigeon) - app code imports generated files only.
+
+builders:
+  add2app:
+    import: "package:leancode_add2app_gen/builder.dart"
+    builder_factories: ["add2appBuilder"]
+    build_extensions:
+      r"$lib$":
+        - "src/generated/routes.g.dart"
+        - "src/generated/stores.g.dart"
+    auto_apply: dependents
+    build_to: source
+    required_inputs: [".dart"]
