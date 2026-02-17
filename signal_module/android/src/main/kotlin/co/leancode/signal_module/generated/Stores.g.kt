@@ -24,11 +24,11 @@ class SoundsNotificationsStore(
         set(value) = storage.put(key("showPreviews"), value.toString())
 
     var sound: String
-        get() = storage.get(key("sound")) ?: 'Default'
+        get() = storage.get(key("sound")) ?: "Default"
         set(value) = storage.put(key("sound"), value)
 
     var vibration: String
-        get() = storage.get(key("vibration")) ?: 'Default'
+        get() = storage.get(key("vibration")) ?: "Default"
         set(value) = storage.put(key("vibration"), value)
 
     fun clear() = storage.removeByPrefix(key(""))
@@ -41,7 +41,7 @@ class UserPreferencesStore(
     private val storage: NativeStorageScope,
 ) {
 
-    private fun key(field: String) = "$storeKey/$field"
+    private fun key(field: String) = "user_preferences/$field"
 
     var darkMode: Boolean
         get() = storage.get(key("darkMode")) == "true"
