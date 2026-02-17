@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:leancode_add2app/leancode_add2app.dart';
+import 'package:signal_module/src/generated/routes.g.dart';
 
 import '../models/wallpaper.dart';
-import '../navigator/flutter_routes.g.dart';
-import '../navigator/native_routes.g.dart';
-import '../navigator/pages.g.dart' hide SetWallpaperPage;
 import '../theme/signal_theme.dart';
 import '../widgets/wallpaper_preview.dart';
 

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:leancode_add2app/leancode_add2app.dart';
-import 'package:signal_module/src/navigator/flutter_routes.g.dart';
+import 'package:signal_module/src/generated/routes.g.dart';
 import 'package:signal_module/src/screens/contact_details_screen.dart';
 import 'package:signal_module/src/screens/set_wallpaper_screen.dart';
 import 'package:signal_module/src/screens/sounds_notifications_screen.dart';
@@ -38,6 +38,11 @@ void add2appMain() {
   runApp(MaterialApp(home: routeHandler.handle(page)));
 }
 
+/// Route handler that maps typed routes to screens.
+///
+/// Extend the generated [FlutterRouteHandler] and implement a method for each
+/// Flutter route. The handler provides compile-time type safety - if you add
+/// a new route, you'll get a compile error until you implement its handler.
 class _SignalFlutterRouteHandler extends FlutterRouteHandler {
   const _SignalFlutterRouteHandler();
 
