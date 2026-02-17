@@ -77,6 +77,8 @@ object Add2AppNavigator {
 
     /** The single native route handler set by the app. */
     private var nativeRouteHandler: NativeRouteHandler? = null
+    /** Whether [init] should prewarm a hidden engine. */
+    private var isPrewarmEnabled: Boolean = true
     /** Hidden warm-up engine kept alive for app lifetime. */
     private var prewarmedEngine: FlutterEngine? = null
 
@@ -86,10 +88,51 @@ object Add2AppNavigator {
      * Call once at app startup (e.g. `Application.onCreate`).
      * Idempotent — safe to call multiple times.
      */
-    fun init(context: Context) {
+    @JvmOverloads
+    fun init(context: Context, prewarm: Boolean = true) {
         appContext = context.applicationContext
+        isPrewarmEnabled = prewarm
         ensureEngineGroup()
+        if (isPrewarmEnabled) {
+            prewarmEngineIfNeeded()
+        }
+    }
+
+    /**
+     * Enable/disable automatic prewarming performed by [init].
+     *
+     * Enabled by default.
+     */
+    @Synchronized
+    fun setPrewarmEnabled(enabled: Boolean) {
+        isPrewarmEnabled = enabled
+        if (enabled) {
+            if (::appContext.isInitialized) {
+                prewarmEngineIfNeeded()
+            }
+        } else {
+            destroyPrewarmedEngine()
+        }
+    }
+
+    /**
+     * Imperatively prewarm the hidden engine.
+     */
+    fun prewarm(context: Context) {
+        init(context, prewarm = isPrewarmEnabled)
         prewarmEngineIfNeeded()
+    }
+
+    /**
+     * Destroy the hidden prewarmed engine and release its resources.
+     */
+    @Synchronized
+    fun destroyPrewarmedEngine() {
+        val engine = prewarmedEngine ?: return
+        Add2AppNavigatorHostApi.setUp(engine.dartExecutor.binaryMessenger, null)
+        KeyValueStorageImpl.detachFromEngine(engine)
+        engine.destroy()
+        prewarmedEngine = null
     }
 
     private fun ensureEngineGroup() {
@@ -135,7 +178,7 @@ object Add2AppNavigator {
      * No FlutterEngine, no entrypoints, no method channels.
      */
     fun push(context: Context, page: PageSettings) {
-        init(context)
+        init(context, prewarm = isPrewarmEnabled)
         context.startActivity(createIntent(context, page))
     }
 
@@ -205,7 +248,7 @@ object Add2AppNavigator {
      * when the fragment attaches — no manual wiring needed.
      */
     fun createFragment(context: Context, page: PageSettings): Add2AppFlutterFragment {
-        init(context)
+        init(context, prewarm = isPrewarmEnabled)
         val initialRoute = encodePageSettings(page)
         return FlutterFragment.NewEngineInGroupFragmentBuilder(
             Add2AppFlutterFragment::class.java,
@@ -219,7 +262,7 @@ object Add2AppNavigator {
     // ── Intent factory ───────────────────────────────────────────────────
 
     internal fun createIntent(context: Context, page: PageSettings): Intent {
-        init(context)
+        init(context, prewarm = isPrewarmEnabled)
         val initialRoute = encodePageSettings(page)
         return FlutterActivity.NewEngineInGroupIntentBuilder(
             Add2AppFlutterActivity::class.java,
