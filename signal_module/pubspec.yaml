@@ -1,6 +1,7 @@
 name: signal_module
 description: "Flutter module for Signal app add2app PoC"
 publish_to: none
+resolution: workspace
 
 version: 1.0.0+1
 
