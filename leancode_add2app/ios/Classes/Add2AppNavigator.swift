@@ -69,6 +69,8 @@ final class Add2AppNavigator {
 
     /// The single native route handler set by the app.
     private var nativeRouteHandler: NativeRouteHandling?
+    /// Whether `start()` should prewarm a hidden engine.
+    private var isPrewarmEnabled = true
     /// Hidden warm-up engine kept alive for app lifetime.
     private var prewarmedEngine: FlutterEngine?
 
@@ -76,11 +78,44 @@ final class Add2AppNavigator {
 
     /// Call once at app startup (e.g. `application(_:didFinishLaunchingWithOptions:)`).
     /// Idempotent — safe to call multiple times.
-    func start() {
+    func start(prewarm: Bool = true) {
+        isPrewarmEnabled = prewarm
         if engineGroup == nil {
             engineGroup = FlutterEngineGroup(name: "add2app_engine_group", project: nil)
         }
+        if isPrewarmEnabled {
+            prewarmEngineIfNeeded()
+        }
+    }
+
+    /// Enable/disable automatic prewarming performed by `start()`.
+    ///
+    /// Enabled by default.
+    func setPrewarmEnabled(_ enabled: Bool) {
+        isPrewarmEnabled = enabled
+        if enabled {
+            prewarm()
+        } else {
+            destroyPrewarmedEngine()
+        }
+    }
+
+    /// Imperatively prewarm the hidden engine (independent from `setPrewarmEnabled`).
+    func prewarm() {
+        start(prewarm: false)
         prewarmEngineIfNeeded()
+    }
+
+    /// Destroy the hidden prewarmed engine and release its resources.
+    func destroyPrewarmedEngine() {
+        guard let engine = prewarmedEngine else { return }
+        Add2AppNavigatorHostApiSetup.setUp(
+            binaryMessenger: engine.binaryMessenger,
+            api: nil
+        )
+        KeyValueStorageImpl.shared.detachFromEngine(engine)
+        engine.destroyContext()
+        prewarmedEngine = nil
     }
 
     /// Boots a hidden engine once so first visible add2app navigation is faster.
@@ -111,7 +146,7 @@ final class Add2AppNavigator {
     /// This is the **only** method native iOS code needs to call.
     /// No FlutterEngine, no entrypoints, no channels.
     func push(from viewController: UIViewController, page: PageSettings, animated: Bool = true) {
-        start()
+        start(prewarm: isPrewarmEnabled)
         let flutterVC = createFlutterViewController(page: page)
         viewController.navigationController?.pushViewController(flutterVC, animated: animated)
             ?? viewController.present(flutterVC, animated: animated)
@@ -119,7 +154,7 @@ final class Add2AppNavigator {
 
     /// Present a Flutter page modally.
     func present(from viewController: UIViewController, page: PageSettings, animated: Bool = true) {
-        start()
+        start(prewarm: isPrewarmEnabled)
         let flutterVC = createFlutterViewController(page: page)
         viewController.present(flutterVC, animated: animated)
     }
@@ -158,7 +193,7 @@ final class Add2AppNavigator {
 
     /// Create a `FlutterViewController` configured for the given page.
     func createFlutterViewController(page: PageSettings) -> Add2AppFlutterViewController {
-        start()
+        start(prewarm: isPrewarmEnabled)
 
         let initialRoute = Self.encodePageSettings(page)
 
