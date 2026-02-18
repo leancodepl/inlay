@@ -7,67 +7,230 @@ import android.content.Context
 import co.leancode.add2app.NativeRouteHandler as NativeRouteHandling
 import co.leancode.add2app.navigator.PageSettings
 
+enum class NotificationSound {
+    defaultSound,
+    chime,
+    pop
+}
+
+enum class BadgePriority {
+    low,
+    medium,
+    high
+}
+
+enum class DeliveryChannel {
+    push,
+    sms,
+    email
+}
+
+enum class WallpaperKind {
+    staticImage,
+    live
+}
+
+enum class NotificationBehavior {
+    defaultBehavior,
+    mentionsOnly,
+    muted
+}
+
+enum class AppTheme {
+    system,
+    light,
+    dark
+}
+
+enum class VibrationLevel {
+    off,
+    normal,
+    intense
+}
+
+enum class ConversationCategory {
+    direct,
+    group,
+    archived
+}
+
+data class NotificationPreset(
+    val name: String,
+    val preferences: NotificationPreferences
+) {
+    companion object {
+        fun fromList(list: List<Any?>): NotificationPreset = NotificationPreset(
+            name = list[0] as String,
+            preferences = NotificationPreferences.fromList(list[1] as List<Any?>),
+        )
+    }
+
+    fun toList(): List<Any?> = listOf(
+        name,
+        preferences.toList(),
+    )
+}
+
+data class NotificationPreferences(
+    val sound: NotificationSound,
+    val channels: List<DeliveryChannel>,
+    val quietHours: QuietHours?
+) {
+    companion object {
+        fun fromList(list: List<Any?>): NotificationPreferences = NotificationPreferences(
+            sound = NotificationSound.entries[list[0] as Int],
+            channels = (list[1] as List<*>).map { DeliveryChannel.entries[it as Int] },
+            quietHours = (list[2] as? QuietHours)?.let { QuietHours.fromList(it as List<Any?>) },
+        )
+    }
+
+    fun toList(): List<Any?> = listOf(
+        sound.ordinal,
+        channels.map { it.ordinal },
+        quietHours?.let { it.toList() },
+    )
+}
+
+data class QuietHours(
+    val fromHour: Long,
+    val toHour: Long
+) {
+    companion object {
+        fun fromList(list: List<Any?>): QuietHours = QuietHours(
+            fromHour = list[0] as Long,
+            toHour = list[1] as Long,
+        )
+    }
+
+    fun toList(): List<Any?> = listOf(
+        fromHour,
+        toHour,
+    )
+}
+
+data class WallpaperOption(
+    val assetName: String,
+    val kind: WallpaperKind
+) {
+    companion object {
+        fun fromList(list: List<Any?>): WallpaperOption = WallpaperOption(
+            assetName = list[0] as String,
+            kind = WallpaperKind.entries[list[1] as Int],
+        )
+    }
+
+    fun toList(): List<Any?> = listOf(
+        assetName,
+        kind.ordinal,
+    )
+}
+
+data class ContactBadge(
+    val label: String,
+    val priority: BadgePriority
+) {
+    companion object {
+        fun fromList(list: List<Any?>): ContactBadge = ContactBadge(
+            label = list[0] as String,
+            priority = BadgePriority.entries[list[1] as Int],
+        )
+    }
+
+    fun toList(): List<Any?> = listOf(
+        label,
+        priority.ordinal,
+    )
+}
+
 data class SoundsNotificationsPage(
-    val contactId: String
+    val contactId: String,
+    val preferences: NotificationPreferences?,
+    val presets: List<NotificationPreset>?,
+    val fallbackChannel: DeliveryChannel?
 ) {
     companion object {
         const val ROUTE_NAME = "soundsNotifications"
 
         fun fromList(list: List<Any?>): SoundsNotificationsPage = SoundsNotificationsPage(
             contactId = list[0] as String,
+            preferences = (list[1] as? NotificationPreferences)?.let { NotificationPreferences.fromList(it as List<Any?>) },
+            presets = (list[2] as? List<*>)?.let { (it as List<*>).map { NotificationPreset.fromList(it as List<Any?>) } },
+            fallbackChannel = (list[3] as? DeliveryChannel)?.let { DeliveryChannel.entries[it as Int] },
         )
     }
 
     fun toList(): List<Any?> = listOf(
         contactId,
+        preferences?.let { it.toList() },
+        presets?.let { it.map { it.toList() } },
+        fallbackChannel?.let { it.ordinal },
     )
 
     fun toMap(): Map<String, String> = mapOf(
-        "contactId" to contactId.toString()
+        "contactId" to contactId.toString(),
+        "preferences" to (preferences?.toString() ?: ""),
+        "presets" to (presets?.toString() ?: ""),
+        "fallbackChannel" to (fallbackChannel?.toString() ?: "")
     )
 
     fun toPageSettings(): PageSettings = PageSettings(ROUTE_NAME, toMap())
 }
 
 data class SetWallpaperPage(
-    val recipientId: String?
+    val recipientId: String?,
+    val options: List<WallpaperOption>?,
+    val preferredKind: WallpaperKind?
 ) {
     companion object {
         const val ROUTE_NAME = "setWallpaper"
 
         fun fromList(list: List<Any?>): SetWallpaperPage = SetWallpaperPage(
             recipientId = (list[0] as? String)?.let { it as String },
+            options = (list[1] as? List<*>)?.let { (it as List<*>).map { WallpaperOption.fromList(it as List<Any?>) } },
+            preferredKind = (list[2] as? WallpaperKind)?.let { WallpaperKind.entries[it as Int] },
         )
     }
 
     fun toList(): List<Any?> = listOf(
         recipientId?.let { it },
+        options?.let { it.map { it.toList() } },
+        preferredKind?.let { it.ordinal },
     )
 
     fun toMap(): Map<String, String> = mapOf(
-        "recipientId" to (recipientId?.toString() ?: "")
+        "recipientId" to (recipientId?.toString() ?: ""),
+        "options" to (options?.toString() ?: ""),
+        "preferredKind" to (preferredKind?.toString() ?: "")
     )
 
     fun toPageSettings(): PageSettings = PageSettings(ROUTE_NAME, toMap())
 }
 
 data class ContactDetailsPage(
-    val contactId: String
+    val contactId: String,
+    val badges: List<ContactBadge>?,
+    val preferredSound: NotificationSound?
 ) {
     companion object {
         const val ROUTE_NAME = "contactDetails"
 
         fun fromList(list: List<Any?>): ContactDetailsPage = ContactDetailsPage(
             contactId = list[0] as String,
+            badges = (list[1] as? List<*>)?.let { (it as List<*>).map { ContactBadge.fromList(it as List<Any?>) } },
+            preferredSound = (list[2] as? NotificationSound)?.let { NotificationSound.entries[it as Int] },
         )
     }
 
     fun toList(): List<Any?> = listOf(
         contactId,
+        badges?.let { it.map { it.toList() } },
+        preferredSound?.let { it.ordinal },
     )
 
     fun toMap(): Map<String, String> = mapOf(
-        "contactId" to contactId.toString()
+        "contactId" to contactId.toString(),
+        "badges" to (badges?.toString() ?: ""),
+        "preferredSound" to (preferredSound?.toString() ?: "")
     )
 
     fun toPageSettings(): PageSettings = PageSettings(ROUTE_NAME, toMap())

@@ -4,28 +4,204 @@
 import 'package:flutter/widgets.dart';
 import 'package:leancode_add2app/leancode_add2app.dart';
 
+enum NotificationSound {
+  defaultSound,
+  chime,
+  pop,
+}
+
+enum BadgePriority {
+  low,
+  medium,
+  high,
+}
+
+enum DeliveryChannel {
+  push,
+  sms,
+  email,
+}
+
+enum WallpaperKind {
+  staticImage,
+  live,
+}
+
+enum NotificationBehavior {
+  defaultBehavior,
+  mentionsOnly,
+  muted,
+}
+
+enum AppTheme {
+  system,
+  light,
+  dark,
+}
+
+enum VibrationLevel {
+  off,
+  normal,
+  intense,
+}
+
+enum ConversationCategory {
+  direct,
+  group,
+  archived,
+}
+
+class NotificationPreset {
+  const NotificationPreset({
+    required this.name,
+    required this.preferences,
+  });
+
+  final String name;
+  final NotificationPreferences preferences;
+
+  List<Object?> encode() => <Object?>[
+    name,
+    preferences.encode(),
+  ];
+
+  static NotificationPreset decode(List<Object?> list) {
+    return NotificationPreset(
+      name: list[0] as String,
+      preferences: NotificationPreferences.decode(list[1] as List<Object?>),
+    );
+  }
+}
+
+class NotificationPreferences {
+  const NotificationPreferences({
+    required this.sound,
+    required this.channels,
+    this.quietHours,
+  });
+
+  final NotificationSound sound;
+  final List<DeliveryChannel> channels;
+  final QuietHours? quietHours;
+
+  List<Object?> encode() => <Object?>[
+    sound.index,
+    channels.map((e) => e.index).toList(),
+    quietHours != null ? quietHours!.encode() : null,
+  ];
+
+  static NotificationPreferences decode(List<Object?> list) {
+    return NotificationPreferences(
+      sound: NotificationSound.values[list[0] as int],
+      channels: (list[1] as List<Object?>).map((e) => DeliveryChannel.values[e as int]).toList(),
+      quietHours: (list[2] as QuietHours?) != null ? (() { final v = list[2]; return QuietHours.decode(v as List<Object?>); })() : null,
+    );
+  }
+}
+
+class QuietHours {
+  const QuietHours({
+    required this.fromHour,
+    required this.toHour,
+  });
+
+  final int fromHour;
+  final int toHour;
+
+  List<Object?> encode() => <Object?>[
+    fromHour,
+    toHour,
+  ];
+
+  static QuietHours decode(List<Object?> list) {
+    return QuietHours(
+      fromHour: list[0] as int,
+      toHour: list[1] as int,
+    );
+  }
+}
+
+class WallpaperOption {
+  const WallpaperOption({
+    required this.assetName,
+    required this.kind,
+  });
+
+  final String assetName;
+  final WallpaperKind kind;
+
+  List<Object?> encode() => <Object?>[
+    assetName,
+    kind.index,
+  ];
+
+  static WallpaperOption decode(List<Object?> list) {
+    return WallpaperOption(
+      assetName: list[0] as String,
+      kind: WallpaperKind.values[list[1] as int],
+    );
+  }
+}
+
+class ContactBadge {
+  const ContactBadge({
+    required this.label,
+    required this.priority,
+  });
+
+  final String label;
+  final BadgePriority priority;
+
+  List<Object?> encode() => <Object?>[
+    label,
+    priority.index,
+  ];
+
+  static ContactBadge decode(List<Object?> list) {
+    return ContactBadge(
+      label: list[0] as String,
+      priority: BadgePriority.values[list[1] as int],
+    );
+  }
+}
+
 class SoundsNotificationsPage extends FlutterRouteBase {
   const SoundsNotificationsPage({
     required this.contactId,
+    this.preferences,
+    this.presets,
+    this.fallbackChannel,
   });
 
   final String contactId;
+  final NotificationPreferences? preferences;
+  final List<NotificationPreset>? presets;
+  final DeliveryChannel? fallbackChannel;
 
   static const String routeName = 'soundsNotifications';
 
   List<Object?> encode() => <Object?>[
     contactId,
+    preferences != null ? preferences!.encode() : null,
+    presets != null ? presets!.map((e) => e.encode()).toList() : null,
+    fallbackChannel != null ? fallbackChannel!.index : null,
   ];
 
   static SoundsNotificationsPage decode(List<Object?> list) {
     return SoundsNotificationsPage(
       contactId: list[0] as String,
+      preferences: (list[1] as NotificationPreferences?) != null ? (() { final v = list[1]; return NotificationPreferences.decode(v as List<Object?>); })() : null,
+      presets: (list[2] as List<NotificationPreset>?) != null ? (() { final v = list[2]; return (v as List<Object?>).map((e) => NotificationPreset.decode(e as List<Object?>)).toList(); })() : null,
+      fallbackChannel: (list[3] as DeliveryChannel?) != null ? (() { final v = list[3]; return DeliveryChannel.values[v as int]; })() : null,
     );
   }
 
   static SoundsNotificationsPage decodeFromMap(Map<Object?, Object?> map) {
     return SoundsNotificationsPage(
       contactId: map['contactId'] as String? ?? '',
+      preferences: map['preferences'] as NotificationPreferences?,
+      presets: map['presets'] as List?,
+      fallbackChannel: map['fallbackChannel'] as DeliveryChannel?,
     );
   }
 
@@ -39,25 +215,35 @@ class SoundsNotificationsPage extends FlutterRouteBase {
 class SetWallpaperPage extends FlutterRouteBase {
   const SetWallpaperPage({
     this.recipientId,
+    this.options,
+    this.preferredKind,
   });
 
   final String? recipientId;
+  final List<WallpaperOption>? options;
+  final WallpaperKind? preferredKind;
 
   static const String routeName = 'setWallpaper';
 
   List<Object?> encode() => <Object?>[
     recipientId != null ? recipientId! : null,
+    options != null ? options!.map((e) => e.encode()).toList() : null,
+    preferredKind != null ? preferredKind!.index : null,
   ];
 
   static SetWallpaperPage decode(List<Object?> list) {
     return SetWallpaperPage(
       recipientId: list[0] as String?,
+      options: (list[1] as List<WallpaperOption>?) != null ? (() { final v = list[1]; return (v as List<Object?>).map((e) => WallpaperOption.decode(e as List<Object?>)).toList(); })() : null,
+      preferredKind: (list[2] as WallpaperKind?) != null ? (() { final v = list[2]; return WallpaperKind.values[v as int]; })() : null,
     );
   }
 
   static SetWallpaperPage decodeFromMap(Map<Object?, Object?> map) {
     return SetWallpaperPage(
       recipientId: map['recipientId'] as String?,
+      options: map['options'] as List?,
+      preferredKind: map['preferredKind'] as WallpaperKind?,
     );
   }
 
@@ -71,25 +257,35 @@ class SetWallpaperPage extends FlutterRouteBase {
 class ContactDetailsPage extends FlutterRouteBase {
   const ContactDetailsPage({
     required this.contactId,
+    this.badges,
+    this.preferredSound,
   });
 
   final String contactId;
+  final List<ContactBadge>? badges;
+  final NotificationSound? preferredSound;
 
   static const String routeName = 'contactDetails';
 
   List<Object?> encode() => <Object?>[
     contactId,
+    badges != null ? badges!.map((e) => e.encode()).toList() : null,
+    preferredSound != null ? preferredSound!.index : null,
   ];
 
   static ContactDetailsPage decode(List<Object?> list) {
     return ContactDetailsPage(
       contactId: list[0] as String,
+      badges: (list[1] as List<ContactBadge>?) != null ? (() { final v = list[1]; return (v as List<Object?>).map((e) => ContactBadge.decode(e as List<Object?>)).toList(); })() : null,
+      preferredSound: (list[2] as NotificationSound?) != null ? (() { final v = list[2]; return NotificationSound.values[v as int]; })() : null,
     );
   }
 
   static ContactDetailsPage decodeFromMap(Map<Object?, Object?> map) {
     return ContactDetailsPage(
       contactId: map['contactId'] as String? ?? '',
+      badges: map['badges'] as List?,
+      preferredSound: map['preferredSound'] as NotificationSound?,
     );
   }
 

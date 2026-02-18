@@ -2,6 +2,7 @@ import 'package:leancode_add2app_gen/src/generators/kotlin/kotlin_serialization.
 import 'package:leancode_add2app_gen/src/models/schema.dart';
 import 'package:leancode_add2app_gen/src/models/store_definition.dart';
 import 'package:leancode_add2app_gen/src/models/type_info.dart';
+import 'package:leancode_add2app_gen/src/parser/type_resolver.dart';
 
 /// Generates Kotlin code for stores from a resolved schema.
 ///
@@ -9,6 +10,7 @@ import 'package:leancode_add2app_gen/src/models/type_info.dart';
 /// - Store classes with typed getters/setters via NativeStorageScope
 String generateKotlinStores({
   required Schema schema,
+  required Map<String, TypeDefinition> typeGraph,
   required String packageName,
 }) {
   final buffer = StringBuffer()
@@ -23,7 +25,7 @@ String generateKotlinStores({
 
   // Generate store classes.
   for (final store in schema.stores) {
-    _writeStoreClass(buffer, store);
+    _writeStoreClass(buffer, store, typeGraph);
     buffer.writeln();
   }
 
@@ -31,10 +33,14 @@ String generateKotlinStores({
   return output.endsWith('\n') ? output : '$output\n';
 }
 
-void _writeStoreClass(StringBuffer buffer, StoreDefinition store) {
+void _writeStoreClass(
+  StringBuffer buffer,
+  StoreDefinition store,
+  Map<String, TypeDefinition> typeGraph,
+) {
   final className = store.className;
   final storeKey = store.storeKey;
-  final scopeFields = store.scopeFields;
+  final keyField = store.keyField;
   final valueFields = store.valueFields;
 
   buffer
@@ -45,26 +51,28 @@ void _writeStoreClass(StringBuffer buffer, StoreDefinition store) {
     ..write('class $className(')
     ..writeln()
     ..writeln('    private val storage: NativeStorageScope,');
-  for (final field in scopeFields) {
-    final kotlinType = dartTypeToKotlin(field.type);
-    buffer.writeln('    private val ${field.name}: $kotlinType,');
+  if (keyField != null) {
+    final kotlinType = dartTypeToKotlin(keyField.type);
+    buffer.writeln('    private val ${keyField.name}: $kotlinType,');
   }
   buffer
     ..writeln(') {')
     ..writeln();
 
   // Key helper.
-  if (scopeFields.isEmpty) {
+  if (keyField == null) {
     buffer.writeln('    private fun key(field: String) = "$storeKey/\$field"');
   } else {
-    final scopeParts = scopeFields.map((f) => '\$${f.name}').join('/');
-    buffer.writeln('    private fun key(field: String) = "$storeKey/$scopeParts/\$field"');
+    final keySegment = _keySegmentExpression(keyField, typeGraph);
+    buffer.writeln(
+      '    private fun key(field: String) = "$storeKey/$keySegment/\$field"',
+    );
   }
   buffer.writeln();
 
   // Properties for each value field.
   for (final field in valueFields) {
-    _writeProperty(buffer, field);
+    _writeProperty(buffer, field, typeGraph);
     buffer.writeln();
   }
 
@@ -74,15 +82,33 @@ void _writeStoreClass(StringBuffer buffer, StoreDefinition store) {
     ..writeln('}');
 }
 
-void _writeProperty(StringBuffer buffer, FieldInfo field) {
+void _writeProperty(
+  StringBuffer buffer,
+  FieldInfo field,
+  Map<String, TypeDefinition> typeGraph,
+) {
   final baseName = field.type.baseName;
-  final kotlinType = _kotlinPrimitiveType(baseName);
-  final rawDefault = field.defaultValue ?? _defaultValueForType(baseName);
+  final enumType = typeGraph[baseName] is EnumType
+      ? typeGraph[baseName]! as EnumType
+      : null;
+  final kotlinType = _kotlinStoreType(baseName, enumType);
+  final rawDefault = field.defaultValue ?? _defaultValueForType(baseName, enumType);
   final defaultVal = _dartToKotlinLiteral(rawDefault, baseName);
 
   buffer.writeln('    var ${field.name}: $kotlinType');
 
   // Getter.
+  if (enumType != null) {
+    buffer
+      ..writeln(
+        '        get() = storage.get(key("${field.name}"))?.toIntOrNull()?.let { $baseName.entries[it] } ?: $defaultVal',
+      )
+      ..writeln(
+        '        set(value) = storage.put(key("${field.name}"), value.ordinal.toString())',
+      );
+    return;
+  }
+
   switch (baseName) {
     case 'bool':
       if (defaultVal == 'true') {
@@ -119,7 +145,11 @@ void _writeProperty(StringBuffer buffer, FieldInfo field) {
   }
 }
 
-String _kotlinPrimitiveType(String dartType) {
+String _kotlinStoreType(String dartType, EnumType? enumType) {
+  if (enumType != null) {
+    return enumType.name;
+  }
+
   switch (dartType) {
     case 'bool':
       return 'Boolean';
@@ -134,7 +164,11 @@ String _kotlinPrimitiveType(String dartType) {
   }
 }
 
-String _defaultValueForType(String dartType) {
+String _defaultValueForType(String dartType, EnumType? enumType) {
+  if (enumType != null) {
+    return '${enumType.name}.${enumType.values.first}';
+  }
+
   switch (dartType) {
     case 'bool':
       return 'false';
@@ -162,4 +196,14 @@ String _dartToKotlinLiteral(String dartLiteral, String dartType) {
     }
   }
   return dartLiteral;
+}
+
+String _keySegmentExpression(
+  FieldInfo keyField,
+  Map<String, TypeDefinition> typeGraph,
+) {
+  if (typeGraph[keyField.type.baseName] is EnumType) {
+    return '\${${keyField.name}.name}';
+  }
+  return '\$${keyField.name}';
 }

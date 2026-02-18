@@ -75,23 +75,23 @@ class Add2AppNativeRoute {
 /// - A store class with typed getters/setters for each field
 /// - A snapshot class with all field values
 /// - A reactive stream that emits snapshots on changes
-/// - Key generation based on store key and scoping fields
+/// - Key generation based on store key and optional `@Add2AppStoreKey` field
 ///
-/// Scoping fields are constructor parameters marked as `required` without defaults.
-/// They are used in the storage key prefix but not stored as values themselves.
+/// If a field is annotated with `@Add2AppStoreKey()`, it becomes the key segment
+/// in storage paths and is not stored as a value itself.
 ///
 /// Example:
 /// ```dart
 /// @Add2AppStore(key: 'sounds_notifications')
 /// class SoundsNotificationsStore {
 ///   const SoundsNotificationsStore({
-///     required this.contactId,  // scoping field - used in key prefix
+///     @Add2AppStoreKey() required this.contactId,
 ///     this.mute = false,
 ///     this.showPreviews = true,
 ///     this.sound = 'Default',
 ///   });
 ///
-///   final String contactId;  // scope: sounds_notifications/{contactId}/...
+///   final String contactId;  // key: sounds_notifications/{contactId}/...
 ///   final bool mute;         // key: sounds_notifications/{contactId}/mute
 ///   final bool showPreviews; // key: sounds_notifications/{contactId}/showPreviews
 ///   final String sound;      // key: sounds_notifications/{contactId}/sound
@@ -110,6 +110,16 @@ class Add2AppStore {
   final String? key;
 }
 
+/// Marks a single field inside `@Add2AppStore` class as the store key.
+///
+/// Only one field per store may be annotated. Supported key field types:
+/// - `String`
+/// - `int`
+/// - enum
+class Add2AppStoreKey {
+  const Add2AppStoreKey();
+}
+
 /// Convenience constant for `@Add2AppFlutterRoute()` annotation.
 const add2AppFlutterRoute = Add2AppFlutterRoute();
 
@@ -118,3 +128,6 @@ const add2AppNativeRoute = Add2AppNativeRoute();
 
 /// Convenience constant for `@Add2AppStore()` annotation.
 const add2AppStore = Add2AppStore();
+
+/// Convenience constant for `@Add2AppStoreKey()` annotation.
+const add2AppStoreKey = Add2AppStoreKey();

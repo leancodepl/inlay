@@ -1,6 +1,7 @@
 import 'package:leancode_add2app_gen/src/models/schema.dart';
 import 'package:leancode_add2app_gen/src/models/store_definition.dart';
 import 'package:leancode_add2app_gen/src/models/type_info.dart';
+import 'package:leancode_add2app_gen/src/parser/type_resolver.dart';
 
 /// Generates Dart code for stores from a resolved schema.
 ///
@@ -8,7 +9,10 @@ import 'package:leancode_add2app_gen/src/models/type_info.dart';
 /// - Store classes with typed getters/setters
 /// - Snapshot classes for reactive reading
 /// - Stream support for change notifications
-String generateDartStores({required Schema schema}) {
+String generateDartStores({
+  required Schema schema,
+  required Map<String, TypeDefinition> typeGraph,
+}) {
   final buffer = StringBuffer()
     // Header.
     ..writeln('// GENERATED CODE — DO NOT MODIFY BY HAND')
@@ -21,7 +25,7 @@ String generateDartStores({required Schema schema}) {
 
   // Generate store classes.
   for (final store in schema.stores) {
-    _writeStoreClass(buffer, store);
+    _writeStoreClass(buffer, store, typeGraph);
     buffer.writeln();
     _writeSnapshotClass(buffer, store);
     buffer.writeln();
@@ -31,10 +35,14 @@ String generateDartStores({required Schema schema}) {
   return output.endsWith('\n') ? output : '$output\n';
 }
 
-void _writeStoreClass(StringBuffer buffer, StoreDefinition store) {
+void _writeStoreClass(
+  StringBuffer buffer,
+  StoreDefinition store,
+  Map<String, TypeDefinition> typeGraph,
+) {
   final className = store.className;
   final storeKey = store.storeKey;
-  final scopeFields = store.scopeFields;
+  final keyField = store.keyField;
   final valueFields = store.valueFields;
 
   buffer
@@ -42,12 +50,11 @@ void _writeStoreClass(StringBuffer buffer, StoreDefinition store) {
     ..writeln('class $className {')
     // Constructor.
     ..write('  $className(this._storage');
-  if (scopeFields.isNotEmpty) {
-    buffer.write(', {');
-    for (final field in scopeFields) {
-      buffer.write('required this.${field.name}, ');
-    }
-    buffer.write('}');
+  if (keyField != null) {
+    buffer
+      ..write(', {')
+      ..write('required this.${keyField.name}, ')
+      ..write('}');
   }
   buffer
     ..writeln(');')
@@ -55,18 +62,18 @@ void _writeStoreClass(StringBuffer buffer, StoreDefinition store) {
     // Storage field.
     ..writeln('  final KeyValueStorage _storage;');
 
-  // Scope fields.
-  for (final field in scopeFields) {
-    buffer.writeln('  final ${field.type.toSource()} ${field.name};');
+  // Store key field.
+  if (keyField != null) {
+    buffer.writeln('  final ${keyField.type.toSource()} ${keyField.name};');
   }
   buffer.writeln();
 
   // Key helper.
-  if (scopeFields.isEmpty) {
+  if (keyField == null) {
     buffer.writeln("  String _key(String field) => '$storeKey/\$field';");
   } else {
-    final scopeParts = scopeFields.map((f) => '\$${f.name}').join('/');
-    buffer.writeln("  String _key(String field) => '$storeKey/$scopeParts/\$field';");
+    final keySegment = _keySegmentExpression(keyField, typeGraph);
+    buffer.writeln("  String _key(String field) => '$storeKey/$keySegment/\$field';");
   }
 
   buffer
@@ -76,7 +83,7 @@ void _writeStoreClass(StringBuffer buffer, StoreDefinition store) {
     ..writeln();
 
   for (final field in valueFields) {
-    _writeGetter(buffer, field);
+    _writeGetter(buffer, field, typeGraph);
     buffer.writeln();
   }
 
@@ -86,7 +93,7 @@ void _writeStoreClass(StringBuffer buffer, StoreDefinition store) {
     ..writeln();
 
   for (final field in valueFields) {
-    _writeSetter(buffer, field);
+    _writeSetter(buffer, field, typeGraph);
     buffer.writeln();
   }
 
@@ -153,7 +160,11 @@ void _writeSnapshotClass(StringBuffer buffer, StoreDefinition store) {
   buffer.writeln('}');
 }
 
-void _writeGetter(StringBuffer buffer, FieldInfo field) {
+void _writeGetter(
+  StringBuffer buffer,
+  FieldInfo field,
+  Map<String, TypeDefinition> typeGraph,
+) {
   final getterName = _getterNameForField(field);
   final returnType = _nonNullableType(field);
   final baseName = field.type.baseName;
@@ -161,6 +172,16 @@ void _writeGetter(StringBuffer buffer, FieldInfo field) {
   buffer
     ..writeln('  Future<$returnType> $getterName() async {')
     ..writeln("    final value = await _storage.getString(_key('${field.name}'));");
+
+  if (typeGraph[baseName] case final EnumType enumType) {
+    final defaultVal = field.defaultValue ?? '$baseName.${enumType.values.first}';
+    buffer
+      ..writeln(
+        '    return value != null ? $baseName.values[int.parse(value)] : $defaultVal;',
+      )
+      ..writeln('  }');
+    return;
+  }
 
   switch (baseName) {
     case 'bool':
@@ -187,12 +208,25 @@ void _writeGetter(StringBuffer buffer, FieldInfo field) {
   buffer.writeln('  }');
 }
 
-void _writeSetter(StringBuffer buffer, FieldInfo field) {
+void _writeSetter(
+  StringBuffer buffer,
+  FieldInfo field,
+  Map<String, TypeDefinition> typeGraph,
+) {
   final setterName = _setterNameForField(field);
   final paramType = _nonNullableType(field);
   final baseName = field.type.baseName;
 
   buffer.writeln('  Future<void> $setterName($paramType value) async {');
+
+  if (typeGraph[baseName] is EnumType) {
+    buffer
+      ..writeln(
+        "    await _storage.putString(_key('${field.name}'), value.index.toString());",
+      )
+      ..writeln('  }');
+    return;
+  }
 
   switch (baseName) {
     case 'String':
@@ -202,6 +236,16 @@ void _writeSetter(StringBuffer buffer, FieldInfo field) {
   }
 
   buffer.writeln('  }');
+}
+
+String _keySegmentExpression(
+  FieldInfo keyField,
+  Map<String, TypeDefinition> typeGraph,
+) {
+  if (typeGraph[keyField.type.baseName] is EnumType) {
+    return '\${${keyField.name}.name}';
+  }
+  return '\$${keyField.name}';
 }
 
 String _getterNameForField(FieldInfo field) {

@@ -63,12 +63,14 @@ class FieldInfo {
     required this.type,
     required this.isRequired,
     this.defaultValue,
+    this.isStoreKey = false,
   });
 
   final String name;
   final TypeInfo type;
   final bool isRequired;
   final String? defaultValue;
+  final bool isStoreKey;
 
   bool get hasDefault => defaultValue != null;
 }

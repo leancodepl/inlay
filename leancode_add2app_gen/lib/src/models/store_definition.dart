@@ -4,14 +4,15 @@ class StoreDefinition {
   const StoreDefinition({
     required this.className,
     required this.storeKey,
-    required this.scopeFields,
+    required this.keyFields,
     required this.valueFields,
   });
 
   final String className;
   final String storeKey;
-  final List<FieldInfo> scopeFields;
+  final List<FieldInfo> keyFields;
   final List<FieldInfo> valueFields;
 
-  List<FieldInfo> get allFields => [...scopeFields, ...valueFields];
+  FieldInfo? get keyField => keyFields.isEmpty ? null : keyFields.first;
+  List<FieldInfo> get allFields => [...keyFields, ...valueFields];
 }
