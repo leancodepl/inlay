@@ -183,8 +183,7 @@ String generateKotlinToListMethod(
     return 'fun toList(): List<Any?> = emptyList()';
   }
 
-  final buffer = StringBuffer();
-  buffer.writeln('fun toList(): List<Any?> = listOf(');
+  final buffer = StringBuffer()..writeln('fun toList(): List<Any?> = listOf(');
 
   for (final field in fields) {
     final encode = generateKotlinEncode(field.name, field.type, typeGraph);
@@ -201,8 +200,8 @@ String generateKotlinFromListMethod(
   List<FieldInfo> fields,
   Map<String, TypeDefinition> typeGraph,
 ) {
-  final buffer = StringBuffer();
-  buffer.writeln('fun fromList(list: List<Any?>): $className = $className(');
+  final buffer = StringBuffer()
+    ..writeln('fun fromList(list: List<Any?>): $className = $className(');
 
   for (var i = 0; i < fields.length; i++) {
     final field = fields[i];

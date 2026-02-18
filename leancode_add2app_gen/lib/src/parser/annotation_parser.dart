@@ -55,6 +55,8 @@ class _SchemaCollectorVisitor extends RecursiveAstVisitor<void> {
 
   @override
   void visitClassDeclaration(ClassDeclaration node) {
+    // Using deprecated API - namePart replacement has different structure.
+    // ignore: deprecated_member_use
     final className = node.name.lexeme;
 
     // Check for route annotations.
@@ -115,7 +117,11 @@ class _SchemaCollectorVisitor extends RecursiveAstVisitor<void> {
 
   @override
   void visitEnumDeclaration(EnumDeclaration node) {
+    // Using deprecated API - namePart replacement has different structure.
+    // ignore: deprecated_member_use
     final name = node.name.lexeme;
+    // Using deprecated API - body.constants has different iteration pattern.
+    // ignore: deprecated_member_use
     final values = node.constants.map((c) => c.name.lexeme).toList();
     enums.add(EnumDefinition(name: name, values: values));
     super.visitEnumDeclaration(node);
@@ -169,9 +175,10 @@ class _SchemaCollectorVisitor extends RecursiveAstVisitor<void> {
     return storeKeyFromClassName(className);
   }
 
-  /// Extracts all fields from a class.
   List<FieldInfo> _extractFields(ClassDeclaration node) {
     final fields = <FieldInfo>[];
+    // Using deprecated API - body.members has different iteration pattern.
+    // ignore: deprecated_member_use
     final members = node.members;
 
     // First, collect constructor parameter info.
@@ -181,7 +188,9 @@ class _SchemaCollectorVisitor extends RecursiveAstVisitor<void> {
     for (final member in members) {
       if (member is FieldDeclaration) {
         final typeAnnotation = member.fields.type;
-        if (typeAnnotation == null) continue;
+        if (typeAnnotation == null) {
+          continue;
+        }
 
         for (final variable in member.fields.variables) {
           final fieldName = variable.name.lexeme;
@@ -230,7 +239,9 @@ class _SchemaCollectorVisitor extends RecursiveAstVisitor<void> {
         // Primary constructor (unnamed).
         for (final param in member.parameters.parameters) {
           final name = param.name?.lexeme;
-          if (name == null) continue;
+          if (name == null) {
+            continue;
+          }
 
           String? defaultValue;
           if (param is DefaultFormalParameter && param.defaultValue != null) {
@@ -251,8 +262,7 @@ class _SchemaCollectorVisitor extends RecursiveAstVisitor<void> {
   /// Parses a type annotation into [TypeInfo].
   TypeInfo _parseTypeAnnotation(TypeAnnotation typeAnnotation) {
     if (typeAnnotation is NamedType) {
-      // In analyzer 7.x, name2 gives us the Identifier token.
-      final name = typeAnnotation.name2.lexeme;
+      final name = typeAnnotation.name.lexeme;
       final isNullable = typeAnnotation.question != null;
       final typeArgs = <TypeInfo>[];
 

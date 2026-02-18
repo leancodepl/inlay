@@ -1,4 +1,11 @@
-import 'package:leancode_add2app_gen/leancode_add2app_gen.dart';
+import 'package:leancode_add2app_gen/src/generators/dart/dart_routes_generator.dart';
+import 'package:leancode_add2app_gen/src/generators/dart/dart_store_generator.dart';
+import 'package:leancode_add2app_gen/src/generators/kotlin/kotlin_routes_generator.dart';
+import 'package:leancode_add2app_gen/src/generators/kotlin/kotlin_store_generator.dart';
+import 'package:leancode_add2app_gen/src/generators/swift/swift_routes_generator.dart';
+import 'package:leancode_add2app_gen/src/parser/annotation_parser.dart';
+import 'package:leancode_add2app_gen/src/parser/type_resolver.dart';
+import 'package:leancode_add2app_gen/src/utils/naming.dart';
 import 'package:test/test.dart';
 
 const _routesSource = '''

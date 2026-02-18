@@ -205,20 +205,18 @@ class Add2AppNavigator {
 
   /// Pushes a route, creating a new native Activity/ViewController.
   ///
-  /// For [Add2AppFlutterRoute]: Opens a **new** Activity/ViewController with
+  /// For `Add2AppFlutterRoute`: Opens a **new** Activity/ViewController with
   /// a **new Flutter engine**. This is NOT the same as in-Flutter navigation.
   /// See class documentation for when to use this vs `Navigator.of(context)`.
   ///
-  /// For [Add2AppNativeRoute]: Opens a native Activity/ViewController.
+  /// For `Add2AppNativeRoute`: Opens a native Activity/ViewController.
   Future<void> push(Add2AppRoute route) async {
     final page = route.toPageSettings();
     switch (route.type) {
       case Add2AppRouteType.flutter:
         await pushFlutterRoute(page);
-        break;
       case Add2AppRouteType.native:
         await pushNativeRoute(page);
-        break;
     }
   }
 

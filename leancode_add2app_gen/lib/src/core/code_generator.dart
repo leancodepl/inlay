@@ -1,7 +1,5 @@
 import 'dart:io';
 
-import 'package:path/path.dart' as p;
-
 import 'package:leancode_add2app_gen/src/core/generation_result.dart';
 import 'package:leancode_add2app_gen/src/generators/dart/dart_routes_generator.dart';
 import 'package:leancode_add2app_gen/src/generators/dart/dart_store_generator.dart';
@@ -11,10 +9,8 @@ import 'package:leancode_add2app_gen/src/generators/swift/swift_routes_generator
 import 'package:leancode_add2app_gen/src/models/schema.dart';
 import 'package:leancode_add2app_gen/src/parser/annotation_parser.dart';
 import 'package:leancode_add2app_gen/src/parser/type_resolver.dart';
+import 'package:path/path.dart' as p;
 
-export 'package:leancode_add2app_gen/src/parser/type_resolver.dart' show TypeDefinition;
-
-/// Core code generator that can be used by both CLI and build_runner.
 class CodeGenerator {
   CodeGenerator({
     AnnotationParser? parser,
@@ -25,7 +21,6 @@ class CodeGenerator {
   final AnnotationParser _parser;
   final TypeResolver _resolver;
 
-  /// Parses source code and validates the schema.
   ParseResult parseAndValidate(String source, {String? path}) {
     final schema = _parser.parse(source, path: path);
     final resolution = _resolver.resolve(schema);
@@ -118,17 +113,26 @@ class CodeGenerator {
 
 /// Configuration for native file output.
 class NativeOutputConfig {
+  /// Creates a new native output configuration.
   const NativeOutputConfig({
     this.kotlinOutput,
     this.kotlinPackage,
     this.swiftOutput,
   });
 
+  /// The output directory for Kotlin files.
   final String? kotlinOutput;
+
+  /// The Kotlin package name for generated files.
   final String? kotlinPackage;
+
+  /// The output directory for Swift files.
   final String? swiftOutput;
 
+  /// Whether Kotlin generation is configured.
   bool get hasKotlinConfig => kotlinOutput != null && kotlinPackage != null;
+
+  /// Whether Swift generation is configured.
   bool get hasSwiftConfig => swiftOutput != null;
 }
 
