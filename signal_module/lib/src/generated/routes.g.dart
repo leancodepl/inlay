@@ -200,7 +200,7 @@ class SoundsNotificationsPage extends FlutterRouteBase {
     return SoundsNotificationsPage(
       contactId: map['contactId'] as String? ?? '',
       preferences: map['preferences'] as NotificationPreferences?,
-      presets: map['presets'] as List?,
+      presets: map['presets'] as List<NotificationPreset>?,
       fallbackChannel: map['fallbackChannel'] as DeliveryChannel?,
     );
   }
@@ -242,7 +242,7 @@ class SetWallpaperPage extends FlutterRouteBase {
   static SetWallpaperPage decodeFromMap(Map<Object?, Object?> map) {
     return SetWallpaperPage(
       recipientId: map['recipientId'] as String?,
-      options: map['options'] as List?,
+      options: map['options'] as List<WallpaperOption>?,
       preferredKind: map['preferredKind'] as WallpaperKind?,
     );
   }
@@ -284,7 +284,7 @@ class ContactDetailsPage extends FlutterRouteBase {
   static ContactDetailsPage decodeFromMap(Map<Object?, Object?> map) {
     return ContactDetailsPage(
       contactId: map['contactId'] as String? ?? '',
-      badges: map['badges'] as List?,
+      badges: map['badges'] as List<ContactBadge>?,
       preferredSound: map['preferredSound'] as NotificationSound?,
     );
   }

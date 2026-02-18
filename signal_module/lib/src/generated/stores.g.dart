@@ -5,6 +5,8 @@ import 'dart:async';
 
 import 'package:leancode_add2app/leancode_add2app.dart';
 
+import 'routes.g.dart';
+
 /// Generated store wrapper for SoundsNotificationsStore.
 class SoundsNotificationsStore {
   SoundsNotificationsStore(this._storage, {required this.contactId, });

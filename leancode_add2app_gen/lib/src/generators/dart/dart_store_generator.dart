@@ -13,6 +13,7 @@ String generateDartStores({
   required Schema schema,
   required Map<String, TypeDefinition> typeGraph,
 }) {
+  final needsRoutesImport = _storesRequireRoutesImport(schema, typeGraph);
   final buffer = StringBuffer()
     // Header.
     ..writeln('// GENERATED CODE — DO NOT MODIFY BY HAND')
@@ -22,6 +23,12 @@ String generateDartStores({
     ..writeln()
     ..writeln("import 'package:leancode_add2app/leancode_add2app.dart';")
     ..writeln();
+
+  if (needsRoutesImport) {
+    buffer
+      ..writeln("import 'routes.g.dart';")
+      ..writeln();
+  }
 
   // Generate store classes.
   for (final store in schema.stores) {
@@ -33,6 +40,20 @@ String generateDartStores({
 
   final output = buffer.toString();
   return output.endsWith('\n') ? output : '$output\n';
+}
+
+bool _storesRequireRoutesImport(
+  Schema schema,
+  Map<String, TypeDefinition> typeGraph,
+) {
+  for (final store in schema.stores) {
+    for (final field in store.allFields) {
+      if (typeGraph[field.type.baseName] is EnumType) {
+        return true;
+      }
+    }
+  }
+  return false;
 }
 
 void _writeStoreClass(
