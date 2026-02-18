@@ -408,6 +408,18 @@ private struct NativeSwiftUISoundsNotifications: View {
     }
 }
 
+private enum VibrationLevel: Int {
+    case off = 0
+    case normal = 1
+    case intense = 2
+}
+
+private enum NotificationBehavior: Int {
+    case defaultBehavior = 0
+    case mentionsOnly = 1
+    case muted = 2
+}
+
 private extension VibrationLevel {
     static let storeValues: [VibrationLevel] = [.off, .normal, .intense]
 
