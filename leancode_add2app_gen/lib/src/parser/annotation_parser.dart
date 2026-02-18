@@ -55,9 +55,7 @@ class _SchemaCollectorVisitor extends RecursiveAstVisitor<void> {
 
   @override
   void visitClassDeclaration(ClassDeclaration node) {
-    // Using deprecated API - namePart replacement has different structure.
-    // ignore: deprecated_member_use
-    final className = node.name.lexeme;
+    final className = node.namePart.typeName.lexeme;
 
     // Check for route annotations.
     final flutterAnnotation = _findAnnotation(node, _flutterRouteAnnotations);
@@ -117,12 +115,8 @@ class _SchemaCollectorVisitor extends RecursiveAstVisitor<void> {
 
   @override
   void visitEnumDeclaration(EnumDeclaration node) {
-    // Using deprecated API - namePart replacement has different structure.
-    // ignore: deprecated_member_use
-    final name = node.name.lexeme;
-    // Using deprecated API - body.constants has different iteration pattern.
-    // ignore: deprecated_member_use
-    final values = node.constants.map((c) => c.name.lexeme).toList();
+    final name = node.namePart.typeName.lexeme;
+    final values = node.body.constants.map((c) => c.name.lexeme).toList();
     enums.add(EnumDefinition(name: name, values: values));
     super.visitEnumDeclaration(node);
   }
@@ -177,9 +171,11 @@ class _SchemaCollectorVisitor extends RecursiveAstVisitor<void> {
 
   List<FieldInfo> _extractFields(ClassDeclaration node) {
     final fields = <FieldInfo>[];
-    // Using deprecated API - body.members has different iteration pattern.
-    // ignore: deprecated_member_use
-    final members = node.members;
+    final body = node.body;
+    if (body is! BlockClassBody) {
+      return fields;
+    }
+    final members = body.members;
 
     // First, collect constructor parameter info.
     final paramInfo = _extractConstructorParamInfo(members);
