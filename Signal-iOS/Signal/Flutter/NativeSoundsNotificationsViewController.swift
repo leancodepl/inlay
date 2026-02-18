@@ -26,6 +26,7 @@ final class NativeSoundsNotificationsViewController: UIViewController {
     private let previewsSwitch = UISwitch()
     private let soundValueLabel = UILabel()
     private let vibrationValueLabel = UILabel()
+    private let behaviorValueLabel = UILabel()
 
     // MARK: - Init
 
@@ -79,9 +80,14 @@ final class NativeSoundsNotificationsViewController: UIViewController {
 
     private func loadState() {
         muteSwitch.isOn = storage.get(key: key("mute")) == "true"
-        previewsSwitch.isOn = storage.get(key: key("previews")) != "false"
+        previewsSwitch.isOn = storage.get(key: key("showPreviews")) != "false"
         soundValueLabel.text = storage.get(key: key("sound")) ?? "Default"
-        vibrationValueLabel.text = storage.get(key: key("vibration")) ?? "Default"
+        vibrationValueLabel.text = VibrationLevel.fromStorage(
+            storage.get(key: key("vibration"))
+        ).label
+        behaviorValueLabel.text = NotificationBehavior.fromStorage(
+            storage.get(key: key("behavior"))
+        ).label
     }
 
     // MARK: - Observer callback (only fires for changes from OTHER sources)
@@ -94,12 +100,14 @@ final class NativeSoundsNotificationsViewController: UIViewController {
             switch field {
             case "mute":
                 muteSwitch.isOn = entry.value == "true"
-            case "previews":
+            case "showPreviews":
                 previewsSwitch.isOn = entry.value != "false"
             case "sound":
                 soundValueLabel.text = entry.value.isEmpty ? "Default" : entry.value
             case "vibration":
-                vibrationValueLabel.text = entry.value.isEmpty ? "Default" : entry.value
+                vibrationValueLabel.text = VibrationLevel.fromStorage(entry.value).label
+            case "behavior":
+                behaviorValueLabel.text = NotificationBehavior.fromStorage(entry.value).label
             default:
                 break
             }
@@ -113,7 +121,7 @@ final class NativeSoundsNotificationsViewController: UIViewController {
     }
 
     @objc private func previewsChanged(_ sender: UISwitch) {
-        storage.put(key: key("previews"), value: String(sender.isOn))
+        storage.put(key: key("showPreviews"), value: String(sender.isOn))
     }
 
     @objc private func showSoundPicker() {
@@ -131,13 +139,25 @@ final class NativeSoundsNotificationsViewController: UIViewController {
     }
 
     @objc private func showVibrationPicker() {
-        let patterns = ["Default", "Short", "Long", "Double", "None"]
         let alert = UIAlertController(title: "Vibration Pattern", message: nil, preferredStyle: .actionSheet)
-        for pattern in patterns {
-            alert.addAction(UIAlertAction(title: pattern, style: .default) { [weak self] _ in
+        for level in VibrationLevel.storeValues {
+            alert.addAction(UIAlertAction(title: level.label, style: .default) { [weak self] _ in
                 guard let self else { return }
-                self.storage.put(key: self.key("vibration"), value: pattern)
-                self.vibrationValueLabel.text = pattern
+                self.storage.put(key: self.key("vibration"), value: String(level.rawValue))
+                self.vibrationValueLabel.text = level.label
+            })
+        }
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        present(alert, animated: true)
+    }
+
+    @objc private func showBehaviorPicker() {
+        let alert = UIAlertController(title: "Notification Behavior", message: nil, preferredStyle: .actionSheet)
+        for behavior in NotificationBehavior.storeValues {
+            alert.addAction(UIAlertAction(title: behavior.label, style: .default) { [weak self] _ in
+                guard let self else { return }
+                self.storage.put(key: self.key("behavior"), value: String(behavior.rawValue))
+                self.behaviorValueLabel.text = behavior.label
             })
         }
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
@@ -223,13 +243,32 @@ final class NativeSoundsNotificationsViewController: UIViewController {
         vibTitle.font = .systemFont(ofSize: 16)
         stack.addArrangedSubview(vibTitle)
 
-        vibrationValueLabel.text = "Default"
+        vibrationValueLabel.text = VibrationLevel.normal.label
         vibrationValueLabel.font = .systemFont(ofSize: 14)
         vibrationValueLabel.textColor = .secondaryLabel
         stack.addArrangedSubview(vibrationValueLabel)
 
         let changeVibBtn = makeButton(title: "Change vibration", action: #selector(showVibrationPicker))
         stack.addArrangedSubview(changeVibBtn)
+
+        stack.addArrangedSubview(makeDivider())
+
+        // ── Behavior ──
+        let behaviorTitle = UILabel()
+        behaviorTitle.text = "Notification behavior"
+        behaviorTitle.font = .systemFont(ofSize: 16)
+        stack.addArrangedSubview(behaviorTitle)
+
+        behaviorValueLabel.text = NotificationBehavior.defaultBehavior.label
+        behaviorValueLabel.font = .systemFont(ofSize: 14)
+        behaviorValueLabel.textColor = .secondaryLabel
+        stack.addArrangedSubview(behaviorValueLabel)
+
+        let changeBehaviorBtn = makeButton(
+            title: "Change behavior",
+            action: #selector(showBehaviorPicker)
+        )
+        stack.addArrangedSubview(changeBehaviorBtn)
 
         stack.addArrangedSubview(makeDivider())
 
@@ -289,5 +328,43 @@ final class NativeSoundsNotificationsViewController: UIViewController {
         btn.addTarget(self, action: action, for: .touchUpInside)
         btn.contentHorizontalAlignment = .leading
         return btn
+    }
+}
+
+private extension VibrationLevel {
+    static let storeValues: [VibrationLevel] = [.off, .normal, .intense]
+
+    static func fromStorage(_ raw: String?) -> VibrationLevel {
+        guard let raw, let intValue = Int(raw), let level = VibrationLevel(rawValue: intValue) else {
+            return .normal
+        }
+        return level
+    }
+
+    var label: String {
+        switch self {
+        case .off: return "Off"
+        case .normal: return "Normal"
+        case .intense: return "Intense"
+        }
+    }
+}
+
+private extension NotificationBehavior {
+    static let storeValues: [NotificationBehavior] = [.defaultBehavior, .mentionsOnly, .muted]
+
+    static func fromStorage(_ raw: String?) -> NotificationBehavior {
+        guard let raw, let intValue = Int(raw), let behavior = NotificationBehavior(rawValue: intValue) else {
+            return .defaultBehavior
+        }
+        return behavior
+    }
+
+    var label: String {
+        switch self {
+        case .defaultBehavior: return "Default"
+        case .mentionsOnly: return "Mentions only"
+        case .muted: return "Muted"
+        }
     }
 }

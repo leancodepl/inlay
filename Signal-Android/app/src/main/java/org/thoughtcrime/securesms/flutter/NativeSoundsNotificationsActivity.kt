@@ -16,6 +16,9 @@ import co.leancode.add2app.KeyValueStorageImpl
 import co.leancode.add2app.NativeStorageScope
 import co.leancode.add2app.navigator.PageSettings
 import co.leancode.add2app.storage.StorageEntry
+import co.leancode.signal_module.generated.NotificationBehavior
+import co.leancode.signal_module.generated.SoundsNotificationsStore
+import co.leancode.signal_module.generated.VibrationLevel
 
 /**
  * ADD2APP: Native Android duplicate of the Sounds & Notifications screen.
@@ -39,9 +42,11 @@ class NativeSoundsNotificationsActivity : AppCompatActivity() {
     private lateinit var previewsSwitch: Switch
     private lateinit var soundValue: TextView
     private lateinit var vibrationValue: TextView
+    private lateinit var behaviorValue: TextView
 
     /** Scoped storage handle — read, write, and observe with auto-suppression. */
     private lateinit var storage: NativeStorageScope
+    private lateinit var store: SoundsNotificationsStore
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -50,6 +55,7 @@ class NativeSoundsNotificationsActivity : AppCompatActivity() {
         buildUi()
 
         storage = KeyValueStorageImpl.createScope()
+        store = SoundsNotificationsStore(storage, contactId = recipientId)
         loadState()
 
         storage.startObserving { entries ->
@@ -67,31 +73,22 @@ class NativeSoundsNotificationsActivity : AppCompatActivity() {
         storage.dispose()
     }
 
-    // ── Storage key helpers ──────────────────────────────────────────────
-
-    private fun key(field: String) = "sounds_notifications/$recipientId/$field"
-
     // ── Load from storage ────────────────────────────────────────────────
 
     private fun loadState() {
-        muteSwitch.isChecked = storage.get(key("mute")) == "true"
-        previewsSwitch.isChecked = storage.get(key("previews")) != "false"
-        soundValue.text = storage.get(key("sound")) ?: "Default"
-        vibrationValue.text = storage.get(key("vibration")) ?: "Default"
+        muteSwitch.isChecked = store.mute
+        previewsSwitch.isChecked = store.showPreviews
+        soundValue.text = store.sound
+        vibrationValue.text = store.vibration.label
+        behaviorValue.text = store.behavior.label
     }
 
     // ── Observer callback (only fires for changes from OTHER sources) ───
 
     private fun onStorageChanged(entries: List<StorageEntry>) {
         val prefix = "sounds_notifications/$recipientId/"
-        for (entry in entries) {
-            if (!entry.key.startsWith(prefix)) continue
-            when (entry.key.removePrefix(prefix)) {
-                "mute" -> muteSwitch.isChecked = entry.value == "true"
-                "previews" -> previewsSwitch.isChecked = entry.value != "false"
-                "sound" -> soundValue.text = entry.value.ifEmpty { "Default" }
-                "vibration" -> vibrationValue.text = entry.value.ifEmpty { "Default" }
-            }
+        if (entries.any { it.key.startsWith(prefix) }) {
+            loadState()
         }
     }
 
@@ -137,7 +134,7 @@ class NativeSoundsNotificationsActivity : AppCompatActivity() {
             textSize = 16f
             setPadding(0, dp(12), 0, dp(12))
             setOnCheckedChangeListener { _, isChecked ->
-                storage.put(key("mute"), isChecked.toString())
+                store.mute = isChecked
             }
         }
         content.addView(muteSwitch)
@@ -186,13 +183,34 @@ class NativeSoundsNotificationsActivity : AppCompatActivity() {
 
         content.addView(divider(dp))
 
+        // ── Behavior ──
+        content.addView(TextView(this).apply {
+            text = "Notification behavior"
+            textSize = 16f
+            setPadding(0, dp(12), 0, dp(4))
+        })
+        behaviorValue = TextView(this).apply {
+            text = NotificationBehavior.defaultBehavior.label
+            textSize = 14f
+            setTextColor(0xFF888888.toInt())
+            setPadding(0, 0, 0, dp(12))
+        }
+        content.addView(behaviorValue)
+
+        content.addView(Button(this).apply {
+            text = "Change behavior"
+            setOnClickListener { showBehaviorPicker() }
+        })
+
+        content.addView(divider(dp))
+
         // ── Show previews ──
         previewsSwitch = Switch(this).apply {
             text = "Show previews"
             textSize = 16f
             setPadding(0, dp(12), 0, dp(12))
             setOnCheckedChangeListener { _, isChecked ->
-                storage.put(key("previews"), isChecked.toString())
+                store.showPreviews = isChecked
             }
         }
         content.addView(previewsSwitch)
@@ -250,19 +268,34 @@ class NativeSoundsNotificationsActivity : AppCompatActivity() {
         AlertDialog.Builder(this)
             .setTitle("Notification Sound")
             .setItems(sounds) { _, which ->
-                storage.put(key("sound"), sounds[which])
+                store.sound = sounds[which]
                 soundValue.text = sounds[which]
             }
             .show()
     }
 
     private fun showVibrationPicker() {
-        val patterns = arrayOf("Default", "Short", "Long", "Double", "None")
+        val levels = VibrationLevel.entries.toTypedArray()
+        val labels = levels.map { it.label }.toTypedArray()
         AlertDialog.Builder(this)
             .setTitle("Vibration Pattern")
-            .setItems(patterns) { _, which ->
-                storage.put(key("vibration"), patterns[which])
-                vibrationValue.text = patterns[which]
+            .setItems(labels) { _, which ->
+                val level = levels[which]
+                store.vibration = level
+                vibrationValue.text = level.label
+            }
+            .show()
+    }
+
+    private fun showBehaviorPicker() {
+        val behaviors = NotificationBehavior.entries.toTypedArray()
+        val labels = behaviors.map { it.label }.toTypedArray()
+        AlertDialog.Builder(this)
+            .setTitle("Notification Behavior")
+            .setItems(labels) { _, which ->
+                val behavior = behaviors[which]
+                store.behavior = behavior
+                behaviorValue.text = behavior.label
             }
             .show()
     }
@@ -280,3 +313,17 @@ class NativeSoundsNotificationsActivity : AppCompatActivity() {
         }
     }
 }
+
+private val VibrationLevel.label: String
+    get() = when (this) {
+        VibrationLevel.off -> "Off"
+        VibrationLevel.normal -> "Normal"
+        VibrationLevel.intense -> "Intense"
+    }
+
+private val NotificationBehavior.label: String
+    get() = when (this) {
+        NotificationBehavior.defaultBehavior -> "Default"
+        NotificationBehavior.mentionsOnly -> "Mentions only"
+        NotificationBehavior.muted -> "Muted"
+    }

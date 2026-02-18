@@ -29,7 +29,7 @@ void add2appMain() {
   const routeHandler = _SignalFlutterRouteHandler();
 
   // ── 1. Init framework services ─────────────────────────────────────
-  KeyValueStorage().init();
+  KeyValueStorage.instance.init();
 
   // ── 2. Decode initial route ────────────────────────────────────────
   final page = Add2AppNavigator.initialPageFromPlatform();

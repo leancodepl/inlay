@@ -4,13 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:leancode_add2app/leancode_add2app.dart';
 import 'package:signal_module/src/generated/routes.g.dart';
+import 'package:signal_module/src/generated/stores.g.dart';
 
 import '../theme/signal_theme.dart';
 import '../widgets/settings_tile.dart';
-
-/// Storage key helpers — namespaced per contact.
-String _key(String contactId, String field) =>
-    'sounds_notifications/$contactId/$field';
 
 /// Sounds & Notifications screen.
 ///
@@ -29,21 +26,26 @@ class SoundsNotificationsScreen extends StatefulWidget {
 }
 
 class _SoundsNotificationsScreenState extends State<SoundsNotificationsScreen> {
-  final _storage = KeyValueStorage();
+  late final SoundsNotificationsStore _store;
 
   var _muteNotifications = false;
   var _showPreviews = true;
   var _notificationSound = 'Default';
-  var _vibrationPattern = 'Default';
+  var _vibrationLevel = VibrationLevel.normal;
+  var _behavior = NotificationBehavior.defaultBehavior;
   var _isLoading = true;
 
-  StreamSubscription<List<StorageEntry>>? _sub;
+  StreamSubscription<SoundsNotificationsStoreSnapshot>? _sub;
 
   @override
   void initState() {
     super.initState();
-    _loadFromStorage();
-    _sub = _storage.stream.listen(_onStorageChanged);
+    _store = SoundsNotificationsStore(
+      KeyValueStorage.instance,
+      contactId: widget.contactId,
+    );
+    _loadFromStore();
+    _sub = _store.stream.listen(_onStoreSnapshot);
   }
 
   @override
@@ -52,55 +54,31 @@ class _SoundsNotificationsScreenState extends State<SoundsNotificationsScreen> {
     super.dispose();
   }
 
-  /// Read the latest values from the platform (async, always fresh).
-  Future<void> _loadFromStorage() async {
-    final mute = await _storage.getString(_key(widget.contactId, 'mute'));
-    final sound = await _storage.getString(_key(widget.contactId, 'sound'));
-    final vibration = await _storage.getString(
-      _key(widget.contactId, 'vibration'),
-    );
-    final previews = await _storage.getString(
-      _key(widget.contactId, 'previews'),
-    );
-
+  /// Read latest values through generated typed store API.
+  Future<void> _loadFromStore() async {
+    final snapshot = await _store.getSnapshot();
     if (!mounted) {
       return;
     }
-
-    setState(() {
-      _muteNotifications = mute == 'true';
-      _notificationSound = sound ?? 'Default';
-      _vibrationPattern = vibration ?? 'Default';
-      _showPreviews = previews != 'false';
-      _isLoading = false;
-    });
+    _applySnapshot(snapshot);
   }
 
-  /// Called when storage changes from another engine or Android.
-  /// (The framework never sends back our own writes.)
-  void _onStorageChanged(List<StorageEntry> entries) {
-    final prefix = 'sounds_notifications/${widget.contactId}/';
-    final relevant = entries.where((e) => e.key.startsWith(prefix));
-    if (relevant.isEmpty) {
+  /// Called when store snapshot changes from another engine or native app.
+  void _onStoreSnapshot(SoundsNotificationsStoreSnapshot snapshot) {
+    if (!mounted) {
       return;
     }
+    _applySnapshot(snapshot);
+  }
 
-    // On a full-sync (resumed) we get all keys, so we reload everything.
-    // For granular pushes we just update the changed fields.
+  void _applySnapshot(SoundsNotificationsStoreSnapshot snapshot) {
     setState(() {
-      for (final entry in relevant) {
-        final field = entry.key.replaceFirst(prefix, '');
-        switch (field) {
-          case 'mute':
-            _muteNotifications = entry.value == 'true';
-          case 'sound':
-            _notificationSound = entry.value.isEmpty ? 'Default' : entry.value;
-          case 'vibration':
-            _vibrationPattern = entry.value.isEmpty ? 'Default' : entry.value;
-          case 'previews':
-            _showPreviews = entry.value != 'false';
-        }
-      }
+      _muteNotifications = snapshot.mute;
+      _showPreviews = snapshot.showPreviews;
+      _notificationSound = snapshot.sound;
+      _vibrationLevel = snapshot.vibration;
+      _behavior = snapshot.behavior;
+      _isLoading = false;
     });
   }
 
@@ -108,25 +86,27 @@ class _SoundsNotificationsScreenState extends State<SoundsNotificationsScreen> {
 
   Future<void> _setMute(bool value) async {
     setState(() => _muteNotifications = value);
-    await _storage.putString(_key(widget.contactId, 'mute'), value.toString());
+    await _store.setMute(value);
   }
 
   Future<void> _setPreviews(bool value) async {
     setState(() => _showPreviews = value);
-    await _storage.putString(
-      _key(widget.contactId, 'previews'),
-      value.toString(),
-    );
+    await _store.setShowPreviews(value);
   }
 
   Future<void> _setSound(String value) async {
     setState(() => _notificationSound = value);
-    await _storage.putString(_key(widget.contactId, 'sound'), value);
+    await _store.setSound(value);
   }
 
-  Future<void> _setVibration(String value) async {
-    setState(() => _vibrationPattern = value);
-    await _storage.putString(_key(widget.contactId, 'vibration'), value);
+  Future<void> _setVibration(VibrationLevel value) async {
+    setState(() => _vibrationLevel = value);
+    await _store.setVibration(value);
+  }
+
+  Future<void> _setBehavior(NotificationBehavior value) async {
+    setState(() => _behavior = value);
+    await _store.setBehavior(value);
   }
 
   // ── Build ─────────────────────────────────────────────────────────
@@ -188,8 +168,17 @@ class _SoundsNotificationsScreenState extends State<SoundsNotificationsScreen> {
                   SettingsTile(
                     icon: Icons.vibration,
                     title: 'Vibrate',
-                    subtitle: _vibrationPattern,
+                    subtitle: _vibrationLevel.label,
                     onTap: () => _showVibrationPicker(context),
+                  ),
+
+                  const Divider(indent: 56),
+
+                  SettingsTile(
+                    icon: Icons.tune,
+                    title: 'Notification behavior',
+                    subtitle: _behavior.label,
+                    onTap: () => _showBehaviorPicker(context),
                   ),
 
                   const SizedBox(height: 24),
@@ -320,7 +309,7 @@ class _SoundsNotificationsScreenState extends State<SoundsNotificationsScreen> {
   }
 
   void _showVibrationPicker(BuildContext context) {
-    final patterns = ['Default', 'Short', 'Long', 'Double', 'None'];
+    const levels = VibrationLevel.values;
 
     showModalBottomSheet<void>(
       context: context,
@@ -335,14 +324,14 @@ class _SoundsNotificationsScreenState extends State<SoundsNotificationsScreen> {
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
               ),
             ),
-            ...patterns.map(
-              (pattern) => ListTile(
-                title: Text(pattern),
-                trailing: _vibrationPattern == pattern
+            ...levels.map(
+              (level) => ListTile(
+                title: Text(level.label),
+                trailing: _vibrationLevel == level
                     ? const Icon(Icons.check, color: SignalColors.signalBlue)
                     : null,
                 onTap: () {
-                  _setVibration(pattern);
+                  _setVibration(level);
                   Navigator.pop(context);
                 },
               ),
@@ -353,4 +342,55 @@ class _SoundsNotificationsScreenState extends State<SoundsNotificationsScreen> {
       ),
     );
   }
+
+  void _showBehaviorPicker(BuildContext context) {
+    const behaviors = NotificationBehavior.values;
+
+    showModalBottomSheet<void>(
+      context: context,
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Padding(
+              padding: EdgeInsets.all(16),
+              child: Text(
+                'Notification Behavior',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+              ),
+            ),
+            ...behaviors.map(
+              (behavior) => ListTile(
+                title: Text(behavior.label),
+                trailing: _behavior == behavior
+                    ? const Icon(Icons.check, color: SignalColors.signalBlue)
+                    : null,
+                onTap: () {
+                  _setBehavior(behavior);
+                  Navigator.pop(context);
+                },
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+extension on VibrationLevel {
+  String get label => switch (this) {
+    VibrationLevel.off => 'Off',
+    VibrationLevel.normal => 'Normal',
+    VibrationLevel.intense => 'Intense',
+  };
+}
+
+extension on NotificationBehavior {
+  String get label => switch (this) {
+    NotificationBehavior.defaultBehavior => 'Default',
+    NotificationBehavior.mentionsOnly => 'Mentions only',
+    NotificationBehavior.muted => 'Muted',
+  };
 }

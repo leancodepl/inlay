@@ -46,6 +46,9 @@ import androidx.navigation.compose.rememberNavController
 import co.leancode.add2app.Add2AppFlutterScreen
 import co.leancode.add2app.KeyValueStorageImpl
 import co.leancode.add2app.navigator.PageSettings
+import co.leancode.signal_module.generated.NotificationBehavior
+import co.leancode.signal_module.generated.SoundsNotificationsStore
+import co.leancode.signal_module.generated.VibrationLevel
 
 /**
  * ADD2APP: Compose Activity that demonstrates [Add2AppFlutterScreen] inside a
@@ -262,44 +265,46 @@ private fun NativeComposeSoundsNotifications(
     recipientId: String,
     onBack: () -> Unit,
 ) {
-    // ── Key helper ──
-    fun key(field: String) = "sounds_notifications/$recipientId/$field"
-
     // ── Storage scope — created once per recipientId, during composition.
     //    Read/write works immediately; observation starts in DisposableEffect. ──
     val storage = remember(recipientId) {
         KeyValueStorageImpl.createScope()
     }
+    val store = remember(recipientId) {
+        SoundsNotificationsStore(storage, contactId = recipientId)
+    }
 
     // ── State — initialised from real storage values, no guessed defaults ──
     var muteNotifications by remember(recipientId) {
-        mutableStateOf(storage.get(key("mute")) == "true")
+        mutableStateOf(store.mute)
     }
     var showPreviews by remember(recipientId) {
-        mutableStateOf(storage.get(key("previews")) != "false")
+        mutableStateOf(store.showPreviews)
     }
     var notificationSound by remember(recipientId) {
-        mutableStateOf(storage.get(key("sound")) ?: "Default")
+        mutableStateOf(store.sound)
     }
-    var vibrationPattern by remember(recipientId) {
-        mutableStateOf(storage.get(key("vibration")) ?: "Default")
+    var vibrationLevel by remember(recipientId) {
+        mutableStateOf(store.vibration)
+    }
+    var behavior by remember(recipientId) {
+        mutableStateOf(store.behavior)
     }
 
     var showSoundPicker by remember { mutableStateOf(false) }
     var showVibrationPicker by remember { mutableStateOf(false) }
+    var showBehaviorPicker by remember { mutableStateOf(false) }
 
     // ── Start observing after state is declared (runs after composition) ──
     DisposableEffect(recipientId) {
         val prefix = "sounds_notifications/$recipientId/"
         storage.startObserving { entries ->
-            for (entry in entries) {
-                if (!entry.key.startsWith(prefix)) continue
-                when (entry.key.removePrefix(prefix)) {
-                    "mute" -> muteNotifications = entry.value == "true"
-                    "previews" -> showPreviews = entry.value != "false"
-                    "sound" -> notificationSound = entry.value.ifEmpty { "Default" }
-                    "vibration" -> vibrationPattern = entry.value.ifEmpty { "Default" }
-                }
+            if (entries.any { it.key.startsWith(prefix) }) {
+                muteNotifications = store.mute
+                showPreviews = store.showPreviews
+                notificationSound = store.sound
+                vibrationLevel = store.vibration
+                behavior = store.behavior
             }
         }
         onDispose { storage.dispose() }
@@ -365,7 +370,7 @@ private fun NativeComposeSoundsNotifications(
                             checked = muteNotifications,
                             onCheckedChange = { checked ->
                                 muteNotifications = checked
-                                storage.put(key("mute"), checked.toString())
+                                store.mute = checked
                             },
                         )
                     },
@@ -391,10 +396,23 @@ private fun NativeComposeSoundsNotifications(
             item {
                 ListItem(
                     headlineContent = { Text("Vibrate") },
-                    supportingContent = { Text(vibrationPattern) },
+                    supportingContent = { Text(vibrationLevel.label) },
                     leadingContent = { Text("📳", fontSize = 22.sp) },
                     trailingContent = { Text("›", fontSize = 22.sp, color = MaterialTheme.colorScheme.onSurfaceVariant) },
                     modifier = Modifier.clickable { showVibrationPicker = true },
+                )
+            }
+
+            item { HorizontalDivider(modifier = Modifier.padding(start = 56.dp)) }
+
+            // ── Behavior ──
+            item {
+                ListItem(
+                    headlineContent = { Text("Notification behavior") },
+                    supportingContent = { Text(behavior.label) },
+                    leadingContent = { Text("🎚", fontSize = 22.sp) },
+                    trailingContent = { Text("›", fontSize = 22.sp, color = MaterialTheme.colorScheme.onSurfaceVariant) },
+                    modifier = Modifier.clickable { showBehaviorPicker = true },
                 )
             }
 
@@ -422,7 +440,7 @@ private fun NativeComposeSoundsNotifications(
                             checked = showPreviews,
                             onCheckedChange = { checked ->
                                 showPreviews = checked
-                                storage.put(key("previews"), checked.toString())
+                                store.showPreviews = checked
                             },
                         )
                     },
@@ -463,7 +481,7 @@ private fun NativeComposeSoundsNotifications(
                                 .fillMaxWidth()
                                 .clickable {
                                     notificationSound = sound
-                                    storage.put(key("sound"), sound)
+                                    store.sound = sound
                                     showSoundPicker = false
                                 }
                                 .padding(vertical = 12.dp, horizontal = 8.dp),
@@ -485,7 +503,7 @@ private fun NativeComposeSoundsNotifications(
     // ── Vibration picker dialog ──
 
     if (showVibrationPicker) {
-        val patterns = listOf("Default", "Short", "Long", "Double", "None")
+        val patterns = VibrationLevel.entries
         AlertDialog(
             onDismissRequest = { showVibrationPicker = false },
             title = { Text("Vibration Pattern") },
@@ -496,16 +514,50 @@ private fun NativeComposeSoundsNotifications(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clickable {
-                                    vibrationPattern = pattern
-                                    storage.put(key("vibration"), pattern)
+                                    vibrationLevel = pattern
+                                    store.vibration = pattern
                                     showVibrationPicker = false
                                 }
                                 .padding(vertical = 12.dp, horizontal = 8.dp),
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
-                            Text(pattern, style = MaterialTheme.typography.bodyLarge)
-                            if (vibrationPattern == pattern) {
+                            Text(pattern.label, style = MaterialTheme.typography.bodyLarge)
+                            if (vibrationLevel == pattern) {
+                                Text("✓", color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
+                            }
+                        }
+                    }
+                }
+            },
+            confirmButton = {},
+        )
+    }
+
+    // ── Behavior picker dialog ──
+
+    if (showBehaviorPicker) {
+        val behaviors = NotificationBehavior.entries
+        AlertDialog(
+            onDismissRequest = { showBehaviorPicker = false },
+            title = { Text("Notification Behavior") },
+            text = {
+                Column {
+                    behaviors.forEach { item ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    behavior = item
+                                    store.behavior = item
+                                    showBehaviorPicker = false
+                                }
+                                .padding(vertical = 12.dp, horizontal = 8.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Text(item.label, style = MaterialTheme.typography.bodyLarge)
+                            if (behavior == item) {
                                 Text("✓", color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
                             }
                         }
@@ -516,3 +568,17 @@ private fun NativeComposeSoundsNotifications(
         )
     }
 }
+
+private val VibrationLevel.label: String
+    get() = when (this) {
+        VibrationLevel.off -> "Off"
+        VibrationLevel.normal -> "Normal"
+        VibrationLevel.intense -> "Intense"
+    }
+
+private val NotificationBehavior.label: String
+    get() = when (this) {
+        NotificationBehavior.defaultBehavior -> "Default"
+        NotificationBehavior.mentionsOnly -> "Mentions only"
+        NotificationBehavior.muted -> "Muted"
+    }

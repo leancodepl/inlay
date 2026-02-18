@@ -221,8 +221,11 @@ String _mapAccessorForType(String fieldName, TypeInfo type) {
         : "map['$fieldName'] == 'true'";
   }
 
-  // For complex types, just cast (they won't work via URL anyway).
-  return isNullable ? "map['$fieldName'] as $name?" : "map['$fieldName'] as $name";
+  // For complex types, cast to the full declared Dart type.
+  // URL maps only carry strings in real iOS deep-link cases, but this keeps
+  // generated code type-correct for generic fields (e.g. List<Custom>?).
+  final typeSource = type.toSource();
+  return "map['$fieldName'] as $typeSource";
 }
 
 void _writeNativeRoute(
