@@ -27,9 +27,13 @@ class SoundsNotificationsStore(
         get() = storage.get(key("sound")) ?: "Default"
         set(value) = storage.put(key("sound"), value)
 
-    var vibration: String
-        get() = storage.get(key("vibration")) ?: "Default"
-        set(value) = storage.put(key("vibration"), value)
+    var vibration: VibrationLevel
+        get() = storage.get(key("vibration"))?.toIntOrNull()?.let { VibrationLevel.entries[it] } ?: VibrationLevel.normal
+        set(value) = storage.put(key("vibration"), value.ordinal.toString())
+
+    var behavior: NotificationBehavior
+        get() = storage.get(key("behavior"))?.toIntOrNull()?.let { NotificationBehavior.entries[it] } ?: NotificationBehavior.defaultBehavior
+        set(value) = storage.put(key("behavior"), value.ordinal.toString())
 
     fun clear() = storage.removeByPrefix(key(""))
 }
@@ -50,6 +54,56 @@ class UserPreferencesStore(
     var locale: String
         get() = storage.get(key("locale")) ?: ""
         set(value) = storage.put(key("locale"), value)
+
+    var theme: AppTheme
+        get() = storage.get(key("theme"))?.toIntOrNull()?.let { AppTheme.entries[it] } ?: AppTheme.system
+        set(value) = storage.put(key("theme"), value.ordinal.toString())
+
+    fun clear() = storage.removeByPrefix(key(""))
+}
+
+/**
+ * Generated store wrapper for ThreadPreferencesStore.
+ */
+class ThreadPreferencesStore(
+    private val storage: NativeStorageScope,
+    private val threadId: Long,
+) {
+
+    private fun key(field: String) = "thread_preferences/$threadId/$field"
+
+    var unreadCount: Long
+        get() = storage.get(key("unreadCount"))?.toLongOrNull() ?: 0
+        set(value) = storage.put(key("unreadCount"), value.toString())
+
+    var fontScale: Double
+        get() = storage.get(key("fontScale"))?.toDoubleOrNull() ?: 1.0
+        set(value) = storage.put(key("fontScale"), value.toString())
+
+    var behavior: NotificationBehavior
+        get() = storage.get(key("behavior"))?.toIntOrNull()?.let { NotificationBehavior.entries[it] } ?: NotificationBehavior.defaultBehavior
+        set(value) = storage.put(key("behavior"), value.ordinal.toString())
+
+    fun clear() = storage.removeByPrefix(key(""))
+}
+
+/**
+ * Generated store wrapper for CategoryPreferencesStore.
+ */
+class CategoryPreferencesStore(
+    private val storage: NativeStorageScope,
+    private val category: ConversationCategory,
+) {
+
+    private fun key(field: String) = "category_preferences/${category.name}/$field"
+
+    var pinned: Boolean
+        get() = storage.get(key("pinned")) == "true"
+        set(value) = storage.put(key("pinned"), value.toString())
+
+    var label: String
+        get() = storage.get(key("label")) ?: "General"
+        set(value) = storage.put(key("label"), value)
 
     fun clear() = storage.removeByPrefix(key(""))
 }

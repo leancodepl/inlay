@@ -12,6 +12,7 @@ import 'package:leancode_add2app_gen/src/utils/naming.dart';
 const _flutterRouteAnnotations = ['Add2AppFlutterRoute', 'add2AppFlutterRoute'];
 const _nativeRouteAnnotations = ['Add2AppNativeRoute', 'add2AppNativeRoute'];
 const _storeAnnotations = ['Add2AppStore', 'add2AppStore'];
+const _storeKeyFieldAnnotations = ['Add2AppStoreKey', 'add2AppStoreKey'];
 
 /// Parses a Dart schema file and extracts definitions from annotations.
 ///
@@ -90,11 +91,11 @@ class _SchemaCollectorVisitor extends RecursiveAstVisitor<void> {
     final storeAnnotation = _findAnnotation(node, _storeAnnotations);
     if (storeAnnotation != null) {
       final storeKey = _extractStoreKey(storeAnnotation, className);
-      final (scopeFields, valueFields) = _extractStoreFields(node);
+      final (keyFields, valueFields) = _extractStoreFields(node);
       stores.add(StoreDefinition(
         className: className,
         storeKey: storeKey,
-        scopeFields: scopeFields,
+        keyFields: keyFields,
         valueFields: valueFields,
       ));
       super.visitClassDeclaration(node);
@@ -187,6 +188,10 @@ class _SchemaCollectorVisitor extends RecursiveAstVisitor<void> {
         if (typeAnnotation == null) {
           continue;
         }
+        final isStoreKey = _hasAnnotation(
+          member.metadata,
+          _storeKeyFieldAnnotations,
+        );
 
         for (final variable in member.fields.variables) {
           final fieldName = variable.name.lexeme;
@@ -198,6 +203,7 @@ class _SchemaCollectorVisitor extends RecursiveAstVisitor<void> {
             type: typeInfo,
             isRequired: info?.isRequired ?? false,
             defaultValue: info?.defaultValue,
+            isStoreKey: isStoreKey || (info?.isStoreKey ?? false),
           ));
         }
       }
@@ -206,24 +212,23 @@ class _SchemaCollectorVisitor extends RecursiveAstVisitor<void> {
     return fields;
   }
 
-  /// Extracts store fields, separating scope fields from value fields.
-  ///
-  /// Scope fields: required constructor params without defaults.
-  /// Value fields: everything else.
-  (List<FieldInfo>, List<FieldInfo>) _extractStoreFields(ClassDeclaration node) {
+  /// Extracts store fields, separating explicit key fields from values.
+  (List<FieldInfo>, List<FieldInfo>) _extractStoreFields(
+    ClassDeclaration node,
+  ) {
     final allFields = _extractFields(node);
-    final scopeFields = <FieldInfo>[];
+    final keyFields = <FieldInfo>[];
     final valueFields = <FieldInfo>[];
 
     for (final field in allFields) {
-      if (field.isRequired && !field.hasDefault) {
-        scopeFields.add(field);
+      if (field.isStoreKey) {
+        keyFields.add(field);
       } else {
         valueFields.add(field);
       }
     }
 
-    return (scopeFields, valueFields);
+    return (keyFields, valueFields);
   }
 
   /// Collects parameter info (required, default value) from constructors.
@@ -247,12 +252,36 @@ class _SchemaCollectorVisitor extends RecursiveAstVisitor<void> {
           info[name] = _ParamInfo(
             isRequired: param.isRequired,
             defaultValue: defaultValue,
+            isStoreKey: _isStoreKeyParameter(param),
           );
         }
       }
     }
 
     return info;
+  }
+
+  bool _hasAnnotation(
+    NodeList<Annotation> metadata,
+    List<String> annotationNames,
+  ) {
+    for (final annotation in metadata) {
+      final name = annotation.name.name;
+      if (annotationNames.contains(name)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  bool _isStoreKeyParameter(FormalParameter param) {
+    if (_hasAnnotation(param.metadata, _storeKeyFieldAnnotations)) {
+      return true;
+    }
+    if (param is DefaultFormalParameter) {
+      return _hasAnnotation(param.parameter.metadata, _storeKeyFieldAnnotations);
+    }
+    return false;
   }
 
   /// Parses a type annotation into [TypeInfo].
@@ -285,8 +314,13 @@ class _SchemaCollectorVisitor extends RecursiveAstVisitor<void> {
 }
 
 class _ParamInfo {
-  const _ParamInfo({required this.isRequired, this.defaultValue});
+  const _ParamInfo({
+    required this.isRequired,
+    this.defaultValue,
+    required this.isStoreKey,
+  });
 
   final bool isRequired;
   final String? defaultValue;
+  final bool isStoreKey;
 }

@@ -118,9 +118,9 @@ class TypeResolver {
       );
     }
 
-    // Validate store types (only primitives + String for now).
+    // Validate store types.
     for (final store in schema.stores) {
-      _validateStoreFields(store, errors);
+      _validateStoreFields(store, typeGraph, errors);
     }
 
     // Check for circular references.
@@ -195,27 +195,63 @@ class TypeResolver {
 
   void _validateStoreFields(
     StoreDefinition store,
+    Map<String, TypeDefinition> typeGraph,
     List<TypeResolutionError> errors,
   ) {
-    // For now, stores only support primitive types.
-    final supportedStoreTypes = {'bool', 'int', 'double', 'String'};
+    // Store key: zero or one key field.
+    if (store.keyFields.length > 1) {
+      errors.add(TypeResolutionError(
+        message: 'Store can have at most one field annotated with @Add2AppStoreKey',
+        location: store.className,
+      ));
+    }
 
-    for (final field in store.valueFields) {
+    for (final field in store.keyFields) {
       final baseName = field.type.baseName;
-      if (!supportedStoreTypes.contains(baseName)) {
+      final isEnum = typeGraph[baseName] is EnumType;
+      final isSupportedKeyType = baseName == 'String' || baseName == 'int' || isEnum;
+
+      if (!isSupportedKeyType) {
         errors.add(TypeResolutionError(
-          message: 'Store fields must be primitive types (bool, int, double, String). '
-              'Found: $baseName',
+          message: 'Store key field must be String, int, or enum. Found: $baseName',
+          location: '${store.className}.${field.name}',
+        ));
+      }
+
+      if (field.type.isNullable) {
+        errors.add(TypeResolutionError(
+          message: 'Store key field cannot be nullable.',
+          location: '${store.className}.${field.name}',
+        ));
+      }
+
+      if (!field.isRequired || field.hasDefault) {
+        errors.add(TypeResolutionError(
+          message: 'Store key field must be a required constructor parameter without default value.',
           location: '${store.className}.${field.name}',
         ));
       }
     }
 
-    // Scope fields must be String.
-    for (final field in store.scopeFields) {
-      if (field.type.baseName != 'String') {
+    // Store values: primitives and enums only.
+    final supportedPrimitiveValues = {'bool', 'int', 'double', 'String'};
+    for (final field in store.valueFields) {
+      final baseName = field.type.baseName;
+      final isEnum = typeGraph[baseName] is EnumType;
+      final isSupportedValueType =
+          supportedPrimitiveValues.contains(baseName) || isEnum;
+
+      if (!isSupportedValueType) {
         errors.add(TypeResolutionError(
-          message: 'Store scope fields must be String. Found: ${field.type.baseName}',
+          message: 'Store value fields must be primitive types or enums (bool, int, double, String, enum). '
+              'Found: $baseName',
+          location: '${store.className}.${field.name}',
+        ));
+      }
+
+      if (field.type.typeArguments.isNotEmpty) {
+        errors.add(TypeResolutionError(
+          message: 'Store value fields cannot be generic types (List/Map/etc).',
           location: '${store.className}.${field.name}',
         ));
       }

@@ -49,16 +49,18 @@ import 'package:leancode_add2app/leancode_add2app.dart';
 @Add2AppStore(key: 'sounds_notifications')
 class SoundsNotificationsStore {
   const SoundsNotificationsStore({
-    required this.contactId,
+    @Add2AppStoreKey() required this.contactId,
     this.mute = false,
     this.showPreviews = true,
     this.sound = 'Default',
+    this.behavior = NotificationBehavior.defaultBehavior,
   });
 
   final String contactId;
   final bool mute;
   final bool showPreviews;
   final String sound;
+  final NotificationBehavior behavior;
 }
 
 @Add2AppStore()
@@ -71,6 +73,8 @@ class UserPreferencesStore {
   final bool darkMode;
   final String? locale;
 }
+
+enum NotificationBehavior { defaultBehavior, muted, mentionsOnly }
 ''';
 
 const _nestedTypesSource = '''
@@ -106,6 +110,130 @@ class NestedItem {
 }
 
 enum MediaType { image, video, audio }
+''';
+
+const _enhancedEnumRoutesSource = '''
+import 'package:leancode_add2app/leancode_add2app.dart';
+
+@Add2AppFlutterRoute()
+class EnhancedEnumPage {
+  const EnhancedEnumPage({required this.channel});
+
+  final DeliveryChannel channel;
+}
+
+enum DeliveryChannel {
+  push('push', true),
+  sms('sms', false);
+
+  const DeliveryChannel(this.code, this.supportsPreview);
+
+  final String code;
+  final bool supportsPreview;
+
+  bool get isFallback => !supportsPreview;
+}
+''';
+
+const _storeKeyTypesSource = '''
+import 'package:leancode_add2app/leancode_add2app.dart';
+
+@Add2AppStore(key: 'thread_preferences')
+class ThreadPreferencesStore {
+  const ThreadPreferencesStore({
+    @Add2AppStoreKey() required this.threadId,
+    this.unreadCount = 0,
+    this.behavior = NotificationBehavior.defaultBehavior,
+  });
+
+  final int threadId;
+  final int unreadCount;
+  final NotificationBehavior behavior;
+}
+
+@Add2AppStore(key: 'category_preferences')
+class CategoryPreferencesStore {
+  const CategoryPreferencesStore({
+    @Add2AppStoreKey() required this.category,
+    this.label = 'General',
+  });
+
+  final ConversationCategory category;
+  final String label;
+}
+
+enum NotificationBehavior { defaultBehavior, muted }
+
+enum ConversationCategory {
+  direct('direct'),
+  group('group');
+
+  const ConversationCategory(this.code);
+
+  final String code;
+}
+''';
+
+const _invalidStoreMultipleKeysSource = '''
+import 'package:leancode_add2app/leancode_add2app.dart';
+
+@Add2AppStore(key: 'invalid_store')
+class InvalidStore {
+  const InvalidStore({
+    @Add2AppStoreKey() required this.contactId,
+    @Add2AppStoreKey() required this.threadId,
+    this.value = true,
+  });
+
+  final String contactId;
+  final int threadId;
+  final bool value;
+}
+''';
+
+const _invalidStoreUnsupportedKeySource = '''
+import 'package:leancode_add2app/leancode_add2app.dart';
+
+@Add2AppStore(key: 'invalid_store')
+class InvalidStore {
+  const InvalidStore({
+    @Add2AppStoreKey() required this.keyValue,
+    this.value = true,
+  });
+
+  final double keyValue;
+  final bool value;
+}
+''';
+
+const _invalidStoreOptionalKeySource = '''
+import 'package:leancode_add2app/leancode_add2app.dart';
+
+@Add2AppStore(key: 'invalid_store')
+class InvalidStore {
+  const InvalidStore({
+    @Add2AppStoreKey() this.contactId = 'default',
+    this.value = true,
+  });
+
+  final String contactId;
+  final bool value;
+}
+''';
+
+const _invalidStoreNestedValueSource = '''
+import 'package:leancode_add2app/leancode_add2app.dart';
+
+@Add2AppStore(key: 'invalid_store')
+class InvalidStore {
+  const InvalidStore({
+    @Add2AppStoreKey() required this.contactId,
+    this.tags = const [],
+  });
+
+  final String contactId;
+  final List<String> tags;
+}
 ''';
 
 void main() {
@@ -169,14 +297,15 @@ void main() {
       final soundsStore = schema.stores[0];
       expect(soundsStore.className, 'SoundsNotificationsStore');
       expect(soundsStore.storeKey, 'sounds_notifications');
-      expect(soundsStore.scopeFields, hasLength(1));
-      expect(soundsStore.scopeFields[0].name, 'contactId');
-      expect(soundsStore.valueFields, hasLength(3));
+      expect(soundsStore.keyFields, hasLength(1));
+      expect(soundsStore.keyFields[0].name, 'contactId');
+      expect(soundsStore.keyFields[0].isStoreKey, isTrue);
+      expect(soundsStore.valueFields, hasLength(4));
 
       final userPrefsStore = schema.stores[1];
       expect(userPrefsStore.className, 'UserPreferencesStore');
       expect(userPrefsStore.storeKey, 'user_preferences');
-      expect(userPrefsStore.scopeFields, isEmpty);
+      expect(userPrefsStore.keyFields, isEmpty);
       expect(userPrefsStore.valueFields, hasLength(2));
     });
 
@@ -209,6 +338,22 @@ void main() {
       expect(showPreviewsField.defaultValue, 'true');
     });
 
+    test('parses key fields with int and enum types', () {
+      final schema = parser.parse(_storeKeyTypesSource);
+
+      expect(schema.stores, hasLength(2));
+
+      final threadStore = schema.stores[0];
+      expect(threadStore.keyFields, hasLength(1));
+      expect(threadStore.keyFields[0].name, 'threadId');
+      expect(threadStore.keyFields[0].type.baseName, 'int');
+
+      final categoryStore = schema.stores[1];
+      expect(categoryStore.keyFields, hasLength(1));
+      expect(categoryStore.keyFields[0].name, 'category');
+      expect(categoryStore.keyFields[0].type.baseName, 'ConversationCategory');
+    });
+
     test('parses nested types and generics', () {
       final schema = parser.parse(_nestedTypesSource);
 
@@ -225,6 +370,15 @@ void main() {
           .firstWhere((f) => f.name == 'metadata');
       expect(metadataField.type.baseName, 'Map');
       expect(metadataField.type.typeArguments, hasLength(2));
+    });
+
+    test('parses enhanced enum declarations', () {
+      final schema = parser.parse(_enhancedEnumRoutesSource);
+
+      expect(schema.enums, hasLength(1));
+      final enumDef = schema.enums.first;
+      expect(enumDef.name, 'DeliveryChannel');
+      expect(enumDef.values, ['push', 'sms']);
     });
   });
 
@@ -278,6 +432,72 @@ class SecondPage {
       expect(result.errors.any((e) => e.message.contains('Duplicate route name')),
           isTrue);
     });
+
+    test('validates store key and enum value types', () {
+      final schema = parser.parse(_storesSource);
+      final resolver = TypeResolver();
+      final result = resolver.resolve(schema);
+
+      expect(result.isValid, isTrue);
+      expect(result.errors, isEmpty);
+    });
+
+    test('allows int and enum store keys', () {
+      final schema = parser.parse(_storeKeyTypesSource);
+      final resolver = TypeResolver();
+      final result = resolver.resolve(schema);
+
+      expect(result.isValid, isTrue);
+      expect(result.errors, isEmpty);
+    });
+
+    test('rejects multiple store keys', () {
+      final schema = parser.parse(_invalidStoreMultipleKeysSource);
+      final resolver = TypeResolver();
+      final result = resolver.resolve(schema);
+
+      expect(result.isValid, isFalse);
+      expect(
+        result.errors.any((e) => e.message.contains('at most one field annotated')),
+        isTrue,
+      );
+    });
+
+    test('rejects unsupported store key type', () {
+      final schema = parser.parse(_invalidStoreUnsupportedKeySource);
+      final resolver = TypeResolver();
+      final result = resolver.resolve(schema);
+
+      expect(result.isValid, isFalse);
+      expect(
+        result.errors.any((e) => e.message.contains('must be String, int, or enum')),
+        isTrue,
+      );
+    });
+
+    test('rejects non-required store key', () {
+      final schema = parser.parse(_invalidStoreOptionalKeySource);
+      final resolver = TypeResolver();
+      final result = resolver.resolve(schema);
+
+      expect(result.isValid, isFalse);
+      expect(
+        result.errors.any((e) => e.message.contains('must be a required constructor parameter')),
+        isTrue,
+      );
+    });
+
+    test('rejects nested store value types', () {
+      final schema = parser.parse(_invalidStoreNestedValueSource);
+      final resolver = TypeResolver();
+      final result = resolver.resolve(schema);
+
+      expect(result.isValid, isFalse);
+      expect(
+        result.errors.any((e) => e.message.contains('primitive types or enums')),
+        isTrue,
+      );
+    });
   });
 
   group('Dart code generation', () {
@@ -299,13 +519,70 @@ class SecondPage {
 
     test('generates stores with typed accessors', () {
       final schema = parser.parse(_storesSource);
+      final resolver = TypeResolver();
+      final result = resolver.resolve(schema);
 
-      final code = generateDartStores(schema: schema);
+      expect(result.isValid, isTrue);
+
+      final code = generateDartStores(schema: schema, typeGraph: result.typeGraph);
 
       expect(code, contains('class SoundsNotificationsStore'));
+      expect(code, contains('{required this.contactId'));
+      expect(
+        code,
+        contains(
+          r"String _key(String field) => 'sounds_notifications/$contactId/$field';",
+        ),
+      );
       expect(code, contains('Future<bool> getMute()'));
       expect(code, contains('Future<void> setMute(bool value)'));
+      expect(code, contains('Future<NotificationBehavior> getBehavior()'));
+      expect(code, contains('NotificationBehavior.values[int.parse(value)]'));
+      expect(code, contains('value.index.toString()'));
+      expect(code, contains('UserPreferencesStore(this._storage);'));
       expect(code, contains('Stream<SoundsNotificationsStoreSnapshot> get stream'));
+    });
+
+    test('generates route serialization for enhanced enum fields', () {
+      final schema = parser.parse(_enhancedEnumRoutesSource);
+      final resolver = TypeResolver();
+      final result = resolver.resolve(schema);
+
+      expect(result.isValid, isTrue);
+
+      final code = generateDartRoutes(
+        schema: schema,
+        typeGraph: result.typeGraph,
+      );
+
+      expect(code, contains('enum DeliveryChannel {'));
+      expect(code, contains('push,'));
+      expect(code, contains('sms,'));
+      expect(code, contains('channel.index'));
+      expect(code, contains('DeliveryChannel.values[list[0] as int]'));
+    });
+
+    test('generates Dart key helpers for int and enum keys', () {
+      final schema = parser.parse(_storeKeyTypesSource);
+      final resolver = TypeResolver();
+      final result = resolver.resolve(schema);
+
+      expect(result.isValid, isTrue);
+
+      final code = generateDartStores(schema: schema, typeGraph: result.typeGraph);
+
+      expect(
+        code,
+        contains(
+          r"String _key(String field) => 'thread_preferences/$threadId/$field';",
+        ),
+      );
+      expect(
+        code,
+        contains(
+          r"String _key(String field) => 'category_preferences/${category.name}/$field';",
+        ),
+      );
     });
   });
 
@@ -329,15 +606,51 @@ class SecondPage {
 
     test('generates stores with properties', () {
       final schema = parser.parse(_storesSource);
+      final resolver = TypeResolver();
+      final result = resolver.resolve(schema);
 
       final code = generateKotlinStores(
         schema: schema,
+        typeGraph: result.typeGraph,
         packageName: 'com.example.generated',
       );
 
       expect(code, contains('class SoundsNotificationsStore'));
+      expect(code, contains('private val contactId: String'));
       expect(code, contains('var mute: Boolean'));
       expect(code, contains('var showPreviews: Boolean'));
+      expect(code, contains('var behavior: NotificationBehavior'));
+      expect(
+        code,
+        contains('set(value) = storage.put(key("behavior"), value.ordinal.toString())'),
+      );
+    });
+
+    test('generates Kotlin key helpers for int and enum keys', () {
+      final schema = parser.parse(_storeKeyTypesSource);
+      final resolver = TypeResolver();
+      final result = resolver.resolve(schema);
+
+      expect(result.isValid, isTrue);
+
+      final code = generateKotlinStores(
+        schema: schema,
+        typeGraph: result.typeGraph,
+        packageName: 'com.example.generated',
+      );
+
+      expect(
+        code,
+        contains(
+          r'private fun key(field: String) = "thread_preferences/$threadId/$field"',
+        ),
+      );
+      expect(
+        code,
+        contains(
+          r'private fun key(field: String) = "category_preferences/${category.name}/$field"',
+        ),
+      );
     });
   });
 

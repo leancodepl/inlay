@@ -31,9 +31,14 @@ class SoundsNotificationsStore {
     return value ?? 'Default';
   }
 
-  Future<String> getVibration() async {
+  Future<VibrationLevel> getVibration() async {
     final value = await _storage.getString(_key('vibration'));
-    return value ?? 'Default';
+    return value != null ? VibrationLevel.values[int.parse(value)] : VibrationLevel.normal;
+  }
+
+  Future<NotificationBehavior> getBehavior() async {
+    final value = await _storage.getString(_key('behavior'));
+    return value != null ? NotificationBehavior.values[int.parse(value)] : NotificationBehavior.defaultBehavior;
   }
 
   // ── Setters ───────────────────────────────────────────────────
@@ -50,8 +55,12 @@ class SoundsNotificationsStore {
     await _storage.putString(_key('sound'), value);
   }
 
-  Future<void> setVibration(String value) async {
-    await _storage.putString(_key('vibration'), value);
+  Future<void> setVibration(VibrationLevel value) async {
+    await _storage.putString(_key('vibration'), value.index.toString());
+  }
+
+  Future<void> setBehavior(NotificationBehavior value) async {
+    await _storage.putString(_key('behavior'), value.index.toString());
   }
 
   // ── Reactive Stream ───────────────────────────────────────────
@@ -68,6 +77,7 @@ class SoundsNotificationsStore {
       showPreviews: await getShowPreviews(),
       sound: await getSound(),
       vibration: await getVibration(),
+      behavior: await getBehavior(),
     );
   }
 
@@ -85,12 +95,14 @@ class SoundsNotificationsStoreSnapshot {
     required this.showPreviews,
     required this.sound,
     required this.vibration,
+    required this.behavior,
   });
 
   final bool mute;
   final bool showPreviews;
   final String sound;
-  final String vibration;
+  final VibrationLevel vibration;
+  final NotificationBehavior behavior;
 }
 
 /// Generated store wrapper for UserPreferencesStore.
@@ -113,6 +125,11 @@ class UserPreferencesStore {
     return value ?? '';
   }
 
+  Future<AppTheme> getTheme() async {
+    final value = await _storage.getString(_key('theme'));
+    return value != null ? AppTheme.values[int.parse(value)] : AppTheme.system;
+  }
+
   // ── Setters ───────────────────────────────────────────────────
 
   Future<void> setDarkMode(bool value) async {
@@ -121,6 +138,10 @@ class UserPreferencesStore {
 
   Future<void> setLocale(String value) async {
     await _storage.putString(_key('locale'), value);
+  }
+
+  Future<void> setTheme(AppTheme value) async {
+    await _storage.putString(_key('theme'), value.index.toString());
   }
 
   // ── Reactive Stream ───────────────────────────────────────────
@@ -135,6 +156,7 @@ class UserPreferencesStore {
     return UserPreferencesStoreSnapshot(
       darkMode: await getDarkMode(),
       locale: await getLocale(),
+      theme: await getTheme(),
     );
   }
 
@@ -150,9 +172,151 @@ class UserPreferencesStoreSnapshot {
   const UserPreferencesStoreSnapshot({
     required this.darkMode,
     required this.locale,
+    required this.theme,
   });
 
   final bool darkMode;
   final String locale;
+  final AppTheme theme;
+}
+
+/// Generated store wrapper for ThreadPreferencesStore.
+class ThreadPreferencesStore {
+  ThreadPreferencesStore(this._storage, {required this.threadId, });
+
+  final KeyValueStorage _storage;
+  final int threadId;
+
+  String _key(String field) => 'thread_preferences/$threadId/$field';
+
+  // ── Getters (async, always fresh) ─────────────────────────────
+
+  Future<int> getUnreadCount() async {
+    final value = await _storage.getString(_key('unreadCount'));
+    return value != null ? int.parse(value) : 0;
+  }
+
+  Future<double> getFontScale() async {
+    final value = await _storage.getString(_key('fontScale'));
+    return value != null ? double.parse(value) : 1.0;
+  }
+
+  Future<NotificationBehavior> getBehavior() async {
+    final value = await _storage.getString(_key('behavior'));
+    return value != null ? NotificationBehavior.values[int.parse(value)] : NotificationBehavior.defaultBehavior;
+  }
+
+  // ── Setters ───────────────────────────────────────────────────
+
+  Future<void> setUnreadCount(int value) async {
+    await _storage.putString(_key('unreadCount'), value.toString());
+  }
+
+  Future<void> setFontScale(double value) async {
+    await _storage.putString(_key('fontScale'), value.toString());
+  }
+
+  Future<void> setBehavior(NotificationBehavior value) async {
+    await _storage.putString(_key('behavior'), value.index.toString());
+  }
+
+  // ── Reactive Stream ───────────────────────────────────────────
+
+  Stream<ThreadPreferencesStoreSnapshot> get stream {
+    return _storage.stream
+        .where((entries) => entries.any((e) => e.key.startsWith(_key(''))))
+        .asyncMap((_) => getSnapshot());
+  }
+
+  Future<ThreadPreferencesStoreSnapshot> getSnapshot() async {
+    return ThreadPreferencesStoreSnapshot(
+      unreadCount: await getUnreadCount(),
+      fontScale: await getFontScale(),
+      behavior: await getBehavior(),
+    );
+  }
+
+  // ── Clear ─────────────────────────────────────────────────────
+
+  Future<void> clear() async {
+    await _storage.removeByPrefix(_key(''));
+  }
+}
+
+/// Immutable snapshot of ThreadPreferencesStore values.
+class ThreadPreferencesStoreSnapshot {
+  const ThreadPreferencesStoreSnapshot({
+    required this.unreadCount,
+    required this.fontScale,
+    required this.behavior,
+  });
+
+  final int unreadCount;
+  final double fontScale;
+  final NotificationBehavior behavior;
+}
+
+/// Generated store wrapper for CategoryPreferencesStore.
+class CategoryPreferencesStore {
+  CategoryPreferencesStore(this._storage, {required this.category, });
+
+  final KeyValueStorage _storage;
+  final ConversationCategory category;
+
+  String _key(String field) => 'category_preferences/${category.name}/$field';
+
+  // ── Getters (async, always fresh) ─────────────────────────────
+
+  Future<bool> getPinned() async {
+    final value = await _storage.getString(_key('pinned'));
+    return value == 'true';
+  }
+
+  Future<String> getLabel() async {
+    final value = await _storage.getString(_key('label'));
+    return value ?? 'General';
+  }
+
+  // ── Setters ───────────────────────────────────────────────────
+
+  Future<void> setPinned(bool value) async {
+    await _storage.putString(_key('pinned'), value.toString());
+  }
+
+  Future<void> setLabel(String value) async {
+    await _storage.putString(_key('label'), value);
+  }
+
+  // ── Reactive Stream ───────────────────────────────────────────
+
+  Stream<CategoryPreferencesStoreSnapshot> get stream {
+    return _storage.stream
+        .where((entries) => entries.any((e) => e.key.startsWith(_key(''))))
+        .asyncMap((_) => getSnapshot());
+  }
+
+  Future<CategoryPreferencesStoreSnapshot> getSnapshot() async {
+    return CategoryPreferencesStoreSnapshot(
+      pinned: await getPinned(),
+      label: await getLabel(),
+    );
+  }
+
+  // ── Clear ─────────────────────────────────────────────────────
+
+  Future<void> clear() async {
+    await _storage.removeByPrefix(_key(''));
+  }
+}
+
+/// Immutable snapshot of CategoryPreferencesStore values.
+class CategoryPreferencesStoreSnapshot {
+  const CategoryPreferencesStoreSnapshot({
+    required this.pinned,
+    required this.label,
+  });
+
+  final bool pinned;
+  final String label;
 }
 

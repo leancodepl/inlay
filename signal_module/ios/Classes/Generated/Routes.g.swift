@@ -4,26 +4,183 @@
 import Foundation
 import UIKit
 
+enum NotificationSound: Int {
+    case defaultSound = 0
+    case chime = 1
+    case pop = 2
+}
+
+enum BadgePriority: Int {
+    case low = 0
+    case medium = 1
+    case high = 2
+}
+
+enum DeliveryChannel: Int {
+    case push = 0
+    case sms = 1
+    case email = 2
+}
+
+enum WallpaperKind: Int {
+    case staticImage = 0
+    case live = 1
+}
+
+enum NotificationBehavior: Int {
+    case defaultBehavior = 0
+    case mentionsOnly = 1
+    case muted = 2
+}
+
+enum AppTheme: Int {
+    case system = 0
+    case light = 1
+    case dark = 2
+}
+
+enum VibrationLevel: Int {
+    case off = 0
+    case normal = 1
+    case intense = 2
+}
+
+enum ConversationCategory: Int {
+    case direct = 0
+    case group = 1
+    case archived = 2
+}
+
+struct NotificationPreset {
+    let name: String
+    let preferences: NotificationPreferences
+
+    static func fromList(_ list: [Any?]) -> NotificationPreset {
+        NotificationPreset(
+            name: list[0] as! String,
+            preferences: NotificationPreferences.fromList(list[1] as! [Any?])
+        )
+    }
+
+    func toList() -> [Any?] {
+        [
+            name,
+            preferences.toList(),
+        ]
+    }
+}
+
+struct NotificationPreferences {
+    let sound: NotificationSound
+    let channels: [DeliveryChannel]
+    let quietHours: QuietHours?
+
+    static func fromList(_ list: [Any?]) -> NotificationPreferences {
+        NotificationPreferences(
+            sound: NotificationSound(rawValue: list[0] as! Int)!,
+            channels: (list[1] as! [Any?]).map { DeliveryChannel(rawValue: $0 as! Int)! },
+            quietHours: (list[2] as? [Any?]).flatMap { QuietHours.fromList($0 as! [Any?]) }
+        )
+    }
+
+    func toList() -> [Any?] {
+        [
+            sound.rawValue,
+            channels.map { $0.rawValue },
+            quietHours.map { $0.toList() },
+        ]
+    }
+}
+
+struct QuietHours {
+    let fromHour: Int64
+    let toHour: Int64
+
+    static func fromList(_ list: [Any?]) -> QuietHours {
+        QuietHours(
+            fromHour: list[0] as! Int64,
+            toHour: list[1] as! Int64
+        )
+    }
+
+    func toList() -> [Any?] {
+        [
+            fromHour,
+            toHour,
+        ]
+    }
+}
+
+struct WallpaperOption {
+    let assetName: String
+    let kind: WallpaperKind
+
+    static func fromList(_ list: [Any?]) -> WallpaperOption {
+        WallpaperOption(
+            assetName: list[0] as! String,
+            kind: WallpaperKind(rawValue: list[1] as! Int)!
+        )
+    }
+
+    func toList() -> [Any?] {
+        [
+            assetName,
+            kind.rawValue,
+        ]
+    }
+}
+
+struct ContactBadge {
+    let label: String
+    let priority: BadgePriority
+
+    static func fromList(_ list: [Any?]) -> ContactBadge {
+        ContactBadge(
+            label: list[0] as! String,
+            priority: BadgePriority(rawValue: list[1] as! Int)!
+        )
+    }
+
+    func toList() -> [Any?] {
+        [
+            label,
+            priority.rawValue,
+        ]
+    }
+}
+
 struct SoundsNotificationsPage {
     let contactId: String
+    let preferences: NotificationPreferences?
+    let presets: [NotificationPreset]?
+    let fallbackChannel: DeliveryChannel?
 
     static let routeName = "soundsNotifications"
 
     static func fromList(_ list: [Any?]) -> SoundsNotificationsPage {
         SoundsNotificationsPage(
-            contactId: list[0] as! String
+            contactId: list[0] as! String,
+            preferences: (list[1] as? [Any?]).flatMap { NotificationPreferences.fromList($0 as! [Any?]) },
+            presets: (list[2] as? [Any?]).flatMap { ($0 as! [Any?]).map { NotificationPreset.fromList($0 as! [Any?]) } },
+            fallbackChannel: (list[3] as? [Any?]).flatMap { DeliveryChannel(rawValue: $0 as! Int)! }
         )
     }
 
     func toList() -> [Any?] {
         [
             contactId,
+            preferences.map { $0.toList() },
+            presets.map { $0.map { $0.toList() } },
+            fallbackChannel.map { $0.rawValue },
         ]
     }
 
     func toDict() -> [String: String] {
         [
-            "contactId": String(describing: contactId)
+            "contactId": String(describing: contactId),
+            "preferences": preferences ?? "",
+            "presets": presets ?? "",
+            "fallbackChannel": fallbackChannel ?? ""
         ]
     }
 
@@ -34,24 +191,32 @@ struct SoundsNotificationsPage {
 
 struct SetWallpaperPage {
     let recipientId: String?
+    let options: [WallpaperOption]?
+    let preferredKind: WallpaperKind?
 
     static let routeName = "setWallpaper"
 
     static func fromList(_ list: [Any?]) -> SetWallpaperPage {
         SetWallpaperPage(
-            recipientId: list[0] as? String
+            recipientId: list[0] as? String,
+            options: (list[1] as? [Any?]).flatMap { ($0 as! [Any?]).map { WallpaperOption.fromList($0 as! [Any?]) } },
+            preferredKind: (list[2] as? [Any?]).flatMap { WallpaperKind(rawValue: $0 as! Int)! }
         )
     }
 
     func toList() -> [Any?] {
         [
             recipientId.map { $0 },
+            options.map { $0.map { $0.toList() } },
+            preferredKind.map { $0.rawValue },
         ]
     }
 
     func toDict() -> [String: String] {
         [
-            "recipientId": recipientId ?? ""
+            "recipientId": recipientId ?? "",
+            "options": options ?? "",
+            "preferredKind": preferredKind ?? ""
         ]
     }
 
@@ -62,24 +227,32 @@ struct SetWallpaperPage {
 
 struct ContactDetailsPage {
     let contactId: String
+    let badges: [ContactBadge]?
+    let preferredSound: NotificationSound?
 
     static let routeName = "contactDetails"
 
     static func fromList(_ list: [Any?]) -> ContactDetailsPage {
         ContactDetailsPage(
-            contactId: list[0] as! String
+            contactId: list[0] as! String,
+            badges: (list[1] as? [Any?]).flatMap { ($0 as! [Any?]).map { ContactBadge.fromList($0 as! [Any?]) } },
+            preferredSound: (list[2] as? [Any?]).flatMap { NotificationSound(rawValue: $0 as! Int)! }
         )
     }
 
     func toList() -> [Any?] {
         [
             contactId,
+            badges.map { $0.map { $0.toList() } },
+            preferredSound.map { $0.rawValue },
         ]
     }
 
     func toDict() -> [String: String] {
         [
-            "contactId": String(describing: contactId)
+            "contactId": String(describing: contactId),
+            "badges": badges ?? "",
+            "preferredSound": preferredSound ?? ""
         ]
     }
 

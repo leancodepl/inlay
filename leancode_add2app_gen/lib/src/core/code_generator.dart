@@ -72,7 +72,9 @@ class CodeGenerator {
       dartRoutesCode: hasRoutes
           ? generateDartRoutes(schema: schema, typeGraph: typeGraph)
           : null,
-      dartStoresCode: hasStores ? generateDartStores(schema: schema) : null,
+      dartStoresCode: hasStores
+          ? generateDartStores(schema: schema, typeGraph: typeGraph)
+          : null,
       kotlinRoutesCode: hasRoutes && kotlinPackage != null
           ? generateKotlinRoutes(
               schema: schema,
@@ -81,7 +83,11 @@ class CodeGenerator {
             )
           : null,
       kotlinStoresCode: hasStores && kotlinPackage != null
-          ? generateKotlinStores(schema: schema, packageName: kotlinPackage)
+          ? generateKotlinStores(
+              schema: schema,
+              typeGraph: typeGraph,
+              packageName: kotlinPackage,
+            )
           : null,
       swiftRoutesCode: hasRoutes
           ? generateSwiftRoutes(schema: schema, typeGraph: typeGraph)
