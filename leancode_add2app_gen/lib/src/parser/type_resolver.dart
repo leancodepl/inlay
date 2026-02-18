@@ -2,7 +2,6 @@ import 'package:leancode_add2app_gen/src/models/schema.dart';
 import 'package:leancode_add2app_gen/src/models/store_definition.dart';
 import 'package:leancode_add2app_gen/src/models/type_info.dart';
 
-/// Primitive types supported by the serialization.
 const _primitiveTypes = {
   'bool',
   'int',
@@ -16,7 +15,6 @@ const _primitiveTypes = {
   'dynamic',
 };
 
-/// Result of type resolution containing the validated schema and any errors.
 class TypeResolutionResult {
   const TypeResolutionResult({
     required this.schema,
@@ -24,68 +22,39 @@ class TypeResolutionResult {
     required this.typeGraph,
   });
 
-  /// The validated schema.
   final Schema schema;
-
-  /// Any errors found during resolution.
   final List<TypeResolutionError> errors;
-
-  /// Map of type name to its definition for quick lookup.
   final Map<String, TypeDefinition> typeGraph;
 
-  /// Whether resolution was successful (no errors).
   bool get isValid => errors.isEmpty;
 }
 
-/// Represents an error found during type resolution.
 class TypeResolutionError {
-  const TypeResolutionError({
-    required this.message,
-    required this.location,
-  });
+  const TypeResolutionError({required this.message, required this.location});
 
-  /// Error message.
   final String message;
-
-  /// Where the error occurred (class name, field name, etc.).
   final String location;
 
   @override
   String toString() => '$location: $message';
 }
 
-/// Represents a resolved type definition (class or enum).
 abstract class TypeDefinition {
   const TypeDefinition({required this.name});
-
   final String name;
 }
 
-/// A resolved data class.
 class DataClassType extends TypeDefinition {
-  const DataClassType({
-    required super.name,
-    required this.fields,
-  });
-
+  const DataClassType({required super.name, required this.fields});
   final List<FieldInfo> fields;
 }
 
-/// A resolved enum.
 class EnumType extends TypeDefinition {
-  const EnumType({
-    required super.name,
-    required this.values,
-  });
-
+  const EnumType({required super.name, required this.values});
   final List<String> values;
 }
 
-/// Resolves and validates types in a schema.
-///
-/// Builds a type graph, validates all types are known, and detects circular references.
 class TypeResolver {
-  /// Resolves and validates the given [schema].
   TypeResolutionResult resolve(Schema schema) {
     final errors = <TypeResolutionError>[];
     final typeGraph = <String, TypeDefinition>{};
@@ -270,7 +239,9 @@ class TypeResolver {
         return;
       }
 
-      if (visited.contains(typeName)) return;
+      if (visited.contains(typeName)) {
+        return;
+      }
 
       visited.add(typeName);
       inStack.add(typeName);
@@ -290,9 +261,7 @@ class TypeResolver {
       inStack.remove(typeName);
     }
 
-    for (final typeName in typeGraph.keys) {
-      dfs(typeName);
-    }
+    typeGraph.keys.forEach(dfs);
 
     return cycles;
   }

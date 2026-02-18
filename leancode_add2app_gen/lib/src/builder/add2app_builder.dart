@@ -2,19 +2,16 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:build/build.dart';
+import 'package:leancode_add2app_gen/src/core/code_generator.dart';
+import 'package:leancode_add2app_gen/src/core/generation_result.dart';
 import 'package:path/path.dart' as p;
 import 'package:yaml/yaml.dart';
 
-import 'package:leancode_add2app_gen/src/core/code_generator.dart';
-import 'package:leancode_add2app_gen/src/core/generation_result.dart';
-
 /// Builder that generates Dart, Kotlin, and Swift code from add2app schema files.
-///
-/// Unlike source_gen, this builder generates **standalone** output files
-/// (not part files) to avoid duplicate class definitions.
 ///
 /// Configuration is read from `add2app.yaml` in the package root.
 class Add2AppBuilder implements Builder {
+  /// Creates a new builder.
   Add2AppBuilder(BuilderOptions _);
 
   final CodeGenerator _codeGenerator = CodeGenerator();
@@ -46,8 +43,8 @@ class Add2AppBuilder implements Builder {
     // Collect schema sources.
     final sources = <(String, String?)>[];
 
-    if (config.routesPath != null) {
-      final routesFile = File(p.join(packageRoot, config.routesPath!));
+    if (config.routesPath case final routesPath?) {
+      final routesFile = File(p.join(packageRoot, routesPath));
       if (routesFile.existsSync()) {
         final source = routesFile.readAsStringSync();
         sources.add((source, config.routesPath));
@@ -57,8 +54,8 @@ class Add2AppBuilder implements Builder {
       }
     }
 
-    if (config.storesPath != null) {
-      final storesFile = File(p.join(packageRoot, config.storesPath!));
+    if (config.storesPath case final storesPath?) {
+      final storesFile = File(p.join(packageRoot, storesPath));
       if (storesFile.existsSync()) {
         final source = storesFile.readAsStringSync();
         sources.add((source, config.storesPath));
@@ -93,20 +90,16 @@ class Add2AppBuilder implements Builder {
 
         // Write Dart routes directly to filesystem.
         if (result.dartRoutesCode != null) {
-          final outputPath = p.join(
-            packageRoot,
-            config.dartOutput ?? 'lib/src/generated/routes.g.dart',
-          );
+          final dartOutput = config.dartOutput ?? 'lib/src/generated/';
+          final outputPath = p.join(packageRoot, dartOutput, 'routes.g.dart');
           _writeFile(outputPath, result.dartRoutesCode!);
           log.info('Generated: $outputPath');
         }
 
         // Write Dart stores directly to filesystem.
         if (result.dartStoresCode != null) {
-          final storesOutputPath = config.dartOutput != null
-              ? config.dartOutput!.replaceAll('routes.g.dart', 'stores.g.dart')
-              : 'lib/src/generated/stores.g.dart';
-          final outputPath = p.join(packageRoot, storesOutputPath);
+          final dartOutput = config.dartOutput ?? 'lib/src/generated/';
+          final outputPath = p.join(packageRoot, dartOutput, 'stores.g.dart');
           _writeFile(outputPath, result.dartStoresCode!);
           log.info('Generated: $outputPath');
         }

@@ -4,6 +4,7 @@ import 'package:yaml/yaml.dart';
 
 /// Configuration for the add2app code generator.
 class GeneratorConfig {
+  /// Creates a new generator configuration.
   const GeneratorConfig({
     this.routes,
     this.stores,
@@ -147,7 +148,9 @@ GeneratorConfig findAndLoadDefaultConfig() {
       return parseYamlConfig(configFile.readAsStringSync());
     }
     final parent = dir.parent;
-    if (parent.path == dir.path) break;
+    if (parent.path == dir.path) {
+      break;
+    }
     dir = parent;
   }
 

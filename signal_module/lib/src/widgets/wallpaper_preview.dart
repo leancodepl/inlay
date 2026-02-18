@@ -44,11 +44,11 @@ class WallpaperPreview extends StatelessWidget {
 
   Widget _buildWallpaperContent() {
     return switch (wallpaper) {
-      SolidColorWallpaper(color: final color) => Container(color: color),
-      GradientWallpaper(gradient: final gradient) => Container(
+      SolidColorWallpaper(:final color) => Container(color: color),
+      GradientWallpaper(:final gradient) => Container(
         decoration: BoxDecoration(gradient: gradient),
       ),
-      ImageWallpaper(imagePath: final path, isAsset: final isAsset) =>
+      ImageWallpaper(imagePath: final path, :final isAsset) =>
         isAsset
             ? Image.asset(path, fit: BoxFit.cover)
             : Image.network(path, fit: BoxFit.cover),
@@ -104,15 +104,15 @@ class WallpaperBackground extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return switch (wallpaper) {
-      SolidColorWallpaper(color: final color) => Container(
+      SolidColorWallpaper(:final color) => Container(
         color: color,
         child: child,
       ),
-      GradientWallpaper(gradient: final gradient) => Container(
+      GradientWallpaper(:final gradient) => Container(
         decoration: BoxDecoration(gradient: gradient),
         child: child,
       ),
-      ImageWallpaper(imagePath: final path, isAsset: final isAsset) =>
+      ImageWallpaper(imagePath: final path, :final isAsset) =>
         Container(
           decoration: BoxDecoration(
             image: DecorationImage(

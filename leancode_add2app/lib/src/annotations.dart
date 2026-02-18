@@ -2,6 +2,7 @@
 ///
 /// These annotations mark classes in schema files for code generation.
 /// The generator creates serialization code, route handlers, and store wrappers.
+library;
 
 /// Marks a class as a Flutter route (native -> Flutter or Flutter -> Flutter).
 ///
@@ -68,7 +69,7 @@ class Add2AppNativeRoute {
   final String? name;
 }
 
-/// Marks a class as a typed store over [KeyValueStorage].
+/// Marks a class as a typed store over `KeyValueStorage`.
 ///
 /// The generator creates:
 /// - A store class with typed getters/setters for each field

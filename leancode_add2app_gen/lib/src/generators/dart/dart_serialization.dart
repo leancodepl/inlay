@@ -156,8 +156,7 @@ String generateDartEncodeMethod(
     return 'List<Object?> encode() => <Object?>[];';
   }
 
-  final buffer = StringBuffer();
-  buffer.writeln('List<Object?> encode() => <Object?>[');
+  final buffer = StringBuffer()..writeln('List<Object?> encode() => <Object?>[');
 
   for (final field in fields) {
     final encode = generateDartEncode(field.name, field.type, typeGraph);
@@ -174,8 +173,8 @@ String generateDartDecodeMethod(
   List<FieldInfo> fields,
   Map<String, TypeDefinition> typeGraph,
 ) {
-  final buffer = StringBuffer();
-  buffer.writeln('static $className decode(List<Object?> list) {');
+  final buffer = StringBuffer()
+    ..writeln('static $className decode(List<Object?> list) {');
 
   if (fields.isEmpty) {
     buffer.writeln('    return $className();');

@@ -5,7 +5,9 @@
 /// - `SoundsNotifications` → `sounds_notifications`
 /// - `contactId` → `contact_id`
 String toSnakeCase(String input) {
-  if (input.isEmpty) return input;
+  if (input.isEmpty) {
+    return input;
+  }
 
   final buffer = StringBuffer();
   for (var i = 0; i < input.length; i++) {
@@ -33,7 +35,9 @@ String routeIdFromClassName(String className) {
   if (name.endsWith('Page')) {
     name = name.substring(0, name.length - 4);
   }
-  if (name.isEmpty) return name;
+  if (name.isEmpty) {
+    return name;
+  }
   return name[0].toLowerCase() + name.substring(1);
 }
 

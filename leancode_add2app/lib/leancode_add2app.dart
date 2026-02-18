@@ -1,9 +1,9 @@
 /// Cross-platform add2app framework for Flutter.
 ///
 /// Provides:
-/// - [Add2AppNavigator] — push/pop Flutter pages from Dart and native code.
-/// - [Add2AppFlutterRoute] — base class for typed Flutter route definitions.
-/// - [KeyValueStorage] — shared key-value storage with cross-engine sync.
+/// - `Add2AppNavigator` — push/pop Flutter pages from Dart and native code.
+/// - `Add2AppFlutterRoute` — base class for typed Flutter route definitions.
+/// - `KeyValueStorage` — shared key-value storage with cross-engine sync.
 /// - Annotations for code generation (`@FlutterRoute`, `@NativeRoute`, `@Store`)
 library;
 

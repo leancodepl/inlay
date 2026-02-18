@@ -110,28 +110,29 @@ ArgParser buildArgParser() {
 }
 
 void printUsage(ArgParser parser) {
-  stdout.writeln('Usage: leancode_add2app_gen [options]\n');
-  stdout.writeln(
-    'Generates Dart, Kotlin, and Swift code from add2app schema files.\n',
-  );
-  stdout.writeln('Options:');
-  stdout.writeln(parser.usage);
-  stdout.writeln();
-  stdout.writeln('Configuration:');
-  stdout.writeln('  Create an add2app.yaml file in your project root:');
-  stdout.writeln();
-  stdout.writeln('    routes: lib/add2app/routes.dart');
-  stdout.writeln('    stores: lib/add2app/stores.dart');
-  stdout.writeln('');
-  stdout.writeln('    dart:');
-  stdout.writeln('      output: lib/src/generated/');
-  stdout.writeln('');
-  stdout.writeln('    kotlin:');
-  stdout.writeln('      output: android/src/main/kotlin/com/example/generated/');
-  stdout.writeln('      package: com.example.app.generated');
-  stdout.writeln('');
-  stdout.writeln('    swift:');
-  stdout.writeln('      output: ios/Classes/Generated/');
-  stdout.writeln();
-  stdout.writeln('CLI arguments override values from the config file.');
+  stdout
+    ..writeln('Usage: leancode_add2app_gen [options]\n')
+    ..writeln(
+      'Generates Dart, Kotlin, and Swift code from add2app schema files.\n',
+    )
+    ..writeln('Options:')
+    ..writeln(parser.usage)
+    ..writeln()
+    ..writeln('Configuration:')
+    ..writeln('  Create an add2app.yaml file in your project root:')
+    ..writeln()
+    ..writeln('    routes: lib/add2app/routes.dart')
+    ..writeln('    stores: lib/add2app/stores.dart')
+    ..writeln()
+    ..writeln('    dart:')
+    ..writeln('      output: lib/src/generated/')
+    ..writeln()
+    ..writeln('    kotlin:')
+    ..writeln('      output: android/src/main/kotlin/com/example/generated/')
+    ..writeln('      package: com.example.app.generated')
+    ..writeln()
+    ..writeln('    swift:')
+    ..writeln('      output: ios/Classes/Generated/')
+    ..writeln()
+    ..writeln('CLI arguments override values from the config file.');
 }

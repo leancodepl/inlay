@@ -195,17 +195,18 @@ String generateSwiftToListMethod(
     return 'func toList() -> [Any?] { [] }';
   }
 
-  final buffer = StringBuffer();
-  buffer.writeln('func toList() -> [Any?] {');
-  buffer.writeln('        [');
+  final buffer = StringBuffer()
+    ..writeln('func toList() -> [Any?] {')
+    ..writeln('        [');
 
   for (final field in fields) {
     final encode = generateSwiftEncode(field.name, field.type, typeGraph);
     buffer.writeln('            $encode,');
   }
 
-  buffer.writeln('        ]');
-  buffer.write('    }');
+  buffer
+    ..writeln('        ]')
+    ..write('    }');
   return buffer.toString();
 }
 
@@ -215,9 +216,9 @@ String generateSwiftFromListMethod(
   List<FieldInfo> fields,
   Map<String, TypeDefinition> typeGraph,
 ) {
-  final buffer = StringBuffer();
-  buffer.writeln('static func fromList(_ list: [Any?]) -> $structName {');
-  buffer.writeln('        $structName(');
+  final buffer = StringBuffer()
+    ..writeln('static func fromList(_ list: [Any?]) -> $structName {')
+    ..writeln('        $structName(');
 
   for (var i = 0; i < fields.length; i++) {
     final field = fields[i];
@@ -226,8 +227,9 @@ String generateSwiftFromListMethod(
     buffer.writeln('            ${field.name}: $decode$comma');
   }
 
-  buffer.writeln('        )');
-  buffer.write('    }');
+  buffer
+    ..writeln('        )')
+    ..write('    }');
   return buffer.toString();
 }
 

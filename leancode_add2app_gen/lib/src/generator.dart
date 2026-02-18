@@ -1,22 +1,22 @@
 import 'dart:io';
 
-import 'package:path/path.dart' as p;
-
 import 'package:leancode_add2app_gen/src/config/generator_config.dart';
 import 'package:leancode_add2app_gen/src/core/code_generator.dart';
 import 'package:leancode_add2app_gen/src/core/generation_result.dart';
+import 'package:path/path.dart' as p;
 
 /// Runs the add2app code generator with the given [config].
 void runGenerator(GeneratorConfig config) {
-  stdout.writeln('leancode_add2app_gen');
-  stdout.writeln('====================');
-  stdout.writeln('Routes:         ${config.routes ?? '(not specified)'}');
-  stdout.writeln('Stores:         ${config.stores ?? '(not specified)'}');
-  stdout.writeln('Dart output:    ${config.dartOutput ?? '(not specified)'}');
-  stdout.writeln('Kotlin output:  ${config.kotlinOutput ?? '(not specified)'}');
-  stdout.writeln('Kotlin package: ${config.kotlinPackage ?? '(not specified)'}');
-  stdout.writeln('Swift output:   ${config.swiftOutput ?? '(not specified)'}');
-  stdout.writeln();
+  stdout
+    ..writeln('leancode_add2app_gen')
+    ..writeln('====================')
+    ..writeln('Routes:         ${config.routes ?? '(not specified)'}')
+    ..writeln('Stores:         ${config.stores ?? '(not specified)'}')
+    ..writeln('Dart output:    ${config.dartOutput ?? '(not specified)'}')
+    ..writeln('Kotlin output:  ${config.kotlinOutput ?? '(not specified)'}')
+    ..writeln('Kotlin package: ${config.kotlinPackage ?? '(not specified)'}')
+    ..writeln('Swift output:   ${config.swiftOutput ?? '(not specified)'}')
+    ..writeln();
 
   final codeGenerator = CodeGenerator();
   final sources = <(String, String?)>[];
@@ -54,13 +54,14 @@ void runGenerator(GeneratorConfig config) {
 
     case ParseSuccess(:final schema, :final resolution):
       // Print summary.
-      stdout.writeln('Parsed:');
-      stdout.writeln('  - ${schema.flutterRoutes.length} flutter route(s)');
-      stdout.writeln('  - ${schema.nativeRoutes.length} native route(s)');
-      stdout.writeln('  - ${schema.stores.length} store(s)');
-      stdout.writeln('  - ${schema.dataClasses.length} data class(es)');
-      stdout.writeln('  - ${schema.enums.length} enum(s)');
-      stdout.writeln();
+      stdout
+        ..writeln('Parsed:')
+        ..writeln('  - ${schema.flutterRoutes.length} flutter route(s)')
+        ..writeln('  - ${schema.nativeRoutes.length} native route(s)')
+        ..writeln('  - ${schema.stores.length} store(s)')
+        ..writeln('  - ${schema.dataClasses.length} data class(es)')
+        ..writeln('  - ${schema.enums.length} enum(s)')
+        ..writeln();
 
       // Generate code.
       final result = codeGenerator.generate(
@@ -92,8 +93,9 @@ void runGenerator(GeneratorConfig config) {
         onFileWritten: (path) => stdout.writeln('  $path'),
       );
 
-      stdout.writeln();
-      stdout.writeln('Done.');
+      stdout
+        ..writeln()
+        ..writeln('Done.');
   }
 }
 
