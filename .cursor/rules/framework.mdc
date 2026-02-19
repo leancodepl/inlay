@@ -1,0 +1,29 @@
+---
+description: A description on how to work on the add-to-app Flutter framework PoC
+alwaysApply: true
+---
+
+# Goals
+
+You are working on a PoC for a Flutter add-to-app framework. The goal is to create a set of opinionated utils that help with the add-to-app process. The main issues we're trying to tackle are:
+
+- Navigation - there are no clear official guidelines how to achieve seamless navigation between native platforms and Flutter. Handling this with MethodChannels is cumbersome and requires adding a new method for every route or following a non-type safe way of passing strings. We want to avoid that. We aim to have full type safety.
+- State management - there is no industry standard for having a synchronized data store and state management that can be easily shared between Flutter and native.
+
+The framework is following multi-engine approach leveraging FlutterEngineGroup to optimize resource usage. Engine management should be kept hidden from the end user, with escape hatches left if necessary. With multiple engines, state management has to consider working across multiple Dart isolates.
+
+# Signal
+
+The repository contains forks of Signal native iOS and Android apps. It is meant to be our benchmark and serve to verify how our framework works with a real, production native mobile app.
+
+Prefer modifying existing native screens instead of adding new native screens for the PoC sake. Forcing native screens to work with the framework is much better validation of its usability.
+
+# Rules
+
+When working on the framework follow these rules:
+
+- Do not try to add backwards compatibility for existing parts of the framework. The framework is in a PoC state and published anywhere yet, so introducing breaking changes are OK.
+- Always consider both iOS and Android platforms for implementation. Do not add support for only one platform, unless explicitely instructed to do so.
+- All cross-platform (Dart, iOS, Android) APIs should be type safe. Never pass arbitrary strings or other dynamic data.
+- Always verify the thread-safety of proposed solution (does it work with multiple Dart isolates? can any race conditions occur? how to solve conflicts?)
+- When changing Dart code always check for lint violations using dart analyze
