@@ -122,6 +122,10 @@ class KeyValueStorage
 
   // ── Bulk ──────────────────────────────────────────────────────────
 
+  Future<void> putAll(List<StorageEntry> entries) async {
+    await _hostApi.putAll(entries);
+  }
+
   Future<List<StorageEntry>> getAll() {
     return _hostApi.getAll();
   }
