@@ -23,7 +23,7 @@ import 'package:pigeon/pigeon.dart';
 /// For Flutter pages pushed from native, [params] is a `Map<String, String>`
 /// (produced by URL-decoding the `initialRoute` string).
 class PageSettings {
-  PageSettings({required this.routeId, this.params});
+  PageSettings({required this.routeId, this.params, this.path});
 
   /// Identifies which screen to show (e.g. "soundsNotifications").
   String routeId;
@@ -31,6 +31,10 @@ class PageSettings {
   /// Page parameters. For native pages this is the pigeon-encoded object
   /// (via `encode()`). For Flutter pages this is a `Map<String, String>`.
   Object? params;
+
+  /// URL path derived from the typed route object (e.g. "/products/42").
+  /// When set, used as the `initialRoute` for router-based navigation.
+  String? path;
 }
 
 /// Host API — Flutter asks the platform to push a new Activity/ViewController.

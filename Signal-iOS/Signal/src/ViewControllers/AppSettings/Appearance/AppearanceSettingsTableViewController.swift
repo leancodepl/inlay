@@ -45,7 +45,11 @@ final class AppearanceSettingsTableViewController: OWSTableViewController2 {
             // ADD2APP: Flutter Set Wallpaper (global settings) — uses Add2AppNavigator.
             Add2AppNavigator.shared.push(
                 from: self,
-                page: PageSettings(routeId: "setWallpaper")
+                route: SetWallpaperPage(
+                    recipientId: nil,
+                    options: nil,
+                    preferredKind: nil,
+                )
             )
         })
         firstSection.add(

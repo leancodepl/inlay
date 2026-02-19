@@ -172,21 +172,18 @@ object Add2AppNavigator {
     // ── Public API (Android side) ────────────────────────────────────────
 
     /**
-     * Push a new Flutter Activity that displays the page described by [page].
+     * Push a new Flutter Activity that displays the page described by [route].
      *
      * This is the **only** method Android code needs to call.
      * No FlutterEngine, no entrypoints, no method channels.
+     *
+     * ```kotlin
+     * Add2AppNavigator.push(context, SoundsNotificationsPage(contactId = "42"))
+     * ```
      */
-    fun push(context: Context, page: PageSettings) {
+    fun push(context: Context, route: FlutterRoute) {
         init(context, prewarm = isPrewarmEnabled)
-        context.startActivity(createIntent(context, page))
-    }
-
-    /**
-     * Convenience overload that builds [PageSettings] from primitives.
-     */
-    fun push(context: Context, routeId: String, params: Map<String, String>? = null) {
-        push(context, PageSettings(routeId, params))
+        context.startActivity(createIntent(context, route.toPageSettings()))
     }
 
     // ── Native route handler ────────────────────────────────────────────
@@ -233,12 +230,12 @@ object Add2AppNavigator {
 
     /**
      * Create an [Add2AppFlutterFragment] configured to display the page
-     * described by [page].
+     * described by [route].
      *
      * The returned fragment can be added to any Activity via a
      * FragmentTransaction:
      * ```kotlin
-     * val fragment = Add2AppNavigator.createFragment(context, page)
+     * val fragment = Add2AppNavigator.createFragment(context, SoundsNotificationsPage(contactId = "42"))
      * supportFragmentManager.beginTransaction()
      *     .replace(R.id.container, fragment)
      *     .commit()
@@ -247,7 +244,11 @@ object Add2AppNavigator {
      * Engine configuration (Pigeon APIs, storage) is set up automatically
      * when the fragment attaches — no manual wiring needed.
      */
-    fun createFragment(context: Context, page: PageSettings): Add2AppFlutterFragment {
+    fun createFragment(context: Context, route: FlutterRoute): Add2AppFlutterFragment {
+        return createFragment(context, route.toPageSettings())
+    }
+
+    internal fun createFragment(context: Context, page: PageSettings): Add2AppFlutterFragment {
         init(context, prewarm = isPrewarmEnabled)
         val initialRoute = encodePageSettings(page)
         return FlutterFragment.NewEngineInGroupFragmentBuilder(
@@ -317,6 +318,8 @@ object Add2AppNavigator {
     // ── Encoding ─────────────────────────────────────────────────────────
 
     internal fun encodePageSettings(page: PageSettings): String {
+        page.path?.let { return it }
+
         val params = page.params
         if (params == null) return page.routeId
 

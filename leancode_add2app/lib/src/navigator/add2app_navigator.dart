@@ -299,4 +299,21 @@ class Add2AppNavigator {
         WidgetsBinding.instance.platformDispatcher.defaultRouteName;
     return decodeInitialRoute(initialRoute);
   }
+
+  /// Returns the raw URL path from the platform's `defaultRouteName`.
+  ///
+  /// For routes with a `path` annotation, this returns the full URL path
+  /// (e.g. `/sounds-notifications/42`). For the prewarm engine or root,
+  /// returns `/`.
+  ///
+  /// Use this as `initialLocation` for go_router, `initialDeepLink` for
+  /// auto_route, or in a custom `RouteInformationProvider`.
+  static String initialLocationFromPlatform() {
+    final raw =
+        WidgetsBinding.instance.platformDispatcher.defaultRouteName;
+    if (raw == '__add2app_prewarm__' || raw == '/') {
+      return '/';
+    }
+    return raw;
+  }
 }

@@ -79,7 +79,7 @@ struct NotificationPreferences {
         NotificationPreferences(
             sound: NotificationSound(rawValue: list[0] as! Int)!,
             channels: (list[1] as! [Any?]).map { DeliveryChannel(rawValue: $0 as! Int)! },
-            quietHours: (list[2] as? [Any?]).flatMap { QuietHours.fromList($0 as! [Any?]) }
+            quietHours: (list[2] as? [Any?]).map { QuietHours.fromList($0) }
         )
     }
 
@@ -149,20 +149,21 @@ struct ContactBadge {
     }
 }
 
-struct SoundsNotificationsPage {
+struct SoundsNotificationsPage: FlutterRoute {
     let contactId: String
     let preferences: NotificationPreferences?
     let presets: [NotificationPreset]?
     let fallbackChannel: DeliveryChannel?
 
     static let routeName = "soundsNotifications"
+    static let pathTemplate = "/sounds-notifications/:contactId"
 
     static func fromList(_ list: [Any?]) -> SoundsNotificationsPage {
         SoundsNotificationsPage(
             contactId: list[0] as! String,
-            preferences: (list[1] as? [Any?]).flatMap { NotificationPreferences.fromList($0 as! [Any?]) },
-            presets: (list[2] as? [Any?]).flatMap { ($0 as! [Any?]).map { NotificationPreset.fromList($0 as! [Any?]) } },
-            fallbackChannel: (list[3] as? [Any?]).flatMap { DeliveryChannel(rawValue: $0 as! Int)! }
+            preferences: (list[1] as? [Any?]).map { NotificationPreferences.fromList($0) },
+            presets: (list[2] as? [Any?])?.map { NotificationPreset.fromList($0 as! [Any?]) },
+            fallbackChannel: (list[3] as? Int).flatMap { DeliveryChannel(rawValue: $0) }
         )
     }
 
@@ -177,30 +178,37 @@ struct SoundsNotificationsPage {
 
     func toDict() -> [String: String] {
         [
-            "contactId": String(describing: contactId),
-            "preferences": preferences ?? "",
-            "presets": presets ?? "",
-            "fallbackChannel": fallbackChannel ?? ""
+            "contactId": contactId,
+            "fallbackChannel": fallbackChannel.map { String($0.rawValue) } ?? ""
         ]
     }
 
+    func toPath() -> String {
+        let basePath = "/sounds-notifications/\(contactId.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? contactId)"
+        var query: [String] = []
+        if let fallbackChannelVal = fallbackChannel { query.append("fallbackChannel=\(String(fallbackChannelVal.rawValue).addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? String(fallbackChannelVal.rawValue))") }
+        if query.isEmpty { return basePath }
+        return "\(basePath)?\(query.joined(separator: "&"))"
+    }
+
     func toPageSettings() -> PageSettings {
-        PageSettings(routeId: Self.routeName, params: toDict())
+        PageSettings(routeId: Self.routeName, params: toDict(), path: toPath())
     }
 }
 
-struct SetWallpaperPage {
+struct SetWallpaperPage: FlutterRoute {
     let recipientId: String?
     let options: [WallpaperOption]?
     let preferredKind: WallpaperKind?
 
     static let routeName = "setWallpaper"
+    static let pathTemplate = "/set-wallpaper/:recipientId"
 
     static func fromList(_ list: [Any?]) -> SetWallpaperPage {
         SetWallpaperPage(
             recipientId: list[0] as? String,
-            options: (list[1] as? [Any?]).flatMap { ($0 as! [Any?]).map { WallpaperOption.fromList($0 as! [Any?]) } },
-            preferredKind: (list[2] as? [Any?]).flatMap { WallpaperKind(rawValue: $0 as! Int)! }
+            options: (list[1] as? [Any?])?.map { WallpaperOption.fromList($0 as! [Any?]) },
+            preferredKind: (list[2] as? Int).flatMap { WallpaperKind(rawValue: $0) }
         )
     }
 
@@ -215,28 +223,36 @@ struct SetWallpaperPage {
     func toDict() -> [String: String] {
         [
             "recipientId": recipientId ?? "",
-            "options": options ?? "",
-            "preferredKind": preferredKind ?? ""
+            "preferredKind": preferredKind.map { String($0.rawValue) } ?? ""
         ]
     }
 
+    func toPath() -> String {
+        let basePath = "/set-wallpaper/\((recipientId ?? "").addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? "")"
+        var query: [String] = []
+        if let preferredKindVal = preferredKind { query.append("preferredKind=\(String(preferredKindVal.rawValue).addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? String(preferredKindVal.rawValue))") }
+        if query.isEmpty { return basePath }
+        return "\(basePath)?\(query.joined(separator: "&"))"
+    }
+
     func toPageSettings() -> PageSettings {
-        PageSettings(routeId: Self.routeName, params: toDict())
+        PageSettings(routeId: Self.routeName, params: toDict(), path: toPath())
     }
 }
 
-struct ContactDetailsPage {
+struct ContactDetailsPage: FlutterRoute {
     let contactId: String
     let badges: [ContactBadge]?
     let preferredSound: NotificationSound?
 
     static let routeName = "contactDetails"
+    static let pathTemplate = "/contact-details/:contactId"
 
     static func fromList(_ list: [Any?]) -> ContactDetailsPage {
         ContactDetailsPage(
             contactId: list[0] as! String,
-            badges: (list[1] as? [Any?]).flatMap { ($0 as! [Any?]).map { ContactBadge.fromList($0 as! [Any?]) } },
-            preferredSound: (list[2] as? [Any?]).flatMap { NotificationSound(rawValue: $0 as! Int)! }
+            badges: (list[1] as? [Any?])?.map { ContactBadge.fromList($0 as! [Any?]) },
+            preferredSound: (list[2] as? Int).flatMap { NotificationSound(rawValue: $0) }
         )
     }
 
@@ -250,14 +266,21 @@ struct ContactDetailsPage {
 
     func toDict() -> [String: String] {
         [
-            "contactId": String(describing: contactId),
-            "badges": badges ?? "",
-            "preferredSound": preferredSound ?? ""
+            "contactId": contactId,
+            "preferredSound": preferredSound.map { String($0.rawValue) } ?? ""
         ]
     }
 
+    func toPath() -> String {
+        let basePath = "/contact-details/\(contactId.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? contactId)"
+        var query: [String] = []
+        if let preferredSoundVal = preferredSound { query.append("preferredSound=\(String(preferredSoundVal.rawValue).addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? String(preferredSoundVal.rawValue))") }
+        if query.isEmpty { return basePath }
+        return "\(basePath)?\(query.joined(separator: "&"))"
+    }
+
     func toPageSettings() -> PageSettings {
-        PageSettings(routeId: Self.routeName, params: toDict())
+        PageSettings(routeId: Self.routeName, params: toDict(), path: toPath())
     }
 }
 
@@ -298,10 +321,6 @@ struct NativeMediaViewerPage {
             mediaType.map { $0 },
         ]
     }
-}
-
-protocol NativeRouteHandling {
-    func handle(viewController: UIViewController, route: PageSettings)
 }
 
 class NativeRouteHandler: NativeRouteHandling {

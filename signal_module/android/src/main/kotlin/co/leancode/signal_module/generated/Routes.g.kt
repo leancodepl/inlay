@@ -4,6 +4,8 @@
 package co.leancode.signal_module.generated
 
 import android.content.Context
+import android.net.Uri
+import co.leancode.add2app.FlutterRoute
 import co.leancode.add2app.NativeRouteHandler as NativeRouteHandling
 import co.leancode.add2app.navigator.PageSettings
 
@@ -147,9 +149,10 @@ data class SoundsNotificationsPage(
     val preferences: NotificationPreferences?,
     val presets: List<NotificationPreset>?,
     val fallbackChannel: DeliveryChannel?
-) {
+) : FlutterRoute {
     companion object {
         const val ROUTE_NAME = "soundsNotifications"
+        const val PATH_TEMPLATE = "/sounds-notifications/:contactId"
 
         fun fromList(list: List<Any?>): SoundsNotificationsPage = SoundsNotificationsPage(
             contactId = list[0] as String,
@@ -173,16 +176,25 @@ data class SoundsNotificationsPage(
         "fallbackChannel" to (fallbackChannel?.toString() ?: "")
     )
 
-    fun toPageSettings(): PageSettings = PageSettings(ROUTE_NAME, toMap())
+    fun toPath(): String {
+        val basePath = "/sounds-notifications/${Uri.encode(contactId)}"
+        val query = mutableListOf<String>()
+        fallbackChannel?.let { query.add("fallbackChannel=${Uri.encode(it.toString())}") }
+        if (query.isEmpty()) return basePath
+        return "$basePath?${query.joinToString("&")}"
+    }
+
+    override fun toPageSettings(): PageSettings = PageSettings(ROUTE_NAME, toMap(), toPath())
 }
 
 data class SetWallpaperPage(
     val recipientId: String?,
     val options: List<WallpaperOption>?,
     val preferredKind: WallpaperKind?
-) {
+) : FlutterRoute {
     companion object {
         const val ROUTE_NAME = "setWallpaper"
+        const val PATH_TEMPLATE = "/set-wallpaper/:recipientId"
 
         fun fromList(list: List<Any?>): SetWallpaperPage = SetWallpaperPage(
             recipientId = (list[0] as? String)?.let { it as String },
@@ -203,16 +215,25 @@ data class SetWallpaperPage(
         "preferredKind" to (preferredKind?.toString() ?: "")
     )
 
-    fun toPageSettings(): PageSettings = PageSettings(ROUTE_NAME, toMap())
+    fun toPath(): String {
+        val basePath = "/set-wallpaper/${Uri.encode(recipientId ?: "")}"
+        val query = mutableListOf<String>()
+        preferredKind?.let { query.add("preferredKind=${Uri.encode(it.toString())}") }
+        if (query.isEmpty()) return basePath
+        return "$basePath?${query.joinToString("&")}"
+    }
+
+    override fun toPageSettings(): PageSettings = PageSettings(ROUTE_NAME, toMap(), toPath())
 }
 
 data class ContactDetailsPage(
     val contactId: String,
     val badges: List<ContactBadge>?,
     val preferredSound: NotificationSound?
-) {
+) : FlutterRoute {
     companion object {
         const val ROUTE_NAME = "contactDetails"
+        const val PATH_TEMPLATE = "/contact-details/:contactId"
 
         fun fromList(list: List<Any?>): ContactDetailsPage = ContactDetailsPage(
             contactId = list[0] as String,
@@ -233,7 +254,15 @@ data class ContactDetailsPage(
         "preferredSound" to (preferredSound?.toString() ?: "")
     )
 
-    fun toPageSettings(): PageSettings = PageSettings(ROUTE_NAME, toMap())
+    fun toPath(): String {
+        val basePath = "/contact-details/${Uri.encode(contactId)}"
+        val query = mutableListOf<String>()
+        preferredSound?.let { query.add("preferredSound=${Uri.encode(it.toString())}") }
+        if (query.isEmpty()) return basePath
+        return "$basePath?${query.joinToString("&")}"
+    }
+
+    override fun toPageSettings(): PageSettings = PageSettings(ROUTE_NAME, toMap(), toPath())
 }
 
 data class NativeEditProfilePage(

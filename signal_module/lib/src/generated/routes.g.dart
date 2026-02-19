@@ -180,6 +180,16 @@ class SoundsNotificationsPage extends FlutterRouteBase {
 
   static const String routeName = 'soundsNotifications';
 
+  static const String pathTemplate = '/sounds-notifications/:contactId';
+
+  String toPath() {
+    final basePath = '/sounds-notifications/${Uri.encodeComponent(contactId)}';
+    final query = <String, String>{};
+    if (fallbackChannel != null) query['fallbackChannel'] = fallbackChannel!.index.toString();
+    if (query.isEmpty) return basePath;
+    return '$basePath?${query.entries.map((e) => '${e.key}=${Uri.encodeComponent(e.value)}').join('&')}';
+  }
+
   List<Object?> encode() => <Object?>[
     contactId,
     preferences != null ? preferences!.encode() : null,
@@ -210,6 +220,11 @@ class SoundsNotificationsPage extends FlutterRouteBase {
 
   @override
   Object? get params => encode();
+
+  @override
+  PageSettings toPageSettings() {
+    return PageSettings(routeId: routeId, params: params, path: toPath());
+  }
 }
 
 class SetWallpaperPage extends FlutterRouteBase {
@@ -224,6 +239,16 @@ class SetWallpaperPage extends FlutterRouteBase {
   final WallpaperKind? preferredKind;
 
   static const String routeName = 'setWallpaper';
+
+  static const String pathTemplate = '/set-wallpaper/:recipientId';
+
+  String toPath() {
+    final basePath = '/set-wallpaper/${Uri.encodeComponent(recipientId ?? '')}';
+    final query = <String, String>{};
+    if (preferredKind != null) query['preferredKind'] = preferredKind!.index.toString();
+    if (query.isEmpty) return basePath;
+    return '$basePath?${query.entries.map((e) => '${e.key}=${Uri.encodeComponent(e.value)}').join('&')}';
+  }
 
   List<Object?> encode() => <Object?>[
     recipientId != null ? recipientId! : null,
@@ -252,6 +277,11 @@ class SetWallpaperPage extends FlutterRouteBase {
 
   @override
   Object? get params => encode();
+
+  @override
+  PageSettings toPageSettings() {
+    return PageSettings(routeId: routeId, params: params, path: toPath());
+  }
 }
 
 class ContactDetailsPage extends FlutterRouteBase {
@@ -266,6 +296,16 @@ class ContactDetailsPage extends FlutterRouteBase {
   final NotificationSound? preferredSound;
 
   static const String routeName = 'contactDetails';
+
+  static const String pathTemplate = '/contact-details/:contactId';
+
+  String toPath() {
+    final basePath = '/contact-details/${Uri.encodeComponent(contactId)}';
+    final query = <String, String>{};
+    if (preferredSound != null) query['preferredSound'] = preferredSound!.index.toString();
+    if (query.isEmpty) return basePath;
+    return '$basePath?${query.entries.map((e) => '${e.key}=${Uri.encodeComponent(e.value)}').join('&')}';
+  }
 
   List<Object?> encode() => <Object?>[
     contactId,
@@ -294,6 +334,11 @@ class ContactDetailsPage extends FlutterRouteBase {
 
   @override
   Object? get params => encode();
+
+  @override
+  PageSettings toPageSettings() {
+    return PageSettings(routeId: routeId, params: params, path: toPath());
+  }
 }
 
 class NativeEditProfilePage {

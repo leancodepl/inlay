@@ -64,6 +64,17 @@ import co.leancode.add2app.navigator.PageSettings
  * @param route    a [PageSettings] describing the Flutter page to display.
  * @param modifier layout modifier applied to the Flutter surface.
  */
+/**
+ * Overload that accepts a type-safe [FlutterRoute] object.
+ */
+@Composable
+fun Add2AppFlutterScreen(
+    route: FlutterRoute,
+    modifier: Modifier = Modifier,
+) {
+    Add2AppFlutterScreen(route = route.toPageSettings(), modifier = modifier)
+}
+
 @Composable
 fun Add2AppFlutterScreen(
     route: PageSettings,

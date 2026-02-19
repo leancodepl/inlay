@@ -41,6 +41,7 @@ class PageSettings {
   PageSettings({
     required this.routeId,
     this.params,
+    this.path,
   });
 
   /// Identifies which screen to show (e.g. "soundsNotifications").
@@ -50,10 +51,15 @@ class PageSettings {
   /// (via `encode()`). For Flutter pages this is a `Map<String, String>`.
   Object? params;
 
+  /// URL path derived from the typed route object (e.g. "/products/42").
+  /// When set, used as the `initialRoute` for router-based navigation.
+  String? path;
+
   List<Object?> _toList() {
     return <Object?>[
       routeId,
       params,
+      path,
     ];
   }
 
@@ -65,6 +71,7 @@ class PageSettings {
     return PageSettings(
       routeId: result[0]! as String,
       params: result[1],
+      path: result[2] as String?,
     );
   }
 

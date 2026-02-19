@@ -5,7 +5,7 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import co.leancode.add2app.Add2AppNavigator
-import co.leancode.add2app.navigator.PageSettings
+import co.leancode.signal_module.generated.SoundsNotificationsPage
 
 /**
  * ADD2APP: Activity that hosts a Flutter Fragment for the Sounds & Notifications
@@ -33,7 +33,7 @@ class FlutterSoundsNotificationsFragmentActivity : AppCompatActivity() {
             val recipientId = intent.getStringExtra(EXTRA_RECIPIENT_ID) ?: "1"
             val fragment = Add2AppNavigator.createFragment(
                 this,
-                PageSettings("soundsNotifications", mapOf("contactId" to recipientId))
+                SoundsNotificationsPage(contactId = recipientId)
             )
             supportFragmentManager.beginTransaction()
                 .replace(android.R.id.content, fragment, TAG_FLUTTER_FRAGMENT)
