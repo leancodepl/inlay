@@ -386,9 +386,10 @@ class ConversationSettingsViewController: OWSTableViewController2, BadgeCollecti
         // ADD2APP: Flutter Set Wallpaper — uses Add2AppNavigator (engine group).
         Add2AppNavigator.shared.push(
             from: self,
-            page: PageSettings(
-                routeId: "setWallpaper",
-                params: ["recipientId": thread.uniqueId]
+            route: SetWallpaperPage(
+                recipientId: thread.uniqueId,
+                options: nil,
+                preferredKind: nil
             )
         )
     }

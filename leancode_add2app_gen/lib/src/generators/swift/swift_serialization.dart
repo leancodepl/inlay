@@ -130,9 +130,43 @@ String generateSwiftDecode(
       return '$expression as? ${dartTypeToSwift(nonNullType)}';
     }
 
-    // For custom types, use flatMap.
-    final nonNullDecode = generateSwiftDecode(_swiftArg0, nonNullType, typeGraph);
-    return '($expression as? [Any?]).flatMap { $nonNullDecode }';
+    if (baseName == 'Uint8List') {
+      return '$expression as? FlutterStandardTypedData';
+    }
+
+    if (baseName == 'List' && type.typeArguments.isNotEmpty) {
+      final elementType = type.typeArguments.first;
+      if (_isPrimitive(elementType.baseName) && !elementType.isNullable) {
+        final swiftElementType = dartTypeToSwift(elementType);
+        return '($expression as? [Any?])?.map { \$0 as! $swiftElementType }';
+      }
+      final elementDecode = generateSwiftDecode(_swiftArg0, elementType, typeGraph);
+      return '($expression as? [Any?])?.map { $elementDecode }';
+    }
+
+    if (baseName == 'Map' && type.typeArguments.length == 2) {
+      final keyType = type.typeArguments[0];
+      final valueType = type.typeArguments[1];
+      final swiftKeyType = dartTypeToSwift(keyType);
+      final swiftValueType = dartTypeToSwift(valueType);
+
+      if (_isPrimitive(keyType.baseName) && _isPrimitive(valueType.baseName)) {
+        return '($expression as? [AnyHashable: Any?]).map { source in source.reduce(into: [$swiftKeyType: $swiftValueType]()) { dict, pair in dict[pair.key as! $swiftKeyType] = pair.value as? $swiftValueType } }';
+      }
+
+      final valueDecode = generateSwiftDecode(_swiftArg1, valueType, typeGraph);
+      return '($expression as? [AnyHashable: Any?]).map { source in source.mapValues { $valueDecode } }';
+    }
+
+    if (typeGraph[baseName] is EnumType) {
+      return '($expression as? Int).flatMap { $baseName(rawValue: \$0) }';
+    }
+
+    if (typeGraph.containsKey(baseName)) {
+      return '($expression as? [Any?]).map { $baseName.fromList(\$0) }';
+    }
+
+    return '$expression as? ${dartTypeToSwift(nonNullType)}';
   }
 
   // Primitives.

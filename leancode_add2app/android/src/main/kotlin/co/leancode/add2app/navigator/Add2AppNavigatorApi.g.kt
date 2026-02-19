@@ -97,20 +97,27 @@ data class PageSettings (
    * Page parameters. For native pages this is the pigeon-encoded object
    * (via `encode()`). For Flutter pages this is a `Map<String, String>`.
    */
-  val params: Any? = null
+  val params: Any? = null,
+  /**
+   * URL path derived from the typed route object (e.g. "/products/42").
+   * When set, used as the `initialRoute` for router-based navigation.
+   */
+  val path: String? = null
 )
  {
   companion object {
     fun fromList(pigeonVar_list: List<Any?>): PageSettings {
       val routeId = pigeonVar_list[0] as String
       val params = pigeonVar_list[1]
-      return PageSettings(routeId, params)
+      val path = pigeonVar_list[2] as String?
+      return PageSettings(routeId, params, path)
     }
   }
   fun toList(): List<Any?> {
     return listOf(
       routeId,
       params,
+      path,
     )
   }
   override fun equals(other: Any?): Boolean {

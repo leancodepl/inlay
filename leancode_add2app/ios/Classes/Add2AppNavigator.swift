@@ -141,10 +141,33 @@ final class Add2AppNavigator {
 
     // MARK: - Public API (iOS side)
 
-    /// Push a new Flutter view controller that displays the page described by `page`.
+    /// Push a new Flutter view controller that displays the page described by `route`.
     ///
     /// This is the **only** method native iOS code needs to call.
     /// No FlutterEngine, no entrypoints, no channels.
+    ///
+    /// ```swift
+    /// Add2AppNavigator.shared.push(
+    ///     from: self,
+    ///     route: SoundsNotificationsPage(contactId: "42")
+    /// )
+    /// ```
+    func push(from viewController: UIViewController, route: FlutterRoute, animated: Bool = true) {
+        push(from: viewController, page: route.toPageSettings(), animated: animated)
+    }
+
+    /// Present a Flutter page modally.
+    func present(from viewController: UIViewController, route: FlutterRoute, animated: Bool = true) {
+        present(from: viewController, page: route.toPageSettings(), animated: animated)
+    }
+
+    /// Create a `FlutterViewController` configured for the given route.
+    func createFlutterViewController(route: FlutterRoute) -> Add2AppFlutterViewController {
+        createFlutterViewController(page: route.toPageSettings())
+    }
+
+    // MARK: - Internal PageSettings-based navigation (used by Pigeon HostApi)
+
     func push(from viewController: UIViewController, page: PageSettings, animated: Bool = true) {
         start(prewarm: isPrewarmEnabled)
         let flutterVC = createFlutterViewController(page: page)
@@ -152,7 +175,6 @@ final class Add2AppNavigator {
             ?? viewController.present(flutterVC, animated: animated)
     }
 
-    /// Present a Flutter page modally.
     func present(from viewController: UIViewController, page: PageSettings, animated: Bool = true) {
         start(prewarm: isPrewarmEnabled)
         let flutterVC = createFlutterViewController(page: page)
@@ -253,6 +275,8 @@ final class Add2AppNavigator {
     /// For Flutter pages (Map params) the params are URL-encoded into the query string.
     /// For native pages (pigeon-encoded List params) only the routeId is used.
     static func encodePageSettings(_ page: PageSettings) -> String {
+        if let path = page.path { return path }
+
         guard let params = page.params else {
             return page.routeId
         }

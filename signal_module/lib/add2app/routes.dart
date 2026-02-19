@@ -5,7 +5,7 @@ import 'package:leancode_add2app/leancode_add2app.dart';
 // Routes for navigating to Flutter screens from native or other Flutter screens.
 
 /// Page settings for the Sounds & Notifications screen.
-@Add2AppFlutterRoute()
+@Add2AppFlutterRoute('/sounds-notifications/:contactId')
 class SoundsNotificationsPage {
   const SoundsNotificationsPage({
     required this.contactId,
@@ -21,7 +21,7 @@ class SoundsNotificationsPage {
 }
 
 /// Page settings for the Set Wallpaper screen.
-@Add2AppFlutterRoute()
+@Add2AppFlutterRoute('/set-wallpaper/:recipientId')
 class SetWallpaperPage {
   const SetWallpaperPage({
     this.recipientId,
@@ -35,7 +35,7 @@ class SetWallpaperPage {
 }
 
 /// Page settings for the Contact Details screen.
-@Add2AppFlutterRoute()
+@Add2AppFlutterRoute('/contact-details/:contactId')
 class ContactDetailsPage {
   const ContactDetailsPage({
     required this.contactId,

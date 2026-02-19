@@ -119,6 +119,7 @@ void _writeFlutterRoute(
   final className = route.className;
   final fields = route.fields;
   final routeName = route.routeName;
+  final path = route.path;
 
   buffer
     // Class declaration.
@@ -146,9 +147,58 @@ void _writeFlutterRoute(
     buffer.writeln();
   }
 
+  buffer.writeln("  static const String routeName = '$routeName';");
+
+  // Path support.
+  if (path != null) {
+    final pathParamNames = extractPathParamNames(path);
+    final queryFields = fields.where(
+      (f) =>
+          !pathParamNames.contains(f.name) && isSimpleType(f.type, typeGraph),
+    );
+
+    buffer
+      ..writeln()
+      ..writeln("  static const String pathTemplate = '$path';")
+      ..writeln()
+      ..writeln('  String toPath() {');
+
+    // Build path string with substituted params.
+    var pathExpr = path;
+    for (final paramName in pathParamNames) {
+      final field = fields.where((f) => f.name == paramName).firstOrNull;
+      final isNullable = field?.type.isNullable ?? false;
+      final encode = isNullable
+          ? "\${Uri.encodeComponent($paramName ?? '')}"
+          : '\${Uri.encodeComponent($paramName)}';
+      pathExpr = pathExpr.replaceAll(':$paramName', encode);
+    }
+    buffer.writeln("    final basePath = '$pathExpr';");
+
+    if (queryFields.isEmpty) {
+      buffer.writeln('    return basePath;');
+    } else {
+      buffer.writeln('    final query = <String, String>{};');
+      for (final field in queryFields) {
+        final valueExpr = _dartFieldToQueryValue(field);
+        if (field.type.isNullable) {
+          buffer.writeln(
+            "    if (${field.name} != null) query['${field.name}'] = $valueExpr;",
+          );
+        } else {
+          buffer.writeln("    query['${field.name}'] = $valueExpr;");
+        }
+      }
+      buffer
+        ..writeln('    if (query.isEmpty) return basePath;')
+        ..writeln(
+          r"    return '$basePath?${query.entries.map((e) => '${e.key}=${Uri.encodeComponent(e.value)}').join('&')}';",
+        );
+    }
+    buffer.writeln('  }');
+  }
+
   buffer
-    // Static route name.
-    ..writeln("  static const String routeName = '$routeName';")
     ..writeln()
     // encode() method.
     ..writeln('  ${generateDartEncodeMethod(fields, typeGraph)};')
@@ -166,8 +216,72 @@ void _writeFlutterRoute(
     ..writeln('  String get routeId => routeName;')
     ..writeln()
     ..writeln('  @override')
-    ..writeln('  Object? get params => encode();')
-    ..writeln('}');
+    ..writeln('  Object? get params => encode();');
+
+  // Override toPageSettings to include path.
+  if (path != null) {
+    buffer
+      ..writeln()
+      ..writeln('  @override')
+      ..writeln('  PageSettings toPageSettings() {')
+      ..writeln(
+        '    return PageSettings(routeId: routeId, params: params, path: toPath());',
+      )
+      ..writeln('  }');
+  }
+
+  buffer.writeln('}');
+}
+
+/// Extracts path parameter names from a path template.
+/// E.g. '/products/:id/reviews/:reviewId' -> ['id', 'reviewId']
+List<String> extractPathParamNames(String path) {
+  final regex = RegExp(r':(\w+)');
+  return regex.allMatches(path).map((m) => m.group(1)!).toList();
+}
+
+/// Whether a type is simple enough to be encoded as a query parameter.
+///
+/// Simple types are primitives and enums. Data classes and collections
+/// are considered complex and should NOT be serialized into query params.
+/// When [typeGraph] is provided, we check whether the type is actually an
+/// enum. Without it we fall back to a heuristic (non-primitive, non-collection,
+/// no type args → assumed enum).
+bool isSimpleType(TypeInfo type, [Map<String, TypeDefinition>? typeGraph]) {
+  if (type.isPrimitive) {
+    return true;
+  }
+  if (type.isList || type.isMap) {
+    return false;
+  }
+  if (type.typeArguments.isNotEmpty) {
+    return false;
+  }
+
+  if (typeGraph != null) {
+    final def = typeGraph[type.name];
+    return def is EnumType;
+  }
+
+  return true;
+}
+
+/// Returns a Dart expression that converts a field value to a String for query params.
+String _dartFieldToQueryValue(FieldInfo field) {
+  final name = field.name;
+  final type = field.type;
+  final nullSuffix = type.isNullable ? '!' : '';
+
+  if (type.name == 'String') {
+    return '$name$nullSuffix';
+  }
+  if (type.name == 'int' || type.name == 'double' || type.name == 'num') {
+    return '$name$nullSuffix.toString()';
+  }
+  if (type.name == 'bool') {
+    return '$name$nullSuffix.toString()';
+  }
+  return '$name$nullSuffix.index.toString()';
 }
 
 String _generateDecodeFromMapMethod(

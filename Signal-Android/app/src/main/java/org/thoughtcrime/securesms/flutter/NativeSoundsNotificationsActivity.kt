@@ -14,9 +14,9 @@ import androidx.appcompat.app.AppCompatActivity
 import co.leancode.add2app.Add2AppNavigator
 import co.leancode.add2app.KeyValueStorageImpl
 import co.leancode.add2app.NativeStorageScope
-import co.leancode.add2app.navigator.PageSettings
 import co.leancode.add2app.storage.StorageEntry
 import co.leancode.signal_module.generated.NotificationBehavior
+import co.leancode.signal_module.generated.SoundsNotificationsPage
 import co.leancode.signal_module.generated.SoundsNotificationsStore
 import co.leancode.signal_module.generated.VibrationLevel
 
@@ -236,9 +236,8 @@ class NativeSoundsNotificationsActivity : AppCompatActivity() {
             setOnClickListener {
                 Add2AppNavigator.push(
                     this@NativeSoundsNotificationsActivity,
-                    PageSettings(
-                        "soundsNotifications",
-                        mapOf("contactId" to recipientId)
+                    SoundsNotificationsPage(
+                        contactId = recipientId,
                     )
                 )
             }

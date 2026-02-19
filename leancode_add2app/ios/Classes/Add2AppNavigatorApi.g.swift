@@ -144,22 +144,28 @@ struct PageSettings: Hashable {
   /// Page parameters. For native pages this is the pigeon-encoded object
   /// (via `encode()`). For Flutter pages this is a `Map<String, String>`.
   var params: Any? = nil
+  /// URL path derived from the typed route object (e.g. "/products/42").
+  /// When set, used as the `initialRoute` for router-based navigation.
+  var path: String? = nil
 
 
   // swift-format-ignore: AlwaysUseLowerCamelCase
   static func fromList(_ pigeonVar_list: [Any?]) -> PageSettings? {
     let routeId = pigeonVar_list[0] as! String
     let params: Any? = pigeonVar_list[1]
+    let path: String? = nilOrValue(pigeonVar_list[2])
 
     return PageSettings(
       routeId: routeId,
-      params: params
+      params: params,
+      path: path
     )
   }
   func toList() -> [Any?] {
     return [
       routeId,
       params,
+      path,
     ]
   }
   static func == (lhs: PageSettings, rhs: PageSettings) -> Bool {

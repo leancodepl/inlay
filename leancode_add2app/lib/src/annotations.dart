@@ -8,33 +8,34 @@ library;
 ///
 /// The generator creates:
 /// - Serialization methods (`encode()`, `decode()`)
-/// - Route class extending `Add2AppFlutterRoute`
-/// - Handler method in `FlutterRouteHandler`
+/// - Route class extending `FlutterRouteBase` with `toPath()` support
+/// - Path-based navigation integration for go_router / auto_route / Navigator 2.0
 ///
 /// Example:
 /// ```dart
-/// @Add2AppFlutterRoute()  // route name defaults to "contactDetails"
+/// @Add2AppFlutterRoute('/contact-details/:contactId')
 /// class ContactDetailsPage {
 ///   const ContactDetailsPage({required this.contactId});
 ///   final String contactId;
 /// }
 ///
-/// @Add2AppFlutterRoute('sounds-notifications')  // explicit route name
-/// class SoundsNotificationsPage {
-///   const SoundsNotificationsPage({required this.contactId});
-///   final String contactId;
+/// @Add2AppFlutterRoute('/products/:id')
+/// class ProductDetailPage {
+///   const ProductDetailPage({required this.id});
+///   final String id;
 /// }
 /// ```
 class Add2AppFlutterRoute {
   /// Creates an annotation for a Flutter route.
   ///
-  /// [name] is the route identifier used in navigation. If not provided,
-  /// defaults to camelCase of the class name without "Page" suffix.
-  /// Example: `ContactDetailsPage` -> `"contactDetails"`
-  const Add2AppFlutterRoute([this.name]);
+  /// [path] is the URL path template for this route. Path parameters use
+  /// `:fieldName` syntax matching the class fields.
+  /// The internal route identifier is auto-derived from the class name
+  /// (strip "Page" suffix, camelCase).
+  const Add2AppFlutterRoute(this.path);
 
-  /// Optional route name. Defaults to camelCase of class name without "Page" suffix.
-  final String? name;
+  /// URL path template, e.g. '/sounds-notifications/:contactId'.
+  final String path;
 }
 
 /// Marks a class as a native route (Flutter -> native).
@@ -120,8 +121,7 @@ class Add2AppStoreKey {
   const Add2AppStoreKey();
 }
 
-/// Convenience constant for `@Add2AppFlutterRoute()` annotation.
-const add2AppFlutterRoute = Add2AppFlutterRoute();
+// Note: no convenience constant for Add2AppFlutterRoute since `path` is required.
 
 /// Convenience constant for `@Add2AppNativeRoute()` annotation.
 const add2AppNativeRoute = Add2AppNativeRoute();

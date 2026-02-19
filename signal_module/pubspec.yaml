@@ -13,6 +13,7 @@ dependencies:
   flutter:
     sdk: flutter
   flutter_bloc: ^9.1.0
+  go_router: ^15.1.2
   leancode_add2app:
     path: ../leancode_add2app
 

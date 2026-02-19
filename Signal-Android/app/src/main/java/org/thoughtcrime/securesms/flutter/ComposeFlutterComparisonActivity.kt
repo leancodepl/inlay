@@ -45,8 +45,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import co.leancode.add2app.Add2AppFlutterScreen
 import co.leancode.add2app.KeyValueStorageImpl
-import co.leancode.add2app.navigator.PageSettings
 import co.leancode.signal_module.generated.NotificationBehavior
+import co.leancode.signal_module.generated.SoundsNotificationsPage
 import co.leancode.signal_module.generated.SoundsNotificationsStore
 import co.leancode.signal_module.generated.VibrationLevel
 
@@ -125,9 +125,8 @@ private fun ComparisonNavHost(
         // ── Flutter destination (seamless!) ──────────────────────────
         composable("flutter/{id}") { entry ->
             Add2AppFlutterScreen(
-                route = PageSettings(
-                    "soundsNotifications",
-                    mapOf("contactId" to entry.arguments!!.getString("id")!!),
+                route = SoundsNotificationsPage(
+                    contactId = entry.arguments!!.getString("id")!!,
                 ),
                 modifier = Modifier.fillMaxSize(),
             )

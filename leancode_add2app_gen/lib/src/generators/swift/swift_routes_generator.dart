@@ -1,3 +1,5 @@
+import 'package:leancode_add2app_gen/src/generators/dart/dart_routes_generator.dart'
+    show extractPathParamNames, isSimpleType;
 import 'package:leancode_add2app_gen/src/generators/swift/swift_serialization.dart';
 import 'package:leancode_add2app_gen/src/models/data_type_definition.dart';
 import 'package:leancode_add2app_gen/src/models/route_definition.dart';
@@ -87,8 +89,14 @@ void _writeRouteStruct(
   final structName = route.className;
   final fields = route.fields;
   final isFlutterRoute = route.routeType == RouteType.flutter;
+  final path = route.path;
 
-  buffer.writeln('struct $structName {');
+  // Flutter routes conform to FlutterRoute protocol.
+  if (isFlutterRoute) {
+    buffer.writeln('struct $structName: FlutterRoute {');
+  } else {
+    buffer.writeln('struct $structName {');
+  }
 
   // Fields.
   for (final field in fields) {
@@ -99,7 +107,13 @@ void _writeRouteStruct(
   buffer
     ..writeln()
     // Route name constant.
-    ..writeln('    static let routeName = "${route.routeName}"')
+    ..writeln('    static let routeName = "${route.routeName}"');
+
+  if (path != null) {
+    buffer.writeln('    static let pathTemplate = "$path"');
+  }
+
+  buffer
     ..writeln()
     // fromList() method.
     ..writeln('    ${generateSwiftFromListMethod(structName, fields, typeGraph)}')
@@ -107,37 +121,165 @@ void _writeRouteStruct(
     // toList() method.
     ..writeln('    ${generateSwiftToListMethod(fields, typeGraph)}');
 
-  // For Flutter routes, add toDict() and toPageSettings() for easier iOS navigation.
+  // For Flutter routes, add toDict(), toPath(), and toPageSettings().
   if (isFlutterRoute) {
+    final dictFields = fields.where((f) => isSimpleType(f.type, typeGraph)).toList();
     buffer
       ..writeln()
       ..writeln('    func toDict() -> [String: String] {')
       ..writeln('        [');
-    for (var i = 0; i < fields.length; i++) {
-      final field = fields[i];
-      final comma = i < fields.length - 1 ? ',' : '';
-      if (field.type.isNullable) {
-        buffer.writeln(
-          '            "${field.name}": ${field.name} ?? ""$comma',
-        );
-      } else {
-        buffer.writeln('            "${field.name}": String(describing: ${field.name})$comma');
-      }
+    for (var i = 0; i < dictFields.length; i++) {
+      final field = dictFields[i];
+      final comma = i < dictFields.length - 1 ? ',' : '';
+      final valueExpr = _swiftFieldToDictValue(field, typeGraph);
+      buffer.writeln('            "${field.name}": $valueExpr$comma');
     }
     buffer
       ..writeln('        ]')
-      ..writeln('    }')
-      ..writeln()
-      ..writeln(
-        '    func toPageSettings() -> PageSettings {',
-      )
-      ..writeln(
-        '        PageSettings(routeId: Self.routeName, params: toDict())',
-      )
       ..writeln('    }');
+
+    if (path != null) {
+      _writeSwiftToPath(buffer, path, fields, typeGraph);
+    }
+
+    buffer.writeln();
+    if (path != null) {
+      buffer
+        ..writeln('    func toPageSettings() -> PageSettings {')
+        ..writeln(
+          '        PageSettings(routeId: Self.routeName, params: toDict(), path: toPath())',
+        )
+        ..writeln('    }');
+    } else {
+      buffer
+        ..writeln('    func toPageSettings() -> PageSettings {')
+        ..writeln(
+          '        PageSettings(routeId: Self.routeName, params: toDict())',
+        )
+        ..writeln('    }');
+    }
   }
 
   buffer.writeln('}');
+}
+
+void _writeSwiftToPath(
+  StringBuffer buffer,
+  String path,
+  List<FieldInfo> fields,
+  Map<String, TypeDefinition> typeGraph,
+) {
+  final pathParamNames = extractPathParamNames(path);
+  final queryFields = fields.where(
+    (f) =>
+        !pathParamNames.contains(f.name) && isSimpleType(f.type, typeGraph),
+  );
+
+  buffer.writeln();
+
+  // Build path expression with percent-encoded params.
+  var pathExpr = path;
+  for (final paramName in pathParamNames) {
+    final field = fields.where((f) => f.name == paramName).firstOrNull;
+    final isNullable = field?.type.isNullable ?? false;
+    if (isNullable) {
+      pathExpr = pathExpr.replaceAll(
+        ':$paramName',
+        '\\(($paramName ?? "").addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? "")',
+      );
+    } else {
+      pathExpr = pathExpr.replaceAll(
+        ':$paramName',
+        '\\($paramName.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? $paramName)',
+      );
+    }
+  }
+
+  if (queryFields.isEmpty) {
+    buffer
+      ..writeln('    func toPath() -> String {')
+      ..writeln('        "$pathExpr"')
+      ..writeln('    }');
+  } else {
+    buffer
+      ..writeln('    func toPath() -> String {')
+      ..writeln('        let basePath = "$pathExpr"')
+      ..writeln('        var query: [String] = []');
+    for (final field in queryFields) {
+      final name = field.name;
+      final valueExpr = _swiftFieldToQueryValue(
+        field.type,
+        typeGraph,
+        valueName: field.type.isNullable ? '${name}Val' : name,
+      );
+      if (field.type.isNullable) {
+        buffer.writeln(
+          '        if let ${name}Val = $name { query.append("$name=\\($valueExpr.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? $valueExpr)") }',
+        );
+      } else {
+        buffer.writeln(
+          '        query.append("$name=\\($valueExpr.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? $valueExpr)")',
+        );
+      }
+    }
+    buffer
+      ..writeln('        if query.isEmpty { return basePath }')
+      ..writeln(r'        return "\(basePath)?\(query.joined(separator: "&"))"')
+      ..writeln('    }');
+  }
+}
+
+String _swiftFieldToQueryValue(
+  TypeInfo type,
+  Map<String, TypeDefinition> typeGraph, {
+  required String valueName,
+}) {
+  final nonNullType = _toNonNullable(type);
+
+  if (nonNullType.name == 'String') {
+    return valueName;
+  }
+
+  if (typeGraph[nonNullType.name] is EnumType) {
+    return 'String($valueName.rawValue)';
+  }
+
+  return 'String(describing: $valueName)';
+}
+
+String _swiftFieldToDictValue(
+  FieldInfo field,
+  Map<String, TypeDefinition> typeGraph,
+) {
+  final name = field.name;
+  final type = field.type;
+  final nonNullType = _toNonNullable(type);
+
+  if (!type.isNullable) {
+    if (nonNullType.name == 'String') {
+      return name;
+    }
+    if (typeGraph[nonNullType.name] is EnumType) {
+      return 'String($name.rawValue)';
+    }
+    return 'String(describing: $name)';
+  }
+
+  if (nonNullType.name == 'String') {
+    return '$name ?? ""';
+  }
+  if (typeGraph[nonNullType.name] is EnumType) {
+    return '$name.map { String(\$0.rawValue) } ?? ""';
+  }
+  return '$name.map { String(describing: \$0) } ?? ""';
+}
+
+TypeInfo _toNonNullable(TypeInfo type) {
+  return TypeInfo(
+    name: type.name,
+    isNullable: false,
+    typeArguments: type.typeArguments,
+  );
 }
 
 void _writeStructWithFields(
@@ -169,13 +311,6 @@ void _writeNativeRouteHandler(
   List<RouteDefinition> routes,
 ) {
   buffer
-    // Protocol.
-    ..writeln('protocol NativeRouteHandling {')
-    ..writeln(
-      '    func handle(viewController: UIViewController, route: PageSettings)',
-    )
-    ..writeln('}')
-    ..writeln()
     // Base class.
     ..writeln('class NativeRouteHandler: NativeRouteHandling {')
     ..writeln()

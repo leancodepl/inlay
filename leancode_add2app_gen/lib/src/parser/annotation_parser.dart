@@ -9,7 +9,7 @@ import 'package:leancode_add2app_gen/src/models/type_info.dart';
 import 'package:leancode_add2app_gen/src/utils/naming.dart';
 
 /// Annotation names that the parser looks for.
-const _flutterRouteAnnotations = ['Add2AppFlutterRoute', 'add2AppFlutterRoute'];
+const _flutterRouteAnnotations = ['Add2AppFlutterRoute'];
 const _nativeRouteAnnotations = ['Add2AppNativeRoute', 'add2AppNativeRoute'];
 const _storeAnnotations = ['Add2AppStore', 'add2AppStore'];
 const _storeKeyFieldAnnotations = ['Add2AppStoreKey', 'add2AppStoreKey'];
@@ -61,13 +61,15 @@ class _SchemaCollectorVisitor extends RecursiveAstVisitor<void> {
     // Check for route annotations.
     final flutterAnnotation = _findAnnotation(node, _flutterRouteAnnotations);
     if (flutterAnnotation != null) {
-      final routeName = _extractRouteName(flutterAnnotation, className);
+      final routeName = routeIdFromClassName(className);
+      final path = _extractPositionalStringArg(flutterAnnotation);
       final fields = _extractFields(node);
       flutterRoutes.add(RouteDefinition(
         className: className,
         routeType: RouteType.flutter,
         routeName: routeName,
         fields: fields,
+        path: path,
       ));
       super.visitClassDeclaration(node);
       return;
@@ -136,11 +138,17 @@ class _SchemaCollectorVisitor extends RecursiveAstVisitor<void> {
     return null;
   }
 
-  /// Extracts the route name from an annotation.
+  /// Extracts the route name from an annotation (for native routes).
   ///
   /// If the annotation has a positional argument, use that.
   /// Otherwise, derive from the class name (remove "Page" suffix, camelCase).
   String _extractRouteName(Annotation annotation, String className) {
+    final value = _extractPositionalStringArg(annotation);
+    return value ?? routeIdFromClassName(className);
+  }
+
+  /// Extracts the first positional string literal argument from an annotation.
+  String? _extractPositionalStringArg(Annotation annotation) {
     final arguments = annotation.arguments;
     if (arguments != null && arguments.arguments.isNotEmpty) {
       final firstArg = arguments.arguments.first;
@@ -148,7 +156,7 @@ class _SchemaCollectorVisitor extends RecursiveAstVisitor<void> {
         return firstArg.value;
       }
     }
-    return routeIdFromClassName(className);
+    return null;
   }
 
   /// Extracts the store key from an annotation.

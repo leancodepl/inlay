@@ -105,9 +105,11 @@ private struct ComparisonHubView: View {
                 // ── Flutter ──
                 NavigationLink {
                     Add2AppFlutterView(
-                        route: PageSettings(
-                            routeId: "soundsNotifications",
-                            params: ["contactId": recipientId]
+                        route: SoundsNotificationsPage(
+                            contactId: recipientId,
+                            preferences: nil,
+                            presets: nil,
+                            fallbackChannel: nil
                         )
                     )
                     .ignoresSafeArea()
@@ -157,8 +159,8 @@ private struct NativeSwiftUISoundsNotifications: View {
     @State private var muteNotifications: Bool
     @State private var showPreviews: Bool
     @State private var notificationSound: String
-    @State private var vibrationLevel: VibrationLevel
-    @State private var behavior: NotificationBehavior
+    @State private var vibrationLevel: LocalVibrationLevel
+    @State private var behavior: LocalNotificationBehavior
 
     @State private var showSoundPicker = false
     @State private var showVibrationPicker = false
@@ -178,8 +180,8 @@ private struct NativeSwiftUISoundsNotifications: View {
         _muteNotifications = State(initialValue: storage.get(key: key("mute")) == "true")
         _showPreviews = State(initialValue: storage.get(key: key("showPreviews")) != "false")
         _notificationSound = State(initialValue: storage.get(key: key("sound")) ?? "Default")
-        _vibrationLevel = State(initialValue: VibrationLevel.fromStorage(storage.get(key: key("vibration"))))
-        _behavior = State(initialValue: NotificationBehavior.fromStorage(storage.get(key: key("behavior"))))
+        _vibrationLevel = State(initialValue: LocalVibrationLevel.fromStorage(storage.get(key: key("vibration"))))
+        _behavior = State(initialValue: LocalNotificationBehavior.fromStorage(storage.get(key: key("behavior"))))
     }
 
     private func key(_ field: String) -> String {
@@ -359,9 +361,9 @@ private struct NativeSwiftUISoundsNotifications: View {
                     case "sound":
                         notificationSound = entry.value.isEmpty ? "Default" : entry.value
                     case "vibration":
-                        vibrationLevel = VibrationLevel.fromStorage(entry.value)
+                        vibrationLevel = LocalVibrationLevel.fromStorage(entry.value)
                     case "behavior":
-                        behavior = NotificationBehavior.fromStorage(entry.value)
+                        behavior = LocalNotificationBehavior.fromStorage(entry.value)
                     default:
                         break
                     }
@@ -372,8 +374,8 @@ private struct NativeSwiftUISoundsNotifications: View {
             muteNotifications = storage.get(key: key("mute")) == "true"
             showPreviews = storage.get(key: key("showPreviews")) != "false"
             notificationSound = storage.get(key: key("sound")) ?? "Default"
-            vibrationLevel = VibrationLevel.fromStorage(storage.get(key: key("vibration")))
-            behavior = NotificationBehavior.fromStorage(storage.get(key: key("behavior")))
+            vibrationLevel = LocalVibrationLevel.fromStorage(storage.get(key: key("vibration")))
+            behavior = LocalNotificationBehavior.fromStorage(storage.get(key: key("behavior")))
         }
         .onDisappear {
             storage.stopObserving()
@@ -388,7 +390,7 @@ private struct NativeSwiftUISoundsNotifications: View {
             Button("Cancel", role: .cancel) {}
         }
         .confirmationDialog("Vibration Pattern", isPresented: $showVibrationPicker) {
-            ForEach(VibrationLevel.storeValues, id: \.rawValue) { level in
+            ForEach(LocalVibrationLevel.storeValues, id: \.rawValue) { level in
                 Button(level.label) {
                     vibrationLevel = level
                     storage.put(key: key("vibration"), value: String(level.rawValue))
@@ -397,7 +399,7 @@ private struct NativeSwiftUISoundsNotifications: View {
             Button("Cancel", role: .cancel) {}
         }
         .confirmationDialog("Notification Behavior", isPresented: $showBehaviorPicker) {
-            ForEach(NotificationBehavior.storeValues, id: \.rawValue) { item in
+            ForEach(LocalNotificationBehavior.storeValues, id: \.rawValue) { item in
                 Button(item.label) {
                     behavior = item
                     storage.put(key: key("behavior"), value: String(item.rawValue))
@@ -408,23 +410,23 @@ private struct NativeSwiftUISoundsNotifications: View {
     }
 }
 
-private enum VibrationLevel: Int {
+private enum LocalVibrationLevel: Int {
     case off = 0
     case normal = 1
     case intense = 2
 }
 
-private enum NotificationBehavior: Int {
+private enum LocalNotificationBehavior: Int {
     case defaultBehavior = 0
     case mentionsOnly = 1
     case muted = 2
 }
 
-private extension VibrationLevel {
-    static let storeValues: [VibrationLevel] = [.off, .normal, .intense]
+private extension LocalVibrationLevel {
+    static let storeValues: [LocalVibrationLevel] = [.off, .normal, .intense]
 
-    static func fromStorage(_ raw: String?) -> VibrationLevel {
-        guard let raw, let intValue = Int(raw), let level = VibrationLevel(rawValue: intValue) else {
+    static func fromStorage(_ raw: String?) -> LocalVibrationLevel {
+        guard let raw, let intValue = Int(raw), let level = LocalVibrationLevel(rawValue: intValue) else {
             return .normal
         }
         return level
@@ -439,11 +441,11 @@ private extension VibrationLevel {
     }
 }
 
-private extension NotificationBehavior {
-    static let storeValues: [NotificationBehavior] = [.defaultBehavior, .mentionsOnly, .muted]
+private extension LocalNotificationBehavior {
+    static let storeValues: [LocalNotificationBehavior] = [.defaultBehavior, .mentionsOnly, .muted]
 
-    static func fromStorage(_ raw: String?) -> NotificationBehavior {
-        guard let raw, let intValue = Int(raw), let behavior = NotificationBehavior(rawValue: intValue) else {
+    static func fromStorage(_ raw: String?) -> LocalNotificationBehavior {
+        guard let raw, let intValue = Int(raw), let behavior = LocalNotificationBehavior(rawValue: intValue) else {
             return .defaultBehavior
         }
         return behavior

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:leancode_add2app/leancode_add2app.dart';
-import 'package:signal_module/src/generated/routes.g.dart';
-import 'package:signal_module/src/screens/contact_details_screen.dart';
+import 'package:signal_module/src/router.dart';
 import 'package:signal_module/src/screens/set_wallpaper_screen.dart';
 import 'package:signal_module/src/screens/sounds_notifications_screen.dart';
 
@@ -13,53 +12,30 @@ void main() {
 
 /// **Single** Dart entrypoint used by [Add2AppNavigator] for every page.
 ///
-/// The Android side always calls this entrypoint and encodes the target page
-/// in the `initialRoute`.  This function:
-/// 1. Uses generated typed route handlers.
-/// 2. Initialises framework services (e.g. [KeyValueStorage]).
-/// 3. Decodes the `initialRoute` to find out which page to show.
-/// 4. Builds the widget and runs the app.
+/// The native side always calls this entrypoint and encodes the target page
+/// as a URL path in `initialRoute`. This function:
+/// 1. Initialises framework services (e.g. [KeyValueStorage]).
+/// 2. Creates a go_router with routes matching the path templates.
+/// 3. go_router reads `initialLocation` from the platform to build the
+///    correct page stack.
 ///
-/// Developers only need to implement generated handler methods here — no need
+/// Developers define routes in the go_router configuration — no need
 /// to create new entrypoints, Activities, method channels, etc.
 @pragma('vm:entry-point')
 void add2appMain() {
   WidgetsFlutterBinding.ensureInitialized();
 
-  const routeHandler = _SignalFlutterRouteHandler();
-
   // ── 1. Init framework services ─────────────────────────────────────
   KeyValueStorage.instance.init();
 
-  // ── 2. Decode initial route ────────────────────────────────────────
-  final page = Add2AppNavigator.initialPageFromPlatform();
+  // ── 2. Create router (reads initialLocation from platform) ─────────
+  final router = createSignalRouter();
 
   // ── 3. Run ─────────────────────────────────────────────────────────
-  runApp(MaterialApp(home: routeHandler.handle(page)));
-}
-
-/// Route handler that maps typed routes to screens.
-///
-/// Extend the generated [FlutterRouteHandler] and implement a method for each
-/// Flutter route. The handler provides compile-time type safety - if you add
-/// a new route, you'll get a compile error until you implement its handler.
-class _SignalFlutterRouteHandler extends FlutterRouteHandler {
-  const _SignalFlutterRouteHandler();
-
-  @override
-  Widget onSoundsNotifications(SoundsNotificationsPage page) {
-    return SoundsNotificationsScreen(contactId: page.contactId);
-  }
-
-  @override
-  Widget onSetWallpaper(SetWallpaperPage page) {
-    return SetWallpaperScreen(recipientId: page.recipientId);
-  }
-
-  @override
-  Widget onContactDetails(ContactDetailsPage page) {
-    return ContactDetailsScreen(contactId: page.contactId);
-  }
+  runApp(MaterialApp.router(
+    routerConfig: router,
+    backButtonDispatcher: Add2AppBackButtonDispatcher(),
+  ));
 }
 
 // ── Legacy entrypoints (kept for backward compatibility) ─────────────

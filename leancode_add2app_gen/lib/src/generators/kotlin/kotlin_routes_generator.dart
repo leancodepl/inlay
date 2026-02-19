@@ -1,3 +1,5 @@
+import 'package:leancode_add2app_gen/src/generators/dart/dart_routes_generator.dart'
+    show extractPathParamNames, isSimpleType;
 import 'package:leancode_add2app_gen/src/generators/kotlin/kotlin_serialization.dart';
 import 'package:leancode_add2app_gen/src/models/data_type_definition.dart';
 import 'package:leancode_add2app_gen/src/models/route_definition.dart';
@@ -18,6 +20,7 @@ String generateKotlinRoutes({
   required Map<String, TypeDefinition> typeGraph,
   required String packageName,
 }) {
+  final hasFlutterRoutes = schema.flutterRoutes.isNotEmpty;
   final buffer = StringBuffer()
     // Header.
     ..writeln('// GENERATED CODE — DO NOT MODIFY BY HAND')
@@ -26,6 +29,11 @@ String generateKotlinRoutes({
     ..writeln('package $packageName')
     ..writeln()
     ..writeln('import android.content.Context')
+    ..writeln('import android.net.Uri');
+  if (hasFlutterRoutes) {
+    buffer.writeln('import co.leancode.add2app.FlutterRoute');
+  }
+  buffer
     ..writeln('import co.leancode.add2app.NativeRouteHandler as NativeRouteHandling')
     ..writeln('import co.leancode.add2app.navigator.PageSettings')
     ..writeln();
@@ -95,20 +103,34 @@ void _writeRouteDataClass(
   final className = route.className;
   final fields = route.fields;
   final isFlutterRoute = route.routeType == RouteType.flutter;
+  final path = route.path;
 
-  buffer.writeln('data class $className(');
-  for (var i = 0; i < fields.length; i++) {
-    final field = fields[i];
-    final kotlinType = dartTypeToKotlin(field.type);
-    final comma = i < fields.length - 1 ? ',' : '';
-    buffer.writeln('    val ${field.name}: $kotlinType$comma');
+  buffer.write('data class $className(');
+  if (fields.isNotEmpty) {
+    buffer.writeln();
+    for (var i = 0; i < fields.length; i++) {
+      final field = fields[i];
+      final kotlinType = dartTypeToKotlin(field.type);
+      final comma = i < fields.length - 1 ? ',' : '';
+      buffer.writeln('    val ${field.name}: $kotlinType$comma');
+    }
   }
 
+  // Flutter routes implement FlutterRoute interface.
+  if (isFlutterRoute) {
+    buffer.writeln(') : FlutterRoute {');
+  } else {
+    buffer.writeln(') {');
+  }
+
+  // Route name constant + path template.
   buffer
-    ..writeln(') {')
-    // Route name constant.
     ..writeln('    companion object {')
-    ..writeln('        const val ROUTE_NAME = "${route.routeName}"')
+    ..writeln('        const val ROUTE_NAME = "${route.routeName}"');
+  if (path != null) {
+    buffer.writeln('        const val PATH_TEMPLATE = "$path"');
+  }
+  buffer
     ..writeln()
     ..writeln(
       '        ${generateKotlinFromListMethod(className, fields, typeGraph)}',
@@ -118,7 +140,7 @@ void _writeRouteDataClass(
     // toList() method.
     ..writeln('    ${generateKotlinToListMethod(fields, typeGraph)}');
 
-  // For Flutter routes, add toMap() and toPageSettings() for easier Android navigation.
+  // For Flutter routes, add toMap(), toPath(), and toPageSettings().
   if (isFlutterRoute) {
     buffer
       ..writeln()
@@ -134,15 +156,76 @@ void _writeRouteDataClass(
         buffer.writeln('        "${field.name}" to ${field.name}.toString()$comma');
       }
     }
-    buffer
-      ..writeln('    )')
-      ..writeln()
-      ..writeln(
-        '    fun toPageSettings(): PageSettings = PageSettings(ROUTE_NAME, toMap())',
+    buffer.writeln('    )');
+
+    if (path != null) {
+      _writeKotlinToPath(buffer, path, fields, typeGraph);
+    }
+
+    buffer.writeln();
+    if (path != null) {
+      buffer.writeln(
+        '    override fun toPageSettings(): PageSettings = PageSettings(ROUTE_NAME, toMap(), toPath())',
       );
+    } else {
+      buffer.writeln(
+        '    override fun toPageSettings(): PageSettings = PageSettings(ROUTE_NAME, toMap())',
+      );
+    }
   }
 
   buffer.writeln('}');
+}
+
+void _writeKotlinToPath(
+  StringBuffer buffer,
+  String path,
+  List<FieldInfo> fields,
+  Map<String, TypeDefinition> typeGraph,
+) {
+  final pathParamNames = extractPathParamNames(path);
+  final queryFields = fields.where(
+    (f) =>
+        !pathParamNames.contains(f.name) && isSimpleType(f.type, typeGraph),
+  );
+
+  buffer.writeln();
+
+  // Build path expression with URI-encoded params.
+  var pathExpr = path;
+  for (final paramName in pathParamNames) {
+    final field = fields.where((f) => f.name == paramName).firstOrNull;
+    final isNullable = field?.type.isNullable ?? false;
+    final encode = isNullable
+        ? '\${Uri.encode($paramName ?: "")}'
+        : '\${Uri.encode($paramName)}';
+    pathExpr = pathExpr.replaceAll(':$paramName', encode);
+  }
+
+  if (queryFields.isEmpty) {
+    buffer.writeln('    fun toPath(): String = "$pathExpr"');
+  } else {
+    buffer
+      ..writeln('    fun toPath(): String {')
+      ..writeln('        val basePath = "$pathExpr"')
+      ..writeln('        val query = mutableListOf<String>()');
+    for (final field in queryFields) {
+      final name = field.name;
+      if (field.type.isNullable) {
+        buffer.writeln(
+          '        $name?.let { query.add("$name=\${Uri.encode(it.toString())}") }',
+        );
+      } else {
+        buffer.writeln(
+          '        query.add("$name=\${Uri.encode($name.toString())}")',
+        );
+      }
+    }
+    buffer
+      ..writeln('        if (query.isEmpty()) return basePath')
+      ..writeln(r'        return "$basePath?${query.joinToString("&")}"')
+      ..writeln('    }');
+  }
 }
 
 void _writeDataClassWithFields(

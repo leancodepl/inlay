@@ -13,10 +13,7 @@ import Flutter
 ///             List {
 ///                 NavigationLink("Contact Details") {
 ///                     Add2AppFlutterView(
-///                         route: PageSettings(
-///                             routeId: "contactDetails",
-///                             params: ["contactId": "42"]
-///                         )
+///                         route: ContactDetailsPage(contactId: "42")
 ///                     )
 ///                     .ignoresSafeArea()
 ///                     .navigationTitle("Contact")
@@ -25,10 +22,7 @@ import Flutter
 ///
 ///                 NavigationLink("Set Wallpaper") {
 ///                     Add2AppFlutterView(
-///                         route: PageSettings(
-///                             routeId: "setWallpaper",
-///                             params: ["recipientId": "42"]
-///                         )
+///                         route: SetWallpaperPage(recipientId: "42")
 ///                     )
 ///                     .ignoresSafeArea()
 ///                 }
@@ -63,6 +57,16 @@ struct Add2AppFlutterView: UIViewControllerRepresentable {
 
     /// The Flutter page to display, described as a `PageSettings`.
     let route: PageSettings
+
+    /// Convenience initializer that accepts a type-safe `FlutterRoute`.
+    init(route: FlutterRoute) {
+        self.route = route.toPageSettings()
+    }
+
+    /// Internal initializer for backward compatibility.
+    init(page: PageSettings) {
+        self.route = page
+    }
 
     @Environment(\.dismiss) private var dismiss
 
