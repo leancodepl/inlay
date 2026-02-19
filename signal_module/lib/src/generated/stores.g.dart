@@ -8,7 +8,7 @@ import 'package:leancode_add2app/leancode_add2app.dart';
 import 'routes.g.dart';
 
 /// Generated store wrapper for SoundsNotificationsStore.
-class SoundsNotificationsStore {
+class SoundsNotificationsStore implements Add2AppSnapshotStore<SoundsNotificationsStoreSnapshot> {
   SoundsNotificationsStore(this._storage, {required this.contactId, });
 
   final KeyValueStorage _storage;
@@ -67,12 +67,14 @@ class SoundsNotificationsStore {
 
   // ── Reactive Stream ───────────────────────────────────────────
 
+  @override
   Stream<SoundsNotificationsStoreSnapshot> get stream {
     return _storage.stream
         .where((entries) => entries.any((e) => e.key.startsWith(_key(''))))
         .asyncMap((_) => getSnapshot());
   }
 
+  @override
   Future<SoundsNotificationsStoreSnapshot> getSnapshot() async {
     return SoundsNotificationsStoreSnapshot(
       mute: await getMute(),
@@ -81,6 +83,34 @@ class SoundsNotificationsStore {
       vibration: await getVibration(),
       behavior: await getBehavior(),
     );
+  }
+
+  // ── Write Snapshot ────────────────────────────────────────────
+
+  @override
+  Future<void> writeSnapshot(
+    SoundsNotificationsStoreSnapshot snapshot, {
+    SoundsNotificationsStoreSnapshot? previous,
+  }) async {
+    final entries = <StorageEntry>[];
+    if (previous == null || previous.mute != snapshot.mute) {
+      entries.add(StorageEntry(key: _key('mute'), value: snapshot.mute.toString()));
+    }
+    if (previous == null || previous.showPreviews != snapshot.showPreviews) {
+      entries.add(StorageEntry(key: _key('showPreviews'), value: snapshot.showPreviews.toString()));
+    }
+    if (previous == null || previous.sound != snapshot.sound) {
+      entries.add(StorageEntry(key: _key('sound'), value: snapshot.sound));
+    }
+    if (previous == null || previous.vibration != snapshot.vibration) {
+      entries.add(StorageEntry(key: _key('vibration'), value: snapshot.vibration.index.toString()));
+    }
+    if (previous == null || previous.behavior != snapshot.behavior) {
+      entries.add(StorageEntry(key: _key('behavior'), value: snapshot.behavior.index.toString()));
+    }
+    if (entries.isNotEmpty) {
+      await _storage.putAll(entries);
+    }
   }
 
   // ── Clear ─────────────────────────────────────────────────────
@@ -105,10 +135,26 @@ class SoundsNotificationsStoreSnapshot {
   final String sound;
   final VibrationLevel vibration;
   final NotificationBehavior behavior;
+
+  SoundsNotificationsStoreSnapshot copyWith({
+    bool? mute,
+    bool? showPreviews,
+    String? sound,
+    VibrationLevel? vibration,
+    NotificationBehavior? behavior,
+  }) {
+    return SoundsNotificationsStoreSnapshot(
+      mute: mute ?? this.mute,
+      showPreviews: showPreviews ?? this.showPreviews,
+      sound: sound ?? this.sound,
+      vibration: vibration ?? this.vibration,
+      behavior: behavior ?? this.behavior,
+    );
+  }
 }
 
 /// Generated store wrapper for UserPreferencesStore.
-class UserPreferencesStore {
+class UserPreferencesStore implements Add2AppSnapshotStore<UserPreferencesStoreSnapshot> {
   UserPreferencesStore(this._storage);
 
   final KeyValueStorage _storage;
@@ -148,18 +194,42 @@ class UserPreferencesStore {
 
   // ── Reactive Stream ───────────────────────────────────────────
 
+  @override
   Stream<UserPreferencesStoreSnapshot> get stream {
     return _storage.stream
         .where((entries) => entries.any((e) => e.key.startsWith(_key(''))))
         .asyncMap((_) => getSnapshot());
   }
 
+  @override
   Future<UserPreferencesStoreSnapshot> getSnapshot() async {
     return UserPreferencesStoreSnapshot(
       darkMode: await getDarkMode(),
       locale: await getLocale(),
       theme: await getTheme(),
     );
+  }
+
+  // ── Write Snapshot ────────────────────────────────────────────
+
+  @override
+  Future<void> writeSnapshot(
+    UserPreferencesStoreSnapshot snapshot, {
+    UserPreferencesStoreSnapshot? previous,
+  }) async {
+    final entries = <StorageEntry>[];
+    if (previous == null || previous.darkMode != snapshot.darkMode) {
+      entries.add(StorageEntry(key: _key('darkMode'), value: snapshot.darkMode.toString()));
+    }
+    if (previous == null || previous.locale != snapshot.locale) {
+      entries.add(StorageEntry(key: _key('locale'), value: snapshot.locale));
+    }
+    if (previous == null || previous.theme != snapshot.theme) {
+      entries.add(StorageEntry(key: _key('theme'), value: snapshot.theme.index.toString()));
+    }
+    if (entries.isNotEmpty) {
+      await _storage.putAll(entries);
+    }
   }
 
   // ── Clear ─────────────────────────────────────────────────────
@@ -180,10 +250,22 @@ class UserPreferencesStoreSnapshot {
   final bool darkMode;
   final String locale;
   final AppTheme theme;
+
+  UserPreferencesStoreSnapshot copyWith({
+    bool? darkMode,
+    String? locale,
+    AppTheme? theme,
+  }) {
+    return UserPreferencesStoreSnapshot(
+      darkMode: darkMode ?? this.darkMode,
+      locale: locale ?? this.locale,
+      theme: theme ?? this.theme,
+    );
+  }
 }
 
 /// Generated store wrapper for ThreadPreferencesStore.
-class ThreadPreferencesStore {
+class ThreadPreferencesStore implements Add2AppSnapshotStore<ThreadPreferencesStoreSnapshot> {
   ThreadPreferencesStore(this._storage, {required this.threadId, });
 
   final KeyValueStorage _storage;
@@ -224,18 +306,42 @@ class ThreadPreferencesStore {
 
   // ── Reactive Stream ───────────────────────────────────────────
 
+  @override
   Stream<ThreadPreferencesStoreSnapshot> get stream {
     return _storage.stream
         .where((entries) => entries.any((e) => e.key.startsWith(_key(''))))
         .asyncMap((_) => getSnapshot());
   }
 
+  @override
   Future<ThreadPreferencesStoreSnapshot> getSnapshot() async {
     return ThreadPreferencesStoreSnapshot(
       unreadCount: await getUnreadCount(),
       fontScale: await getFontScale(),
       behavior: await getBehavior(),
     );
+  }
+
+  // ── Write Snapshot ────────────────────────────────────────────
+
+  @override
+  Future<void> writeSnapshot(
+    ThreadPreferencesStoreSnapshot snapshot, {
+    ThreadPreferencesStoreSnapshot? previous,
+  }) async {
+    final entries = <StorageEntry>[];
+    if (previous == null || previous.unreadCount != snapshot.unreadCount) {
+      entries.add(StorageEntry(key: _key('unreadCount'), value: snapshot.unreadCount.toString()));
+    }
+    if (previous == null || previous.fontScale != snapshot.fontScale) {
+      entries.add(StorageEntry(key: _key('fontScale'), value: snapshot.fontScale.toString()));
+    }
+    if (previous == null || previous.behavior != snapshot.behavior) {
+      entries.add(StorageEntry(key: _key('behavior'), value: snapshot.behavior.index.toString()));
+    }
+    if (entries.isNotEmpty) {
+      await _storage.putAll(entries);
+    }
   }
 
   // ── Clear ─────────────────────────────────────────────────────
@@ -256,10 +362,22 @@ class ThreadPreferencesStoreSnapshot {
   final int unreadCount;
   final double fontScale;
   final NotificationBehavior behavior;
+
+  ThreadPreferencesStoreSnapshot copyWith({
+    int? unreadCount,
+    double? fontScale,
+    NotificationBehavior? behavior,
+  }) {
+    return ThreadPreferencesStoreSnapshot(
+      unreadCount: unreadCount ?? this.unreadCount,
+      fontScale: fontScale ?? this.fontScale,
+      behavior: behavior ?? this.behavior,
+    );
+  }
 }
 
 /// Generated store wrapper for CategoryPreferencesStore.
-class CategoryPreferencesStore {
+class CategoryPreferencesStore implements Add2AppSnapshotStore<CategoryPreferencesStoreSnapshot> {
   CategoryPreferencesStore(this._storage, {required this.category, });
 
   final KeyValueStorage _storage;
@@ -291,17 +409,38 @@ class CategoryPreferencesStore {
 
   // ── Reactive Stream ───────────────────────────────────────────
 
+  @override
   Stream<CategoryPreferencesStoreSnapshot> get stream {
     return _storage.stream
         .where((entries) => entries.any((e) => e.key.startsWith(_key(''))))
         .asyncMap((_) => getSnapshot());
   }
 
+  @override
   Future<CategoryPreferencesStoreSnapshot> getSnapshot() async {
     return CategoryPreferencesStoreSnapshot(
       pinned: await getPinned(),
       label: await getLabel(),
     );
+  }
+
+  // ── Write Snapshot ────────────────────────────────────────────
+
+  @override
+  Future<void> writeSnapshot(
+    CategoryPreferencesStoreSnapshot snapshot, {
+    CategoryPreferencesStoreSnapshot? previous,
+  }) async {
+    final entries = <StorageEntry>[];
+    if (previous == null || previous.pinned != snapshot.pinned) {
+      entries.add(StorageEntry(key: _key('pinned'), value: snapshot.pinned.toString()));
+    }
+    if (previous == null || previous.label != snapshot.label) {
+      entries.add(StorageEntry(key: _key('label'), value: snapshot.label));
+    }
+    if (entries.isNotEmpty) {
+      await _storage.putAll(entries);
+    }
   }
 
   // ── Clear ─────────────────────────────────────────────────────
@@ -320,5 +459,15 @@ class CategoryPreferencesStoreSnapshot {
 
   final bool pinned;
   final String label;
+
+  CategoryPreferencesStoreSnapshot copyWith({
+    bool? pinned,
+    String? label,
+  }) {
+    return CategoryPreferencesStoreSnapshot(
+      pinned: pinned ?? this.pinned,
+      label: label ?? this.label,
+    );
+  }
 }
 

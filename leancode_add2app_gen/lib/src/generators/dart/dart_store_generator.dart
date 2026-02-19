@@ -66,9 +66,11 @@ void _writeStoreClass(
   final keyField = store.keyField;
   final valueFields = store.valueFields;
 
+  final snapshotClassName = '${className}Snapshot';
+
   buffer
     ..writeln('/// Generated store wrapper for $className.')
-    ..writeln('class $className {')
+    ..writeln('class $className implements Add2AppSnapshotStore<$snapshotClassName> {')
     // Constructor.
     ..write('  $className(this._storage');
   if (keyField != null) {
@@ -121,17 +123,15 @@ void _writeStoreClass(
   // Stream for reactive updates.
   buffer
     ..writeln('  // ── Reactive Stream ───────────────────────────────────────────')
-    ..writeln();
-
-  final snapshotClassName = '${className}Snapshot';
-  buffer
+    ..writeln()
+    ..writeln('  @override')
     ..writeln('  Stream<$snapshotClassName> get stream {')
     ..writeln('    return _storage.stream')
     ..writeln("        .where((entries) => entries.any((e) => e.key.startsWith(_key(''))))")
     ..writeln('        .asyncMap((_) => getSnapshot());')
     ..writeln('  }')
     ..writeln()
-    // getSnapshot() method.
+    ..writeln('  @override')
     ..writeln('  Future<$snapshotClassName> getSnapshot() async {')
     ..writeln('    return $snapshotClassName(');
   for (final field in valueFields) {
@@ -142,6 +142,12 @@ void _writeStoreClass(
   buffer
     ..writeln('    );')
     ..writeln('  }')
+    ..writeln();
+
+  // writeSnapshot() — diff-based batch write using putAll.
+  _writeWriteSnapshot(buffer, snapshotClassName, valueFields, typeGraph);
+
+  buffer
     ..writeln()
     // clear() method.
     ..writeln('  // ── Clear ─────────────────────────────────────────────────────')
@@ -177,6 +183,9 @@ void _writeSnapshotClass(StringBuffer buffer, StoreDefinition store) {
     final type = _nonNullableType(field);
     buffer.writeln('  final $type ${field.name};');
   }
+
+  // copyWith method.
+  _writeCopyWith(buffer, store);
 
   buffer.writeln('}');
 }
@@ -277,6 +286,76 @@ String _getterNameForField(FieldInfo field) {
 String _setterNameForField(FieldInfo field) {
   final name = field.name;
   return 'set${name[0].toUpperCase()}${name.substring(1)}';
+}
+
+void _writeWriteSnapshot(
+  StringBuffer buffer,
+  String snapshotClassName,
+  List<FieldInfo> valueFields,
+  Map<String, TypeDefinition> typeGraph,
+) {
+  buffer
+    ..writeln('  // ── Write Snapshot ────────────────────────────────────────────')
+    ..writeln()
+    ..writeln('  @override')
+    ..writeln('  Future<void> writeSnapshot(')
+    ..writeln('    $snapshotClassName snapshot, {')
+    ..writeln('    $snapshotClassName? previous,')
+    ..writeln('  }) async {')
+    ..writeln('    final entries = <StorageEntry>[];');
+
+  for (final field in valueFields) {
+    final name = field.name;
+    final baseName = field.type.baseName;
+
+    buffer.writeln(
+      '    if (previous == null || previous.$name != snapshot.$name) {',
+    );
+
+    final valueExpr = switch (typeGraph[baseName]) {
+      EnumType() => 'snapshot.$name.index.toString()',
+      _ when baseName == 'String' => 'snapshot.$name',
+      _ => 'snapshot.$name.toString()',
+    };
+
+    buffer
+      ..writeln(
+        "      entries.add(StorageEntry(key: _key('$name'), value: $valueExpr));",
+      )
+      ..writeln('    }');
+  }
+
+  buffer
+    ..writeln('    if (entries.isNotEmpty) {')
+    ..writeln('      await _storage.putAll(entries);')
+    ..writeln('    }')
+    ..writeln('  }');
+}
+
+void _writeCopyWith(StringBuffer buffer, StoreDefinition store) {
+  final className = '${store.className}Snapshot';
+  final valueFields = store.valueFields;
+
+  if (valueFields.isEmpty) {
+    return;
+  }
+
+  buffer
+    ..writeln()
+    ..writeln('  $className copyWith({');
+  for (final field in valueFields) {
+    final type = _nonNullableType(field);
+    buffer.writeln('    $type? ${field.name},');
+  }
+  buffer
+    ..writeln('  }) {')
+    ..writeln('    return $className(');
+  for (final field in valueFields) {
+    buffer.writeln('      ${field.name}: ${field.name} ?? this.${field.name},');
+  }
+  buffer
+    ..writeln('    );')
+    ..writeln('  }');
 }
 
 /// Returns the non-nullable version of the field's type.
