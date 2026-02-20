@@ -1,6 +1,8 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:leancode_add2app/leancode_add2app.dart';
 import 'package:signal_module/src/router.dart';
+import 'package:signal_module/src/router_auto_route.dart';
 import 'package:signal_module/src/screens/set_wallpaper_screen.dart';
 import 'package:signal_module/src/screens/sounds_notifications_screen.dart';
 
@@ -15,30 +17,66 @@ void main() {
 /// The native side always calls this entrypoint and encodes the target page
 /// as a URL path in `initialRoute`. This function:
 /// 1. Initialises framework services (e.g. [KeyValueStorage]).
-/// 2. Creates a go_router with routes matching the path templates.
-/// 3. go_router reads `initialLocation` from the platform to build the
+/// 2. Creates an auto_route router with routes matching the path templates.
+/// 3. auto_route reads `initialLocation` from the platform to build the
 ///    correct page stack.
 ///
-/// Developers define routes in the go_router configuration — no need
-/// to create new entrypoints, Activities, method channels, etc.
+/// Developers define routes in the auto_route configuration — no need
+/// to create new Activities, method channels, etc.
 @pragma('vm:entry-point')
 void add2appMain() {
+  // Temporary switch for manual testing of auto_route in the native host.
+  _runAdd2AppWithAutoRoute();
+}
+
+/// Alternative entrypoint kept for backward compatibility with native config.
+@pragma('vm:entry-point')
+void add2appAutoRouteMain() {
+  _runAdd2AppWithAutoRoute();
+}
+
+/// Preserved go_router example entrypoint.
+@pragma('vm:entry-point')
+void add2appGoRouterMain() {
+  _runAdd2AppWithGoRouter();
+}
+
+void _runAdd2AppWithGoRouter() {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // ── 1. Init framework services ─────────────────────────────────────
   KeyValueStorage.instance.init();
 
-  // ── 2. Create router (reads initialLocation from platform) ─────────
   final router = createSignalRouter();
 
-  // ── 3. Run ─────────────────────────────────────────────────────────
   runApp(
     MaterialApp.router(
-      // `routerConfig` cannot be combined with `backButtonDispatcher`,
-      // so we pass router delegates explicitly.
       routeInformationProvider: router.routeInformationProvider,
       routeInformationParser: router.routeInformationParser,
       routerDelegate: router.routerDelegate,
+      backButtonDispatcher: Add2AppBackButtonDispatcher(),
+    ),
+  );
+}
+
+void _runAdd2AppWithAutoRoute() {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  KeyValueStorage.instance.init();
+
+  final initialLocation = normalizeSignalAutoRouteLocation(
+    Add2AppNavigator.initialLocationFromPlatform(),
+  );
+  final router = createSignalAutoRouter();
+
+  runApp(
+    MaterialApp.router(
+      routeInformationParser: router.defaultRouteParser(
+        includePrefixMatches: true,
+      ),
+      routerDelegate: router.delegate(
+        deepLinkBuilder: (_) => DeepLink.path(initialLocation),
+        rebuildStackOnDeepLink: true,
+      ),
       backButtonDispatcher: Add2AppBackButtonDispatcher(),
     ),
   );
