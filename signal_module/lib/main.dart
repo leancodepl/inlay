@@ -32,10 +32,16 @@ void add2appMain() {
   final router = createSignalRouter();
 
   // ── 3. Run ─────────────────────────────────────────────────────────
-  runApp(MaterialApp.router(
-    routerConfig: router,
-    backButtonDispatcher: Add2AppBackButtonDispatcher(),
-  ));
+  runApp(
+    MaterialApp.router(
+      // `routerConfig` cannot be combined with `backButtonDispatcher`,
+      // so we pass router delegates explicitly.
+      routeInformationProvider: router.routeInformationProvider,
+      routeInformationParser: router.routeInformationParser,
+      routerDelegate: router.routerDelegate,
+      backButtonDispatcher: Add2AppBackButtonDispatcher(),
+    ),
+  );
 }
 
 // ── Legacy entrypoints (kept for backward compatibility) ─────────────
