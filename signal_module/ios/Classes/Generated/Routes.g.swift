@@ -192,7 +192,7 @@ struct SoundsNotificationsPage: FlutterRoute {
     }
 
     func toPageSettings() -> PageSettings {
-        PageSettings(routeId: Self.routeName, params: toDict(), path: toPath())
+        PageSettings(routeId: Self.routeName, params: toList(), path: toPath())
     }
 }
 
@@ -236,7 +236,7 @@ struct SetWallpaperPage: FlutterRoute {
     }
 
     func toPageSettings() -> PageSettings {
-        PageSettings(routeId: Self.routeName, params: toDict(), path: toPath())
+        PageSettings(routeId: Self.routeName, params: toList(), path: toPath())
     }
 }
 
@@ -280,7 +280,7 @@ struct ContactDetailsPage: FlutterRoute {
     }
 
     func toPageSettings() -> PageSettings {
-        PageSettings(routeId: Self.routeName, params: toDict(), path: toPath())
+        PageSettings(routeId: Self.routeName, params: toList(), path: toPath())
     }
 }
 

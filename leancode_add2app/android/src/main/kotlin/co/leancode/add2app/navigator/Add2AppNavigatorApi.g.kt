@@ -175,6 +175,14 @@ interface Add2AppNavigatorHostApi {
    * (or throws, depending on platform configuration).
    */
   fun pushNativeRoute(route: PageSettings)
+  /**
+   * Return the full route data that the native host stored for this engine.
+   *
+   * Flutter calls this once at startup to retrieve the typed route object
+   * (with all fields, including complex nested objects). Returns `null`
+   * for the prewarm engine or when no data was set.
+   */
+  fun getInitialRouteData(): PageSettings?
 
   companion object {
     /** The codec used by Add2AppNavigatorHostApi. */
@@ -228,6 +236,21 @@ interface Add2AppNavigatorHostApi {
             val wrapped: List<Any?> = try {
               api.pushNativeRoute(routeArg)
               listOf(null)
+            } catch (exception: Throwable) {
+              Add2AppNavigatorApiPigeonUtils.wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.leancode_add2app.Add2AppNavigatorHostApi.getInitialRouteData$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            val wrapped: List<Any?> = try {
+              listOf(api.getInitialRouteData())
             } catch (exception: Throwable) {
               Add2AppNavigatorApiPigeonUtils.wrapError(exception)
             }

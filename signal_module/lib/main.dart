@@ -1,6 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:leancode_add2app/leancode_add2app.dart';
+import 'package:signal_module/src/generated/routes.g.dart';
 import 'package:signal_module/src/router.dart';
 import 'package:signal_module/src/router_auto_route.dart';
 import 'package:signal_module/src/screens/set_wallpaper_screen.dart';
@@ -41,12 +42,19 @@ void add2appGoRouterMain() {
   _runAdd2AppWithGoRouter();
 }
 
-void _runAdd2AppWithGoRouter() {
+Future<void> _runAdd2AppWithGoRouter() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  KeyValueStorage.instance.init();
+  await KeyValueStorage.instance.init();
 
-  final router = createSignalRouter();
+  final path = Add2AppNavigator.initialPath;
+  final route =
+      await Add2AppNavigator.fetchInitialRoute(decodeFlutterRouteData);
+
+  final router = createSignalRouter(
+    initialLocation: path,
+    initialExtra: route,
+  );
 
   runApp(
     MaterialApp.router(
@@ -58,15 +66,17 @@ void _runAdd2AppWithGoRouter() {
   );
 }
 
-void _runAdd2AppWithAutoRoute() {
+Future<void> _runAdd2AppWithAutoRoute() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  KeyValueStorage.instance.init();
+  await KeyValueStorage.instance.init();
 
-  final initialLocation = normalizeSignalAutoRouteLocation(
-    Add2AppNavigator.initialLocationFromPlatform(),
-  );
-  final router = createSignalAutoRouter();
+  final path = Add2AppNavigator.initialPath;
+  final route =
+      await Add2AppNavigator.fetchInitialRoute(decodeFlutterRouteData);
+
+  final initialLocation = normalizeSignalAutoRouteLocation(path);
+  final router = createSignalAutoRouter(routeData: route);
 
   runApp(
     MaterialApp.router(

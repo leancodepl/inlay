@@ -18,7 +18,7 @@ class Add2AppRouteInformationProvider extends PlatformRouteInformationProvider {
   Add2AppRouteInformationProvider()
     : super(
         initialRouteInformation: RouteInformation(
-          uri: Uri.parse(Add2AppNavigator.initialLocationFromPlatform()),
+          uri: Uri.parse(Add2AppNavigator.initialPath),
         ),
       );
 }

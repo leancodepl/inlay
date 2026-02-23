@@ -244,12 +244,14 @@ final class Add2AppNavigator {
     func configureEngine(
         _ engine: FlutterEngine,
         viewController: UIViewController,
-        onPop: (() -> Void)? = nil
+        onPop: (() -> Void)? = nil,
+        routeData: PageSettings? = nil
     ) {
         let hostApi = Add2AppNavigatorHostApiImpl(
             navigator: self,
             viewController: viewController,
-            onPop: onPop
+            onPop: onPop,
+            routeData: routeData
         )
         Add2AppNavigatorHostApiSetup.setUp(
             binaryMessenger: engine.binaryMessenger,
@@ -321,11 +323,18 @@ private class Add2AppNavigatorHostApiImpl: Add2AppNavigatorHostApi {
     private weak var navigator: Add2AppNavigator?
     private weak var viewController: UIViewController?
     private var onPop: (() -> Void)?
+    private let routeData: PageSettings?
 
-    init(navigator: Add2AppNavigator, viewController: UIViewController, onPop: (() -> Void)? = nil) {
+    init(
+        navigator: Add2AppNavigator,
+        viewController: UIViewController,
+        onPop: (() -> Void)? = nil,
+        routeData: PageSettings? = nil
+    ) {
         self.navigator = navigator
         self.viewController = viewController
         self.onPop = onPop
+        self.routeData = routeData
     }
 
     func push(page: PageSettings) throws {
@@ -355,6 +364,10 @@ private class Add2AppNavigatorHostApiImpl: Add2AppNavigatorHostApi {
             try? nav.dispatchNativeRoute(from: vc, route: route)
         }
     }
+
+    func getInitialRouteData() throws -> PageSettings? {
+        return routeData
+    }
 }
 
 /// No-op HostApi for the hidden warm-up engine.
@@ -362,4 +375,5 @@ private class Add2AppNavigatorPrewarmHostApi: Add2AppNavigatorHostApi {
     func push(page: PageSettings) throws {}
     func pop() throws {}
     func pushNativeRoute(route: PageSettings) throws {}
+    func getInitialRouteData() throws -> PageSettings? { nil }
 }

@@ -169,9 +169,30 @@ final class NativeSoundsNotificationsViewController: UIViewController {
             from: self,
             route: SoundsNotificationsPage(
                 contactId: recipientId,
-                preferences: nil,
-                presets: nil,
-                fallbackChannel: nil
+                preferences: NotificationPreferences(
+                    sound: .chime,
+                    channels: [.push, .email],
+                    quietHours: QuietHours(fromHour: 22, toHour: 7)
+                ),
+                presets: [
+                    NotificationPreset(
+                        name: "Work",
+                        preferences: NotificationPreferences(
+                            sound: .pop,
+                            channels: [.push],
+                            quietHours: nil
+                        )
+                    ),
+                    NotificationPreset(
+                        name: "Silent",
+                        preferences: NotificationPreferences(
+                            sound: .defaultSound,
+                            channels: [.sms],
+                            quietHours: QuietHours(fromHour: 0, toHour: 24)
+                        )
+                    ),
+                ],
+                fallbackChannel: .sms
             )
         )
     }

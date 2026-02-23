@@ -430,3 +430,22 @@ abstract class FlutterRouteHandler {
     return Center(child: Text('Unknown route: ${route.routeId}'));
   }
 }
+
+/// Decodes [PageSettings] returned by the native host into a typed
+/// [FlutterRouteBase] subclass. Pass this to
+/// [Add2AppNavigator.fetchInitialRoute] as the decoder.
+FlutterRouteBase? decodeFlutterRouteData(PageSettings? settings) {
+  if (settings == null) return null;
+  final params = settings.params;
+  if (params is! List) return null;
+  switch (settings.routeId) {
+    case SoundsNotificationsPage.routeName:
+      return SoundsNotificationsPage.decode(params.cast<Object?>());
+    case SetWallpaperPage.routeName:
+      return SetWallpaperPage.decode(params.cast<Object?>());
+    case ContactDetailsPage.routeName:
+      return ContactDetailsPage.decode(params.cast<Object?>());
+    default:
+      return null;
+  }
+}
