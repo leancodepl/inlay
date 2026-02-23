@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
 import 'add2app_navigator.g.dart';
@@ -344,11 +345,32 @@ class Add2AppNavigator {
   static Future<FlutterRouteBase?> fetchInitialRoute(
     FlutterRouteBase? Function(PageSettings?) decoder,
   ) async {
-    try {
-      final raw = await Add2AppNavigatorHostApi().getInitialRouteData();
-      return decoder(raw);
-    } catch (_) {
-      return null;
+    const maxAttempts = 25;
+    var delay = const Duration(milliseconds: 20);
+
+    for (var attempt = 1; attempt <= maxAttempts; attempt++) {
+      try {
+        final raw = await Add2AppNavigatorHostApi().getInitialRouteData();
+        return decoder(raw);
+      } on PlatformException catch (e, st) {
+        final isChannelError = e.code == 'channel-error';
+        if (!isChannelError || attempt == maxAttempts) {
+          debugPrint(
+            'Add2AppNavigator.fetchInitialRoute failed: $e\n$st',
+          );
+          return null;
+        }
+      } catch (e, st) {
+        debugPrint('Add2AppNavigator.fetchInitialRoute failed: $e\n$st');
+        return null;
+      }
+
+      await Future<void>.delayed(delay);
+      if (delay < const Duration(milliseconds: 320)) {
+        delay = Duration(milliseconds: delay.inMilliseconds * 2);
+      }
     }
+
+    return null;
   }
 }
