@@ -96,7 +96,7 @@ String generateDartDecode(
       return '$expression as ${type.toSource()}';
     }
 
-    return '($expression as ${_rawType(type)}) != null ? '
+    return '$expression != null ? '
         '(() { final v = $expression; return $nonNullDecode; })() : null';
   }
 
@@ -198,10 +198,3 @@ bool _isPrimitive(String typeName) {
   return const {'bool', 'int', 'double', 'num', 'String'}.contains(typeName);
 }
 
-/// Returns the raw (non-nullable) representation of a nullable type for casting.
-String _rawType(TypeInfo type) {
-  if (type.typeArguments.isEmpty) {
-    return '${type.baseName}?';
-  }
-  return '${type.baseName}<${type.typeArguments.map((t) => t.toSource()).join(', ')}>?';
-}

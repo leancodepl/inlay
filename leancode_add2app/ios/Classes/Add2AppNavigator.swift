@@ -226,6 +226,15 @@ final class Add2AppNavigator {
 
         let vc = Add2AppFlutterViewController(engine: engine, nibName: nil, bundle: nil)
         vc.page = page
+
+        // Configure HostApi + storage immediately after engine creation.
+        // Dart may start executing before `viewDidLoad`, so delaying setup can
+        // cause startup races (missing initial route data or storage channels).
+        configureEngine(
+            engine,
+            viewController: vc,
+            routeData: page
+        )
         return vc
     }
 
