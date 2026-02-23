@@ -127,9 +127,8 @@ class _ContactDetailsScreenState extends State<ContactDetailsScreen> {
                   subtitle: _contact.isMuted ? 'Muted' : null,
                   onTap: () => Navigator.of(context).push(
                     MaterialPageRoute<void>(
-                      builder: (context) => SoundsNotificationsScreen(
-                        contactId: _contact.id,
-                      ),
+                      builder: (context) =>
+                          SoundsNotificationsScreen(contactId: _contact.id),
                     ),
                   ),
                 ),

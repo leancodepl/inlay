@@ -70,7 +70,9 @@ void _writeStoreClass(
 
   buffer
     ..writeln('/// Generated store wrapper for $className.')
-    ..writeln('class $className implements Add2AppSnapshotStore<$snapshotClassName> {')
+    ..writeln(
+      'class $className implements Add2AppSnapshotStore<$snapshotClassName> {',
+    )
     // Constructor.
     ..write('  $className(this._storage');
   if (keyField != null) {
@@ -96,13 +98,17 @@ void _writeStoreClass(
     buffer.writeln("  String _key(String field) => '$storeKey/\$field';");
   } else {
     final keySegment = _keySegmentExpression(keyField, typeGraph);
-    buffer.writeln("  String _key(String field) => '$storeKey/$keySegment/\$field';");
+    buffer.writeln(
+      "  String _key(String field) => '$storeKey/$keySegment/\$field';",
+    );
   }
 
   buffer
     ..writeln()
     // Getters for each value field.
-    ..writeln('  // ── Getters (async, always fresh) ─────────────────────────────')
+    ..writeln(
+      '  // ── Getters (async, always fresh) ─────────────────────────────',
+    )
     ..writeln();
 
   for (final field in valueFields) {
@@ -112,7 +118,9 @@ void _writeStoreClass(
 
   // Setters for each value field.
   buffer
-    ..writeln('  // ── Setters ───────────────────────────────────────────────────')
+    ..writeln(
+      '  // ── Setters ───────────────────────────────────────────────────',
+    )
     ..writeln();
 
   for (final field in valueFields) {
@@ -122,12 +130,16 @@ void _writeStoreClass(
 
   // Stream for reactive updates.
   buffer
-    ..writeln('  // ── Reactive Stream ───────────────────────────────────────────')
+    ..writeln(
+      '  // ── Reactive Stream ───────────────────────────────────────────',
+    )
     ..writeln()
     ..writeln('  @override')
     ..writeln('  Stream<$snapshotClassName> get stream {')
     ..writeln('    return _storage.stream')
-    ..writeln("        .where((entries) => entries.any((e) => e.key.startsWith(_key(''))))")
+    ..writeln(
+      "        .where((entries) => entries.any((e) => e.key.startsWith(_key(''))))",
+    )
     ..writeln('        .asyncMap((_) => getSnapshot());')
     ..writeln('  }')
     ..writeln()
@@ -150,7 +162,9 @@ void _writeStoreClass(
   buffer
     ..writeln()
     // clear() method.
-    ..writeln('  // ── Clear ─────────────────────────────────────────────────────')
+    ..writeln(
+      '  // ── Clear ─────────────────────────────────────────────────────',
+    )
     ..writeln()
     ..writeln('  Future<void> clear() async {')
     ..writeln("    await _storage.removeByPrefix(_key(''));")
@@ -201,10 +215,13 @@ void _writeGetter(
 
   buffer
     ..writeln('  Future<$returnType> $getterName() async {')
-    ..writeln("    final value = await _storage.getString(_key('${field.name}'));");
+    ..writeln(
+      "    final value = await _storage.getString(_key('${field.name}'));",
+    );
 
   if (typeGraph[baseName] case final EnumType enumType) {
-    final defaultVal = field.defaultValue ?? '$baseName.${enumType.values.first}';
+    final defaultVal =
+        field.defaultValue ?? '$baseName.${enumType.values.first}';
     buffer
       ..writeln(
         '    return value != null ? $baseName.values[int.parse(value)] : $defaultVal;',
@@ -223,10 +240,14 @@ void _writeGetter(
       }
     case 'int':
       final defaultVal = field.defaultValue ?? '0';
-      buffer.writeln('    return value != null ? int.parse(value) : $defaultVal;');
+      buffer.writeln(
+        '    return value != null ? int.parse(value) : $defaultVal;',
+      );
     case 'double':
       final defaultVal = field.defaultValue ?? '0.0';
-      buffer.writeln('    return value != null ? double.parse(value) : $defaultVal;');
+      buffer.writeln(
+        '    return value != null ? double.parse(value) : $defaultVal;',
+      );
     case 'String':
       final defaultVal = field.defaultValue ?? "''";
       buffer.writeln('    return value ?? $defaultVal;');
@@ -260,9 +281,13 @@ void _writeSetter(
 
   switch (baseName) {
     case 'String':
-      buffer.writeln("    await _storage.putString(_key('${field.name}'), value);");
+      buffer.writeln(
+        "    await _storage.putString(_key('${field.name}'), value);",
+      );
     default:
-      buffer.writeln("    await _storage.putString(_key('${field.name}'), value.toString());");
+      buffer.writeln(
+        "    await _storage.putString(_key('${field.name}'), value.toString());",
+      );
   }
 
   buffer.writeln('  }');
@@ -295,7 +320,9 @@ void _writeWriteSnapshot(
   Map<String, TypeDefinition> typeGraph,
 ) {
   buffer
-    ..writeln('  // ── Write Snapshot ────────────────────────────────────────────')
+    ..writeln(
+      '  // ── Write Snapshot ────────────────────────────────────────────',
+    )
     ..writeln()
     ..writeln('  @override')
     ..writeln('  Future<void> writeSnapshot(')

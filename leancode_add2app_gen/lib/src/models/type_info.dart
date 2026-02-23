@@ -42,7 +42,8 @@ class TypeInfo {
           _listEquals(typeArguments, other.typeArguments);
 
   @override
-  int get hashCode => Object.hash(name, isNullable, Object.hashAll(typeArguments));
+  int get hashCode =>
+      Object.hash(name, isNullable, Object.hashAll(typeArguments));
 
   static bool _listEquals(List<TypeInfo> a, List<TypeInfo> b) {
     if (a.length != b.length) {

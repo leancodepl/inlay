@@ -116,14 +116,18 @@ void _writeRouteStruct(
   buffer
     ..writeln()
     // fromList() method.
-    ..writeln('    ${generateSwiftFromListMethod(structName, fields, typeGraph)}')
+    ..writeln(
+      '    ${generateSwiftFromListMethod(structName, fields, typeGraph)}',
+    )
     ..writeln()
     // toList() method.
     ..writeln('    ${generateSwiftToListMethod(fields, typeGraph)}');
 
   // For Flutter routes, add toDict(), toPath(), and toPageSettings().
   if (isFlutterRoute) {
-    final dictFields = fields.where((f) => isSimpleType(f.type, typeGraph)).toList();
+    final dictFields = fields
+        .where((f) => isSimpleType(f.type, typeGraph))
+        .toList();
     buffer
       ..writeln()
       ..writeln('    func toDict() -> [String: String] {')
@@ -171,8 +175,7 @@ void _writeSwiftToPath(
 ) {
   final pathParamNames = extractPathParamNames(path);
   final queryFields = fields.where(
-    (f) =>
-        !pathParamNames.contains(f.name) && isSimpleType(f.type, typeGraph),
+    (f) => !pathParamNames.contains(f.name) && isSimpleType(f.type, typeGraph),
   );
 
   buffer.writeln();
@@ -299,7 +302,9 @@ void _writeStructWithFields(
   buffer
     ..writeln()
     // fromList() method.
-    ..writeln('    ${generateSwiftFromListMethod(structName, fields, typeGraph)}')
+    ..writeln(
+      '    ${generateSwiftFromListMethod(structName, fields, typeGraph)}',
+    )
     ..writeln()
     // toList() method.
     ..writeln('    ${generateSwiftToListMethod(fields, typeGraph)}')

@@ -313,9 +313,10 @@ void main() {
       final schema = parser.parse(_routesSource);
 
       final contactDetails = schema.flutterRoutes[0];
-      final settingsField = contactDetails.fields
-          .firstWhere((f) => f.name == 'settings');
-      
+      final settingsField = contactDetails.fields.firstWhere(
+        (f) => f.name == 'settings',
+      );
+
       expect(settingsField.type.isNullable, isTrue);
       expect(settingsField.type.baseName, 'ContactSettings');
       expect(settingsField.isRequired, isFalse);
@@ -325,15 +326,17 @@ void main() {
       final schema = parser.parse(_storesSource);
 
       final soundsStore = schema.stores[0];
-      final muteField = soundsStore.valueFields
-          .firstWhere((f) => f.name == 'mute');
-      
+      final muteField = soundsStore.valueFields.firstWhere(
+        (f) => f.name == 'mute',
+      );
+
       expect(muteField.hasDefault, isTrue);
       expect(muteField.defaultValue, 'false');
 
-      final showPreviewsField = soundsStore.valueFields
-          .firstWhere((f) => f.name == 'showPreviews');
-      
+      final showPreviewsField = soundsStore.valueFields.firstWhere(
+        (f) => f.name == 'showPreviews',
+      );
+
       expect(showPreviewsField.hasDefault, isTrue);
       expect(showPreviewsField.defaultValue, 'true');
     });
@@ -358,16 +361,16 @@ void main() {
       final schema = parser.parse(_nestedTypesSource);
 
       final mediaViewer = schema.flutterRoutes[0];
-      
-      final tagsField = mediaViewer.fields
-          .firstWhere((f) => f.name == 'tags');
+
+      final tagsField = mediaViewer.fields.firstWhere((f) => f.name == 'tags');
       expect(tagsField.type.baseName, 'List');
       expect(tagsField.type.isNullable, isTrue);
       expect(tagsField.type.typeArguments, hasLength(1));
       expect(tagsField.type.typeArguments[0].baseName, 'String');
 
-      final metadataField = mediaViewer.fields
-          .firstWhere((f) => f.name == 'metadata');
+      final metadataField = mediaViewer.fields.firstWhere(
+        (f) => f.name == 'metadata',
+      );
       expect(metadataField.type.baseName, 'Map');
       expect(metadataField.type.typeArguments, hasLength(2));
     });
@@ -429,8 +432,10 @@ class SecondPage {
       final result = resolver.resolve(schema);
 
       expect(result.isValid, isFalse);
-      expect(result.errors.any((e) => e.message.contains('Duplicate route name')),
-          isTrue);
+      expect(
+        result.errors.any((e) => e.message.contains('Duplicate route name')),
+        isTrue,
+      );
     });
 
     test('validates store key and enum value types', () {
@@ -458,7 +463,9 @@ class SecondPage {
 
       expect(result.isValid, isFalse);
       expect(
-        result.errors.any((e) => e.message.contains('at most one field annotated')),
+        result.errors.any(
+          (e) => e.message.contains('at most one field annotated'),
+        ),
         isTrue,
       );
     });
@@ -470,7 +477,9 @@ class SecondPage {
 
       expect(result.isValid, isFalse);
       expect(
-        result.errors.any((e) => e.message.contains('must be String, int, or enum')),
+        result.errors.any(
+          (e) => e.message.contains('must be String, int, or enum'),
+        ),
         isTrue,
       );
     });
@@ -482,7 +491,9 @@ class SecondPage {
 
       expect(result.isValid, isFalse);
       expect(
-        result.errors.any((e) => e.message.contains('must be a required constructor parameter')),
+        result.errors.any(
+          (e) => e.message.contains('must be a required constructor parameter'),
+        ),
         isTrue,
       );
     });
@@ -494,7 +505,9 @@ class SecondPage {
 
       expect(result.isValid, isFalse);
       expect(
-        result.errors.any((e) => e.message.contains('primitive types or enums')),
+        result.errors.any(
+          (e) => e.message.contains('primitive types or enums'),
+        ),
         isTrue,
       );
     });
@@ -511,10 +524,19 @@ class SecondPage {
         typeGraph: result.typeGraph,
       );
 
-      expect(code, contains('class ContactDetailsPage extends FlutterRouteBase'));
+      expect(
+        code,
+        contains('class ContactDetailsPage extends FlutterRouteBase'),
+      );
       expect(code, contains('List<Object?> encode()'));
-      expect(code, contains('static ContactDetailsPage decode(List<Object?> list)'));
-      expect(code, contains("static const String routeName = 'contactDetails'"));
+      expect(
+        code,
+        contains('static ContactDetailsPage decode(List<Object?> list)'),
+      );
+      expect(
+        code,
+        contains("static const String routeName = 'contactDetails'"),
+      );
     });
 
     test('generates stores with typed accessors', () {
@@ -524,7 +546,10 @@ class SecondPage {
 
       expect(result.isValid, isTrue);
 
-      final code = generateDartStores(schema: schema, typeGraph: result.typeGraph);
+      final code = generateDartStores(
+        schema: schema,
+        typeGraph: result.typeGraph,
+      );
 
       expect(code, contains('class SoundsNotificationsStore'));
       expect(code, contains('{required this.contactId'));
@@ -540,7 +565,10 @@ class SecondPage {
       expect(code, contains('NotificationBehavior.values[int.parse(value)]'));
       expect(code, contains('value.index.toString()'));
       expect(code, contains('UserPreferencesStore(this._storage);'));
-      expect(code, contains('Stream<SoundsNotificationsStoreSnapshot> get stream'));
+      expect(
+        code,
+        contains('Stream<SoundsNotificationsStoreSnapshot> get stream'),
+      );
     });
 
     test('generates route serialization for enhanced enum fields', () {
@@ -569,7 +597,10 @@ class SecondPage {
 
       expect(result.isValid, isTrue);
 
-      final code = generateDartStores(schema: schema, typeGraph: result.typeGraph);
+      final code = generateDartStores(
+        schema: schema,
+        typeGraph: result.typeGraph,
+      );
 
       expect(
         code,
@@ -622,7 +653,9 @@ class SecondPage {
       expect(code, contains('var behavior: NotificationBehavior'));
       expect(
         code,
-        contains('set(value) = storage.put(key("behavior"), value.ordinal.toString())'),
+        contains(
+          'set(value) = storage.put(key("behavior"), value.ordinal.toString())',
+        ),
       );
     });
 
@@ -689,12 +722,18 @@ class SecondPage {
   group('Naming utilities', () {
     test('routeIdFromClassName strips Page suffix', () {
       expect(routeIdFromClassName('ContactDetailsPage'), 'contactDetails');
-      expect(routeIdFromClassName('NativeEditProfilePage'), 'nativeEditProfile');
+      expect(
+        routeIdFromClassName('NativeEditProfilePage'),
+        'nativeEditProfile',
+      );
       expect(routeIdFromClassName('SimplePage'), 'simple');
     });
 
     test('storeKeyFromClassName converts to snake_case', () {
-      expect(storeKeyFromClassName('SoundsNotificationsStore'), 'sounds_notifications');
+      expect(
+        storeKeyFromClassName('SoundsNotificationsStore'),
+        'sounds_notifications',
+      );
       expect(storeKeyFromClassName('UserPreferencesStore'), 'user_preferences');
       expect(storeKeyFromClassName('SimpleStore'), 'simple');
     });

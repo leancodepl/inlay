@@ -27,3 +27,4 @@ When working on the framework follow these rules:
 - All cross-platform (Dart, iOS, Android) APIs should be type safe. Never pass arbitrary strings or other dynamic data.
 - Always verify the thread-safety of proposed solution (does it work with multiple Dart isolates? can any race conditions occur? how to solve conflicts?)
 - When changing Dart code always check for lint violations using dart analyze
+- At the end always format all code with `dart format .`

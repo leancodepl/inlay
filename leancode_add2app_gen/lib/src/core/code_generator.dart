@@ -12,11 +12,9 @@ import 'package:leancode_add2app_gen/src/parser/type_resolver.dart';
 import 'package:path/path.dart' as p;
 
 class CodeGenerator {
-  CodeGenerator({
-    AnnotationParser? parser,
-    TypeResolver? resolver,
-  })  : _parser = parser ?? AnnotationParser(),
-        _resolver = resolver ?? TypeResolver();
+  CodeGenerator({AnnotationParser? parser, TypeResolver? resolver})
+    : _parser = parser ?? AnnotationParser(),
+      _resolver = resolver ?? TypeResolver();
 
   final AnnotationParser _parser;
   final TypeResolver _resolver;
@@ -35,7 +33,9 @@ class CodeGenerator {
   }
 
   /// Parses multiple source files and merges their schemas.
-  ParseResult parseAndValidateMultiple(List<(String source, String? path)> sources) {
+  ParseResult parseAndValidateMultiple(
+    List<(String source, String? path)> sources,
+  ) {
     var mergedSchema = const Schema();
 
     for (final (source, path) in sources) {
@@ -60,7 +60,8 @@ class CodeGenerator {
     required Map<String, TypeDefinition> typeGraph,
     String? kotlinPackage,
   }) {
-    final hasRoutes = schema.flutterRoutes.isNotEmpty ||
+    final hasRoutes =
+        schema.flutterRoutes.isNotEmpty ||
         schema.nativeRoutes.isNotEmpty ||
         schema.dataClasses.isNotEmpty ||
         schema.enums.isNotEmpty;

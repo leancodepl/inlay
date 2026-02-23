@@ -180,7 +180,9 @@ class _ContentList extends StatelessWidget {
             onPressed: () async {
               try {
                 await Add2AppNavigator.instance.push(
-                  SoundsNotificationsPage(contactId: _screenOf(context).contactId),
+                  SoundsNotificationsPage(
+                    contactId: _screenOf(context).contactId,
+                  ),
                 );
               } on PlatformException catch (e) {
                 debugPrint('Add2AppNavigator: $e');
@@ -214,8 +216,7 @@ class _ContentList extends StatelessWidget {
   }
 
   SoundsNotificationsScreen _screenOf(BuildContext context) {
-    return context
-        .findAncestorWidgetOfExactType<SoundsNotificationsScreen>()!;
+    return context.findAncestorWidgetOfExactType<SoundsNotificationsScreen>()!;
   }
 }
 
@@ -352,8 +353,9 @@ class _RouteExtrasSection extends StatelessWidget {
     final hasData =
         preferences != null || presets != null || fallbackChannel != null;
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final subtitleColor =
-        isDark ? SignalColors.textSecondaryDark : SignalColors.textSecondaryLight;
+    final subtitleColor = isDark
+        ? SignalColors.textSecondaryDark
+        : SignalColors.textSecondaryLight;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),

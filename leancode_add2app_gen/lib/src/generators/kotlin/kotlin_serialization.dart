@@ -111,11 +111,13 @@ String generateKotlinDecode(
   Map<String, TypeDefinition> typeGraph,
 ) {
   final baseName = type.baseName;
-  final kotlinType = dartTypeToKotlin(TypeInfo(
-    name: baseName,
-    isNullable: false,
-    typeArguments: type.typeArguments,
-  ));
+  final kotlinType = dartTypeToKotlin(
+    TypeInfo(
+      name: baseName,
+      isNullable: false,
+      typeArguments: type.typeArguments,
+    ),
+  );
 
   // Handle nullable.
   if (type.isNullable) {
@@ -226,10 +228,12 @@ String _rawKotlinCast(TypeInfo type) {
     case 'Map':
       return 'Map<*, *>';
     default:
-      return dartTypeToKotlin(TypeInfo(
-        name: baseName,
-        isNullable: false,
-        typeArguments: type.typeArguments,
-      ));
+      return dartTypeToKotlin(
+        TypeInfo(
+          name: baseName,
+          isNullable: false,
+          typeArguments: type.typeArguments,
+        ),
+      );
   }
 }

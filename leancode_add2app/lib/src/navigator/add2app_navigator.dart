@@ -323,8 +323,7 @@ class Add2AppNavigator {
   /// Use this as `initialLocation` for go_router, `initialDeepLink` for
   /// auto_route, or in a custom `RouteInformationProvider`.
   static String get initialPath {
-    final raw =
-        WidgetsBinding.instance.platformDispatcher.defaultRouteName;
+    final raw = WidgetsBinding.instance.platformDispatcher.defaultRouteName;
     if (raw == '__add2app_prewarm__' || raw == '/') {
       return '/';
     }
@@ -355,9 +354,7 @@ class Add2AppNavigator {
       } on PlatformException catch (e, st) {
         final isChannelError = e.code == 'channel-error';
         if (!isChannelError || attempt == maxAttempts) {
-          debugPrint(
-            'Add2AppNavigator.fetchInitialRoute failed: $e\n$st',
-          );
+          debugPrint('Add2AppNavigator.fetchInitialRoute failed: $e\n$st');
           return null;
         }
       } catch (e, st) {

@@ -209,9 +209,7 @@ void _writeFlutterRoute(
     ..writeln('  ${generateDartDecodeMethod(className, fields, typeGraph)}')
     ..writeln()
     // decodeFromMap() static method (from Map, used by iOS URL encoding).
-    ..writeln(
-      '  ${_generateDecodeFromMapMethod(className, fields, typeGraph)}',
-    )
+    ..writeln('  ${_generateDecodeFromMapMethod(className, fields, typeGraph)}')
     ..writeln()
     // FlutterRouteBase overrides.
     ..writeln('  @override')
@@ -455,13 +453,11 @@ void _writeDecodeFlutterRouteData(
     ..writeln(
       '/// Decodes [PageSettings] returned by the native host into a typed',
     )
+    ..writeln('/// [FlutterRouteBase] subclass. Pass this to')
+    ..writeln('/// [Add2AppNavigator.fetchInitialRoute] as the decoder.')
     ..writeln(
-      '/// [FlutterRouteBase] subclass. Pass this to',
+      'FlutterRouteBase? decodeFlutterRouteData(PageSettings? settings) {',
     )
-    ..writeln(
-      '/// [Add2AppNavigator.fetchInitialRoute] as the decoder.',
-    )
-    ..writeln('FlutterRouteBase? decodeFlutterRouteData(PageSettings? settings) {')
     ..writeln('  if (settings == null) return null;')
     ..writeln('  final params = settings.params;')
     ..writeln('  if (params is! List) return null;')

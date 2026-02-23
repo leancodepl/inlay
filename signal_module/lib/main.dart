@@ -48,13 +48,11 @@ Future<void> _runAdd2AppWithGoRouter() async {
   await KeyValueStorage.instance.init();
 
   final path = Add2AppNavigator.initialPath;
-  final route =
-      await Add2AppNavigator.fetchInitialRoute(decodeFlutterRouteData);
-
-  final router = createSignalRouter(
-    initialLocation: path,
-    initialExtra: route,
+  final route = await Add2AppNavigator.fetchInitialRoute(
+    decodeFlutterRouteData,
   );
+
+  final router = createSignalRouter(initialLocation: path, initialExtra: route);
 
   runApp(
     MaterialApp.router(
@@ -72,8 +70,9 @@ Future<void> _runAdd2AppWithAutoRoute() async {
   await KeyValueStorage.instance.init();
 
   final path = Add2AppNavigator.initialPath;
-  final route =
-      await Add2AppNavigator.fetchInitialRoute(decodeFlutterRouteData);
+  final route = await Add2AppNavigator.fetchInitialRoute(
+    decodeFlutterRouteData,
+  );
 
   final initialLocation = normalizeSignalAutoRouteLocation(path);
   final router = createSignalAutoRouter(routeData: route);

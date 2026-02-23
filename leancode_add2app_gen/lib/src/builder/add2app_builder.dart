@@ -18,8 +18,8 @@ class Add2AppBuilder implements Builder {
 
   @override
   Map<String, List<String>> get buildExtensions => {
-        r'$lib$': ['src/generated/routes.g.dart', 'src/generated/stores.g.dart'],
-      };
+    r'$lib$': ['src/generated/routes.g.dart', 'src/generated/stores.g.dart'],
+  };
 
   @override
   Future<void> build(BuildStep buildStep) async {
@@ -137,14 +137,18 @@ class Add2AppBuilder implements Builder {
     return _BuildConfig(
       routesPath: yaml['routes'] as String?,
       storesPath: yaml['stores'] as String?,
-      dartOutput:
-          dartSection is YamlMap ? dartSection['output'] as String? : null,
-      kotlinOutput:
-          kotlinSection is YamlMap ? kotlinSection['output'] as String? : null,
-      kotlinPackage:
-          kotlinSection is YamlMap ? kotlinSection['package'] as String? : null,
-      swiftOutput:
-          swiftSection is YamlMap ? swiftSection['output'] as String? : null,
+      dartOutput: dartSection is YamlMap
+          ? dartSection['output'] as String?
+          : null,
+      kotlinOutput: kotlinSection is YamlMap
+          ? kotlinSection['output'] as String?
+          : null,
+      kotlinPackage: kotlinSection is YamlMap
+          ? kotlinSection['package'] as String?
+          : null,
+      swiftOutput: swiftSection is YamlMap
+          ? swiftSection['output'] as String?
+          : null,
     );
   }
 }

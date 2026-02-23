@@ -24,11 +24,9 @@ RootStackRouter createSignalAutoRouter({FlutterRouteBase? routeData}) {
         name: 'SoundsNotificationsRoute',
         path: SoundsNotificationsPage.pathTemplate,
         builder: (_, data) {
-          final page =
-              routeData is SoundsNotificationsPage ? routeData : null;
+          final page = routeData is SoundsNotificationsPage ? routeData : null;
           return SoundsNotificationsScreen(
-            contactId:
-                page?.contactId ?? data.params.getString('contactId'),
+            contactId: page?.contactId ?? data.params.getString('contactId'),
             preferences: page?.preferences,
             presets: page?.presets,
             fallbackChannel: page?.fallbackChannel,
@@ -50,9 +48,8 @@ RootStackRouter createSignalAutoRouter({FlutterRouteBase? routeData}) {
       NamedRouteDef(
         name: 'ContactDetailsRoute',
         path: ContactDetailsPage.pathTemplate,
-        builder: (_, data) => ContactDetailsScreen(
-          contactId: data.params.getString('contactId'),
-        ),
+        builder: (_, data) =>
+            ContactDetailsScreen(contactId: data.params.getString('contactId')),
       ),
       NamedRouteDef(
         name: 'SignalHomeRoute',
@@ -64,9 +61,8 @@ RootStackRouter createSignalAutoRouter({FlutterRouteBase? routeData}) {
       NamedRouteDef(
         name: 'UnknownRoute',
         path: '*',
-        builder: (_, data) => Scaffold(
-          body: Center(child: Text('Unknown route: ${data.path}')),
-        ),
+        builder: (_, data) =>
+            Scaffold(body: Center(child: Text('Unknown route: ${data.path}'))),
       ),
     ],
   );

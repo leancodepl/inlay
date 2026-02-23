@@ -113,13 +113,18 @@ GeneratorConfig parseYamlConfig(String content) {
   return GeneratorConfig(
     routes: yaml['routes'] as String?,
     stores: yaml['stores'] as String?,
-    dartOutput: dartSection is YamlMap ? dartSection['output'] as String? : null,
-    kotlinOutput:
-        kotlinSection is YamlMap ? kotlinSection['output'] as String? : null,
-    kotlinPackage:
-        kotlinSection is YamlMap ? kotlinSection['package'] as String? : null,
-    swiftOutput:
-        swiftSection is YamlMap ? swiftSection['output'] as String? : null,
+    dartOutput: dartSection is YamlMap
+        ? dartSection['output'] as String?
+        : null,
+    kotlinOutput: kotlinSection is YamlMap
+        ? kotlinSection['output'] as String?
+        : null,
+    kotlinPackage: kotlinSection is YamlMap
+        ? kotlinSection['package'] as String?
+        : null,
+    swiftOutput: swiftSection is YamlMap
+        ? swiftSection['output'] as String?
+        : null,
   );
 }
 

@@ -37,9 +37,8 @@ GoRouter createSignalRouter({
       ),
       GoRoute(
         path: ContactDetailsPage.pathTemplate,
-        builder: (_, state) => ContactDetailsScreen(
-          contactId: state.pathParameters['contactId']!,
-        ),
+        builder: (_, state) =>
+            ContactDetailsScreen(contactId: state.pathParameters['contactId']!),
       ),
       GoRoute(
         path: '/',

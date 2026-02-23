@@ -92,7 +92,8 @@ void _writeProperty(
       ? typeGraph[baseName]! as EnumType
       : null;
   final kotlinType = _kotlinStoreType(baseName, enumType);
-  final rawDefault = field.defaultValue ?? _defaultValueForType(baseName, enumType);
+  final rawDefault =
+      field.defaultValue ?? _defaultValueForType(baseName, enumType);
   final defaultVal = _dartToKotlinLiteral(rawDefault, baseName);
 
   buffer.writeln('    var ${field.name}: $kotlinType');
@@ -112,9 +113,13 @@ void _writeProperty(
   switch (baseName) {
     case 'bool':
       if (defaultVal == 'true') {
-        buffer.writeln('        get() = storage.get(key("${field.name}")) != "false"');
+        buffer.writeln(
+          '        get() = storage.get(key("${field.name}")) != "false"',
+        );
       } else {
-        buffer.writeln('        get() = storage.get(key("${field.name}")) == "true"');
+        buffer.writeln(
+          '        get() = storage.get(key("${field.name}")) == "true"',
+        );
       }
     case 'int':
       buffer.writeln(
@@ -129,15 +134,15 @@ void _writeProperty(
         '        get() = storage.get(key("${field.name}")) ?: $defaultVal',
       );
     default:
-      buffer.writeln(
-        '        get() = storage.get(key("${field.name}")) ?: ""',
-      );
+      buffer.writeln('        get() = storage.get(key("${field.name}")) ?: ""');
   }
 
   // Setter.
   switch (baseName) {
     case 'String':
-      buffer.writeln('        set(value) = storage.put(key("${field.name}"), value)');
+      buffer.writeln(
+        '        set(value) = storage.put(key("${field.name}"), value)',
+      );
     default:
       buffer.writeln(
         '        set(value) = storage.put(key("${field.name}"), value.toString())',

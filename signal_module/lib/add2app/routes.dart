@@ -23,11 +23,7 @@ class SoundsNotificationsPage {
 /// Page settings for the Set Wallpaper screen.
 @Add2AppFlutterRoute('/set-wallpaper/:recipientId')
 class SetWallpaperPage {
-  const SetWallpaperPage({
-    this.recipientId,
-    this.options,
-    this.preferredKind,
-  });
+  const SetWallpaperPage({this.recipientId, this.options, this.preferredKind});
 
   final String? recipientId;
   final List<WallpaperOption>? options;
@@ -70,10 +66,7 @@ class NativeMediaViewerPage {
 }
 
 class NotificationPreset {
-  const NotificationPreset({
-    required this.name,
-    required this.preferences,
-  });
+  const NotificationPreset({required this.name, required this.preferences});
 
   final String name;
   final NotificationPreferences preferences;
@@ -92,46 +85,29 @@ class NotificationPreferences {
 }
 
 class QuietHours {
-  const QuietHours({
-    required this.fromHour,
-    required this.toHour,
-  });
+  const QuietHours({required this.fromHour, required this.toHour});
 
   final int fromHour;
   final int toHour;
 }
 
 class WallpaperOption {
-  const WallpaperOption({
-    required this.assetName,
-    required this.kind,
-  });
+  const WallpaperOption({required this.assetName, required this.kind});
 
   final String assetName;
   final WallpaperKind kind;
 }
 
 class ContactBadge {
-  const ContactBadge({
-    required this.label,
-    required this.priority,
-  });
+  const ContactBadge({required this.label, required this.priority});
 
   final String label;
   final BadgePriority priority;
 }
 
-enum NotificationSound {
-  defaultSound,
-  chime,
-  pop,
-}
+enum NotificationSound { defaultSound, chime, pop }
 
-enum BadgePriority {
-  low,
-  medium,
-  high,
-}
+enum BadgePriority { low, medium, high }
 
 enum DeliveryChannel {
   push('push', true),

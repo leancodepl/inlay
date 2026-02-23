@@ -20,10 +20,10 @@ class Schema {
   List<RouteDefinition> get allRoutes => [...flutterRoutes, ...nativeRoutes];
 
   Schema merge(Schema other) => Schema(
-        flutterRoutes: [...flutterRoutes, ...other.flutterRoutes],
-        nativeRoutes: [...nativeRoutes, ...other.nativeRoutes],
-        stores: [...stores, ...other.stores],
-        dataClasses: [...dataClasses, ...other.dataClasses],
-        enums: [...enums, ...other.enums],
-      );
+    flutterRoutes: [...flutterRoutes, ...other.flutterRoutes],
+    nativeRoutes: [...nativeRoutes, ...other.nativeRoutes],
+    stores: [...stores, ...other.stores],
+    dataClasses: [...dataClasses, ...other.dataClasses],
+    enums: [...enums, ...other.enums],
+  );
 }
