@@ -8,6 +8,7 @@ import 'package:signal_module/src/screens/sounds_notifications_screen.dart';
 GoRouter createSignalRouter() {
   return GoRouter(
     initialLocation: Add2AppNavigator.initialLocationFromPlatform(),
+    initialExtra: extra,
     routes: [
       GoRoute(
         path: '/sounds-notifications/:contactId',
@@ -23,15 +24,13 @@ GoRouter createSignalRouter() {
       ),
       GoRoute(
         path: '/contact-details/:contactId',
-        builder: (_, state) => ContactDetailsScreen(
-          contactId: state.pathParameters['contactId']!,
-        ),
+        builder: (_, state) =>
+            ContactDetailsScreen(contactId: state.pathParameters['contactId']!),
       ),
       GoRoute(
         path: '/',
-        builder: (_, _) => const Scaffold(
-          body: Center(child: Text('Signal Module')),
-        ),
+        builder: (_, _) =>
+            const Scaffold(body: Center(child: Text('Signal Module'))),
       ),
     ],
   );
