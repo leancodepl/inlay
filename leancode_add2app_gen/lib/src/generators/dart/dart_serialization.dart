@@ -156,7 +156,8 @@ String generateDartEncodeMethod(
     return 'List<Object?> encode() => <Object?>[];';
   }
 
-  final buffer = StringBuffer()..writeln('List<Object?> encode() => <Object?>[');
+  final buffer = StringBuffer()
+    ..writeln('List<Object?> encode() => <Object?>[');
 
   for (final field in fields) {
     final encode = generateDartEncode(field.name, field.type, typeGraph);
@@ -197,4 +198,3 @@ String generateDartDecodeMethod(
 bool _isPrimitive(String typeName) {
   return const {'bool', 'int', 'double', 'num', 'String'}.contains(typeName);
 }
-

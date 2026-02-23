@@ -27,10 +27,7 @@ class AnnotationParser {
   ///
   /// [path] is used only for error messages and diagnostics.
   Schema parse(String source, {String? path}) {
-    final parseResult = parseString(
-      content: source,
-      path: path,
-    );
+    final parseResult = parseString(content: source, path: path);
 
     final unit = parseResult.unit;
     final visitor = _SchemaCollectorVisitor();
@@ -64,13 +61,15 @@ class _SchemaCollectorVisitor extends RecursiveAstVisitor<void> {
       final routeName = routeIdFromClassName(className);
       final path = _extractPositionalStringArg(flutterAnnotation);
       final fields = _extractFields(node);
-      flutterRoutes.add(RouteDefinition(
-        className: className,
-        routeType: RouteType.flutter,
-        routeName: routeName,
-        fields: fields,
-        path: path,
-      ));
+      flutterRoutes.add(
+        RouteDefinition(
+          className: className,
+          routeType: RouteType.flutter,
+          routeName: routeName,
+          fields: fields,
+          path: path,
+        ),
+      );
       super.visitClassDeclaration(node);
       return;
     }
@@ -79,12 +78,14 @@ class _SchemaCollectorVisitor extends RecursiveAstVisitor<void> {
     if (nativeAnnotation != null) {
       final routeName = _extractRouteName(nativeAnnotation, className);
       final fields = _extractFields(node);
-      nativeRoutes.add(RouteDefinition(
-        className: className,
-        routeType: RouteType.native,
-        routeName: routeName,
-        fields: fields,
-      ));
+      nativeRoutes.add(
+        RouteDefinition(
+          className: className,
+          routeType: RouteType.native,
+          routeName: routeName,
+          fields: fields,
+        ),
+      );
       super.visitClassDeclaration(node);
       return;
     }
@@ -94,12 +95,14 @@ class _SchemaCollectorVisitor extends RecursiveAstVisitor<void> {
     if (storeAnnotation != null) {
       final storeKey = _extractStoreKey(storeAnnotation, className);
       final (keyFields, valueFields) = _extractStoreFields(node);
-      stores.add(StoreDefinition(
-        className: className,
-        storeKey: storeKey,
-        keyFields: keyFields,
-        valueFields: valueFields,
-      ));
+      stores.add(
+        StoreDefinition(
+          className: className,
+          storeKey: storeKey,
+          keyFields: keyFields,
+          valueFields: valueFields,
+        ),
+      );
       super.visitClassDeclaration(node);
       return;
     }
@@ -107,10 +110,9 @@ class _SchemaCollectorVisitor extends RecursiveAstVisitor<void> {
     // Non-annotated class - treat as data class.
     final fields = _extractFields(node);
     if (fields.isNotEmpty) {
-      dataClasses.add(DataClassDefinition(
-        className: className,
-        fields: fields,
-      ));
+      dataClasses.add(
+        DataClassDefinition(className: className, fields: fields),
+      );
     }
 
     super.visitClassDeclaration(node);
@@ -206,13 +208,15 @@ class _SchemaCollectorVisitor extends RecursiveAstVisitor<void> {
           final typeInfo = _parseTypeAnnotation(typeAnnotation);
           final info = paramInfo[fieldName];
 
-          fields.add(FieldInfo(
-            name: fieldName,
-            type: typeInfo,
-            isRequired: info?.isRequired ?? false,
-            defaultValue: info?.defaultValue,
-            isStoreKey: isStoreKey || (info?.isStoreKey ?? false),
-          ));
+          fields.add(
+            FieldInfo(
+              name: fieldName,
+              type: typeInfo,
+              isRequired: info?.isRequired ?? false,
+              defaultValue: info?.defaultValue,
+              isStoreKey: isStoreKey || (info?.isStoreKey ?? false),
+            ),
+          );
         }
       }
     }
@@ -240,7 +244,9 @@ class _SchemaCollectorVisitor extends RecursiveAstVisitor<void> {
   }
 
   /// Collects parameter info (required, default value) from constructors.
-  Map<String, _ParamInfo> _extractConstructorParamInfo(NodeList<ClassMember> members) {
+  Map<String, _ParamInfo> _extractConstructorParamInfo(
+    NodeList<ClassMember> members,
+  ) {
     final info = <String, _ParamInfo>{};
 
     for (final member in members) {
@@ -287,7 +293,10 @@ class _SchemaCollectorVisitor extends RecursiveAstVisitor<void> {
       return true;
     }
     if (param is DefaultFormalParameter) {
-      return _hasAnnotation(param.parameter.metadata, _storeKeyFieldAnnotations);
+      return _hasAnnotation(
+        param.parameter.metadata,
+        _storeKeyFieldAnnotations,
+      );
     }
     return false;
   }

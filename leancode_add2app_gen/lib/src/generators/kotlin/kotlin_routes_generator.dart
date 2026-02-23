@@ -34,7 +34,9 @@ String generateKotlinRoutes({
     buffer.writeln('import co.leancode.add2app.FlutterRoute');
   }
   buffer
-    ..writeln('import co.leancode.add2app.NativeRouteHandler as NativeRouteHandling')
+    ..writeln(
+      'import co.leancode.add2app.NativeRouteHandler as NativeRouteHandling',
+    )
     ..writeln('import co.leancode.add2app.navigator.PageSettings')
     ..writeln();
 
@@ -153,7 +155,9 @@ void _writeRouteDataClass(
           '        "${field.name}" to (${field.name}?.toString() ?: "")$comma',
         );
       } else {
-        buffer.writeln('        "${field.name}" to ${field.name}.toString()$comma');
+        buffer.writeln(
+          '        "${field.name}" to ${field.name}.toString()$comma',
+        );
       }
     }
     buffer.writeln('    )');
@@ -185,8 +189,7 @@ void _writeKotlinToPath(
 ) {
   final pathParamNames = extractPathParamNames(path);
   final queryFields = fields.where(
-    (f) =>
-        !pathParamNames.contains(f.name) && isSimpleType(f.type, typeGraph),
+    (f) => !pathParamNames.contains(f.name) && isSimpleType(f.type, typeGraph),
   );
 
   buffer.writeln();

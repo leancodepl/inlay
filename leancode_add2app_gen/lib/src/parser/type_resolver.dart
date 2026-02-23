@@ -62,10 +62,12 @@ class TypeResolver {
     // Register all known custom types.
     for (final dataClass in schema.dataClasses) {
       if (typeGraph.containsKey(dataClass.className)) {
-        errors.add(TypeResolutionError(
-          message: 'Duplicate type definition',
-          location: dataClass.className,
-        ));
+        errors.add(
+          TypeResolutionError(
+            message: 'Duplicate type definition',
+            location: dataClass.className,
+          ),
+        );
       } else {
         typeGraph[dataClass.className] = DataClassType(
           name: dataClass.className,
@@ -76,10 +78,12 @@ class TypeResolver {
 
     for (final enumDef in schema.enums) {
       if (typeGraph.containsKey(enumDef.name)) {
-        errors.add(TypeResolutionError(
-          message: 'Duplicate type definition',
-          location: enumDef.name,
-        ));
+        errors.add(
+          TypeResolutionError(
+            message: 'Duplicate type definition',
+            location: enumDef.name,
+          ),
+        );
       } else {
         typeGraph[enumDef.name] = EnumType(
           name: enumDef.name,
@@ -100,22 +104,12 @@ class TypeResolver {
 
     // Validate route types.
     for (final route in schema.allRoutes) {
-      _validateFields(
-        route.fields,
-        route.className,
-        typeGraph,
-        errors,
-      );
+      _validateFields(route.fields, route.className, typeGraph, errors);
     }
 
     // Validate data class types.
     for (final dataClass in schema.dataClasses) {
-      _validateFields(
-        dataClass.fields,
-        dataClass.className,
-        typeGraph,
-        errors,
-      );
+      _validateFields(dataClass.fields, dataClass.className, typeGraph, errors);
     }
 
     // Validate store types.
@@ -126,21 +120,27 @@ class TypeResolver {
     // Check for circular references.
     final circularRefs = _findCircularReferences(typeGraph);
     for (final cycle in circularRefs) {
-      errors.add(TypeResolutionError(
-        message: 'Circular reference detected: ${cycle.join(' -> ')} -> ${cycle.first}',
-        location: cycle.first,
-      ));
+      errors.add(
+        TypeResolutionError(
+          message:
+              'Circular reference detected: ${cycle.join(' -> ')} -> ${cycle.first}',
+          location: cycle.first,
+        ),
+      );
     }
 
     // Check for duplicate route names.
     final routeNames = <String, String>{};
     for (final route in schema.allRoutes) {
       if (routeNames.containsKey(route.routeName)) {
-        errors.add(TypeResolutionError(
-          message: 'Duplicate route name "${route.routeName}" '
-              '(also used by ${routeNames[route.routeName]})',
-          location: route.className,
-        ));
+        errors.add(
+          TypeResolutionError(
+            message:
+                'Duplicate route name "${route.routeName}" '
+                '(also used by ${routeNames[route.routeName]})',
+            location: route.className,
+          ),
+        );
       } else {
         routeNames[route.routeName] = route.className;
       }
@@ -187,10 +187,12 @@ class TypeResolver {
     }
 
     // Unknown type.
-    errors.add(TypeResolutionError(
-      message: 'Unknown type "$baseName"',
-      location: location,
-    ));
+    errors.add(
+      TypeResolutionError(
+        message: 'Unknown type "$baseName"',
+        location: location,
+      ),
+    );
   }
 
   void _validateStoreFields(
@@ -200,36 +202,48 @@ class TypeResolver {
   ) {
     // Store key: zero or one key field.
     if (store.keyFields.length > 1) {
-      errors.add(TypeResolutionError(
-        message: 'Store can have at most one field annotated with @Add2AppStoreKey',
-        location: store.className,
-      ));
+      errors.add(
+        TypeResolutionError(
+          message:
+              'Store can have at most one field annotated with @Add2AppStoreKey',
+          location: store.className,
+        ),
+      );
     }
 
     for (final field in store.keyFields) {
       final baseName = field.type.baseName;
       final isEnum = typeGraph[baseName] is EnumType;
-      final isSupportedKeyType = baseName == 'String' || baseName == 'int' || isEnum;
+      final isSupportedKeyType =
+          baseName == 'String' || baseName == 'int' || isEnum;
 
       if (!isSupportedKeyType) {
-        errors.add(TypeResolutionError(
-          message: 'Store key field must be String, int, or enum. Found: $baseName',
-          location: '${store.className}.${field.name}',
-        ));
+        errors.add(
+          TypeResolutionError(
+            message:
+                'Store key field must be String, int, or enum. Found: $baseName',
+            location: '${store.className}.${field.name}',
+          ),
+        );
       }
 
       if (field.type.isNullable) {
-        errors.add(TypeResolutionError(
-          message: 'Store key field cannot be nullable.',
-          location: '${store.className}.${field.name}',
-        ));
+        errors.add(
+          TypeResolutionError(
+            message: 'Store key field cannot be nullable.',
+            location: '${store.className}.${field.name}',
+          ),
+        );
       }
 
       if (!field.isRequired || field.hasDefault) {
-        errors.add(TypeResolutionError(
-          message: 'Store key field must be a required constructor parameter without default value.',
-          location: '${store.className}.${field.name}',
-        ));
+        errors.add(
+          TypeResolutionError(
+            message:
+                'Store key field must be a required constructor parameter without default value.',
+            location: '${store.className}.${field.name}',
+          ),
+        );
       }
     }
 
@@ -242,18 +256,24 @@ class TypeResolver {
           supportedPrimitiveValues.contains(baseName) || isEnum;
 
       if (!isSupportedValueType) {
-        errors.add(TypeResolutionError(
-          message: 'Store value fields must be primitive types or enums (bool, int, double, String, enum). '
-              'Found: $baseName',
-          location: '${store.className}.${field.name}',
-        ));
+        errors.add(
+          TypeResolutionError(
+            message:
+                'Store value fields must be primitive types or enums (bool, int, double, String, enum). '
+                'Found: $baseName',
+            location: '${store.className}.${field.name}',
+          ),
+        );
       }
 
       if (field.type.typeArguments.isNotEmpty) {
-        errors.add(TypeResolutionError(
-          message: 'Store value fields cannot be generic types (List/Map/etc).',
-          location: '${store.className}.${field.name}',
-        ));
+        errors.add(
+          TypeResolutionError(
+            message:
+                'Store value fields cannot be generic types (List/Map/etc).',
+            location: '${store.className}.${field.name}',
+          ),
+        );
       }
     }
   }

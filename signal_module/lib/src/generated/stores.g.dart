@@ -8,8 +8,9 @@ import 'package:leancode_add2app/leancode_add2app.dart';
 import 'routes.g.dart';
 
 /// Generated store wrapper for SoundsNotificationsStore.
-class SoundsNotificationsStore implements Add2AppSnapshotStore<SoundsNotificationsStoreSnapshot> {
-  SoundsNotificationsStore(this._storage, {required this.contactId, });
+class SoundsNotificationsStore
+    implements Add2AppSnapshotStore<SoundsNotificationsStoreSnapshot> {
+  SoundsNotificationsStore(this._storage, {required this.contactId});
 
   final KeyValueStorage _storage;
   final String contactId;
@@ -35,12 +36,16 @@ class SoundsNotificationsStore implements Add2AppSnapshotStore<SoundsNotificatio
 
   Future<VibrationLevel> getVibration() async {
     final value = await _storage.getString(_key('vibration'));
-    return value != null ? VibrationLevel.values[int.parse(value)] : VibrationLevel.normal;
+    return value != null
+        ? VibrationLevel.values[int.parse(value)]
+        : VibrationLevel.normal;
   }
 
   Future<NotificationBehavior> getBehavior() async {
     final value = await _storage.getString(_key('behavior'));
-    return value != null ? NotificationBehavior.values[int.parse(value)] : NotificationBehavior.defaultBehavior;
+    return value != null
+        ? NotificationBehavior.values[int.parse(value)]
+        : NotificationBehavior.defaultBehavior;
   }
 
   // ── Setters ───────────────────────────────────────────────────
@@ -94,19 +99,36 @@ class SoundsNotificationsStore implements Add2AppSnapshotStore<SoundsNotificatio
   }) async {
     final entries = <StorageEntry>[];
     if (previous == null || previous.mute != snapshot.mute) {
-      entries.add(StorageEntry(key: _key('mute'), value: snapshot.mute.toString()));
+      entries.add(
+        StorageEntry(key: _key('mute'), value: snapshot.mute.toString()),
+      );
     }
     if (previous == null || previous.showPreviews != snapshot.showPreviews) {
-      entries.add(StorageEntry(key: _key('showPreviews'), value: snapshot.showPreviews.toString()));
+      entries.add(
+        StorageEntry(
+          key: _key('showPreviews'),
+          value: snapshot.showPreviews.toString(),
+        ),
+      );
     }
     if (previous == null || previous.sound != snapshot.sound) {
       entries.add(StorageEntry(key: _key('sound'), value: snapshot.sound));
     }
     if (previous == null || previous.vibration != snapshot.vibration) {
-      entries.add(StorageEntry(key: _key('vibration'), value: snapshot.vibration.index.toString()));
+      entries.add(
+        StorageEntry(
+          key: _key('vibration'),
+          value: snapshot.vibration.index.toString(),
+        ),
+      );
     }
     if (previous == null || previous.behavior != snapshot.behavior) {
-      entries.add(StorageEntry(key: _key('behavior'), value: snapshot.behavior.index.toString()));
+      entries.add(
+        StorageEntry(
+          key: _key('behavior'),
+          value: snapshot.behavior.index.toString(),
+        ),
+      );
     }
     if (entries.isNotEmpty) {
       await _storage.putAll(entries);
@@ -154,7 +176,8 @@ class SoundsNotificationsStoreSnapshot {
 }
 
 /// Generated store wrapper for UserPreferencesStore.
-class UserPreferencesStore implements Add2AppSnapshotStore<UserPreferencesStoreSnapshot> {
+class UserPreferencesStore
+    implements Add2AppSnapshotStore<UserPreferencesStoreSnapshot> {
   UserPreferencesStore(this._storage);
 
   final KeyValueStorage _storage;
@@ -219,13 +242,23 @@ class UserPreferencesStore implements Add2AppSnapshotStore<UserPreferencesStoreS
   }) async {
     final entries = <StorageEntry>[];
     if (previous == null || previous.darkMode != snapshot.darkMode) {
-      entries.add(StorageEntry(key: _key('darkMode'), value: snapshot.darkMode.toString()));
+      entries.add(
+        StorageEntry(
+          key: _key('darkMode'),
+          value: snapshot.darkMode.toString(),
+        ),
+      );
     }
     if (previous == null || previous.locale != snapshot.locale) {
       entries.add(StorageEntry(key: _key('locale'), value: snapshot.locale));
     }
     if (previous == null || previous.theme != snapshot.theme) {
-      entries.add(StorageEntry(key: _key('theme'), value: snapshot.theme.index.toString()));
+      entries.add(
+        StorageEntry(
+          key: _key('theme'),
+          value: snapshot.theme.index.toString(),
+        ),
+      );
     }
     if (entries.isNotEmpty) {
       await _storage.putAll(entries);
@@ -265,8 +298,9 @@ class UserPreferencesStoreSnapshot {
 }
 
 /// Generated store wrapper for ThreadPreferencesStore.
-class ThreadPreferencesStore implements Add2AppSnapshotStore<ThreadPreferencesStoreSnapshot> {
-  ThreadPreferencesStore(this._storage, {required this.threadId, });
+class ThreadPreferencesStore
+    implements Add2AppSnapshotStore<ThreadPreferencesStoreSnapshot> {
+  ThreadPreferencesStore(this._storage, {required this.threadId});
 
   final KeyValueStorage _storage;
   final int threadId;
@@ -287,7 +321,9 @@ class ThreadPreferencesStore implements Add2AppSnapshotStore<ThreadPreferencesSt
 
   Future<NotificationBehavior> getBehavior() async {
     final value = await _storage.getString(_key('behavior'));
-    return value != null ? NotificationBehavior.values[int.parse(value)] : NotificationBehavior.defaultBehavior;
+    return value != null
+        ? NotificationBehavior.values[int.parse(value)]
+        : NotificationBehavior.defaultBehavior;
   }
 
   // ── Setters ───────────────────────────────────────────────────
@@ -331,13 +367,28 @@ class ThreadPreferencesStore implements Add2AppSnapshotStore<ThreadPreferencesSt
   }) async {
     final entries = <StorageEntry>[];
     if (previous == null || previous.unreadCount != snapshot.unreadCount) {
-      entries.add(StorageEntry(key: _key('unreadCount'), value: snapshot.unreadCount.toString()));
+      entries.add(
+        StorageEntry(
+          key: _key('unreadCount'),
+          value: snapshot.unreadCount.toString(),
+        ),
+      );
     }
     if (previous == null || previous.fontScale != snapshot.fontScale) {
-      entries.add(StorageEntry(key: _key('fontScale'), value: snapshot.fontScale.toString()));
+      entries.add(
+        StorageEntry(
+          key: _key('fontScale'),
+          value: snapshot.fontScale.toString(),
+        ),
+      );
     }
     if (previous == null || previous.behavior != snapshot.behavior) {
-      entries.add(StorageEntry(key: _key('behavior'), value: snapshot.behavior.index.toString()));
+      entries.add(
+        StorageEntry(
+          key: _key('behavior'),
+          value: snapshot.behavior.index.toString(),
+        ),
+      );
     }
     if (entries.isNotEmpty) {
       await _storage.putAll(entries);
@@ -377,8 +428,9 @@ class ThreadPreferencesStoreSnapshot {
 }
 
 /// Generated store wrapper for CategoryPreferencesStore.
-class CategoryPreferencesStore implements Add2AppSnapshotStore<CategoryPreferencesStoreSnapshot> {
-  CategoryPreferencesStore(this._storage, {required this.category, });
+class CategoryPreferencesStore
+    implements Add2AppSnapshotStore<CategoryPreferencesStoreSnapshot> {
+  CategoryPreferencesStore(this._storage, {required this.category});
 
   final KeyValueStorage _storage;
   final ConversationCategory category;
@@ -433,7 +485,9 @@ class CategoryPreferencesStore implements Add2AppSnapshotStore<CategoryPreferenc
   }) async {
     final entries = <StorageEntry>[];
     if (previous == null || previous.pinned != snapshot.pinned) {
-      entries.add(StorageEntry(key: _key('pinned'), value: snapshot.pinned.toString()));
+      entries.add(
+        StorageEntry(key: _key('pinned'), value: snapshot.pinned.toString()),
+      );
     }
     if (previous == null || previous.label != snapshot.label) {
       entries.add(StorageEntry(key: _key('label'), value: snapshot.label));
@@ -460,14 +514,10 @@ class CategoryPreferencesStoreSnapshot {
   final bool pinned;
   final String label;
 
-  CategoryPreferencesStoreSnapshot copyWith({
-    bool? pinned,
-    String? label,
-  }) {
+  CategoryPreferencesStoreSnapshot copyWith({bool? pinned, String? label}) {
     return CategoryPreferencesStoreSnapshot(
       pinned: pinned ?? this.pinned,
       label: label ?? this.label,
     );
   }
 }
-

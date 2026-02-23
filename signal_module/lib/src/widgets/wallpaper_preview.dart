@@ -112,18 +112,17 @@ class WallpaperBackground extends StatelessWidget {
         decoration: BoxDecoration(gradient: gradient),
         child: child,
       ),
-      ImageWallpaper(imagePath: final path, :final isAsset) =>
-        Container(
-          decoration: BoxDecoration(
-            image: DecorationImage(
-              image: isAsset
-                  ? AssetImage(path) as ImageProvider
-                  : NetworkImage(path),
-              fit: BoxFit.cover,
-            ),
+      ImageWallpaper(imagePath: final path, :final isAsset) => Container(
+        decoration: BoxDecoration(
+          image: DecorationImage(
+            image: isAsset
+                ? AssetImage(path) as ImageProvider
+                : NetworkImage(path),
+            fit: BoxFit.cover,
           ),
-          child: child,
         ),
+        child: child,
+      ),
     };
   }
 }

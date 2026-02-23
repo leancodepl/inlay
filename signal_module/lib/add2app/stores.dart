@@ -83,17 +83,9 @@ class CategoryPreferencesStore {
   final String label;
 }
 
-enum NotificationBehavior {
-  defaultBehavior,
-  mentionsOnly,
-  muted,
-}
+enum NotificationBehavior { defaultBehavior, mentionsOnly, muted }
 
-enum AppTheme {
-  system,
-  light,
-  dark,
-}
+enum AppTheme { system, light, dark }
 
 enum VibrationLevel {
   off(0),

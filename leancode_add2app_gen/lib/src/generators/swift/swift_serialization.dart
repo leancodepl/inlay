@@ -61,7 +61,11 @@ String generateSwiftEncode(
       isNullable: false,
       typeArguments: type.typeArguments,
     );
-    final nonNullEncode = generateSwiftEncode(_swiftArg0, nonNullType, typeGraph);
+    final nonNullEncode = generateSwiftEncode(
+      _swiftArg0,
+      nonNullType,
+      typeGraph,
+    );
     return '$value.map { $nonNullEncode }';
   }
 
@@ -81,7 +85,11 @@ String generateSwiftEncode(
     if (_isPrimitive(elementType.baseName) && !elementType.isNullable) {
       return value;
     }
-    final elementEncode = generateSwiftEncode(_swiftArg0, elementType, typeGraph);
+    final elementEncode = generateSwiftEncode(
+      _swiftArg0,
+      elementType,
+      typeGraph,
+    );
     return '$value.map { $elementEncode }';
   }
 
@@ -140,7 +148,11 @@ String generateSwiftDecode(
         final swiftElementType = dartTypeToSwift(elementType);
         return '($expression as? [Any?])?.map { \$0 as! $swiftElementType }';
       }
-      final elementDecode = generateSwiftDecode(_swiftArg0, elementType, typeGraph);
+      final elementDecode = generateSwiftDecode(
+        _swiftArg0,
+        elementType,
+        typeGraph,
+      );
       return '($expression as? [Any?])?.map { $elementDecode }';
     }
 
@@ -189,7 +201,11 @@ String generateSwiftDecode(
           .replaceAll(r'$expression', expression)
           .replaceAll(r'$swiftElementType', swiftElementType);
     }
-    final elementDecode = generateSwiftDecode(_swiftArg0, elementType, typeGraph);
+    final elementDecode = generateSwiftDecode(
+      _swiftArg0,
+      elementType,
+      typeGraph,
+    );
     return '($expression as! [Any?]).map { $elementDecode }';
   }
 
