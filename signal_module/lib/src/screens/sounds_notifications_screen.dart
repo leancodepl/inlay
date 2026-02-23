@@ -26,7 +26,7 @@ class SoundsNotificationsScreen extends StatelessWidget {
           KeyValueStorage.instance,
           contactId: contactId,
         ),
-      ),
+      )..init(),
       child: const _SoundsNotificationsBody(),
     );
   }
@@ -52,14 +52,18 @@ class _SoundsNotificationsBody extends StatelessWidget {
             onPressed: SystemNavigator.pop,
           ),
         ),
-        body: BlocBuilder<SoundsNotificationsCubit,
-            Add2AppState<SoundsNotificationsStoreSnapshot>>(
-          builder: (context, state) => switch (state) {
-            Add2AppStateLoading() =>
-              const Center(child: CircularProgressIndicator()),
-            Add2AppStateReady(:final data) => _ContentList(data: data),
-          },
-        ),
+        body:
+            BlocBuilder<
+              SoundsNotificationsCubit,
+              Add2AppState<SoundsNotificationsStoreSnapshot>
+            >(
+              builder: (context, state) => switch (state) {
+                Add2AppStateLoading() => const Center(
+                  child: CircularProgressIndicator(),
+                ),
+                Add2AppStateReady(:final data) => _ContentList(data: data),
+              },
+            ),
       ),
     );
   }
@@ -130,9 +134,7 @@ class _ContentList extends StatelessWidget {
                 : SignalColors.textSecondaryLight,
           ),
           title: const Text('Show previews'),
-          subtitle: const Text(
-            'Display message content in notifications',
-          ),
+          subtitle: const Text('Display message content in notifications'),
           value: data.showPreviews,
           onChanged: (v) => cubit.setShowPreviews(value: v),
         ),
@@ -159,9 +161,7 @@ class _ContentList extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: OutlinedButton.icon(
             icon: const Icon(Icons.open_in_new, size: 20),
-            label: const Text(
-              'Open again (new activity / new engine)',
-            ),
+            label: const Text('Open again (new activity / new engine)'),
             onPressed: () async {
               try {
                 await Add2AppNavigator.instance.push(

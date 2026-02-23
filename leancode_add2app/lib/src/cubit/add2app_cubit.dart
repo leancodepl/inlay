@@ -19,14 +19,12 @@ import 'package:leancode_add2app/src/storage/add2app_snapshot_store.dart';
 /// persistence and prevent write-back loops. This is safe because Dart is
 /// single-threaded within an isolate.
 abstract class Add2AppCubit<State> extends Cubit<Add2AppState<State>> {
-  Add2AppCubit(this._store) : super(const Add2AppStateLoading()) {
-    _init();
-  }
+  Add2AppCubit(this._store) : super(const Add2AppStateLoading());
 
   final Add2AppSnapshotStore<State> _store;
   StreamSubscription<State>? _storeSub;
 
-  Future<void> _init() async {
+  Future<void> init() async {
     final snapshot = await _store.getSnapshot();
     super.emit(Add2AppStateReady(snapshot));
     _storeSub = _store.stream.listen((snapshot) {
