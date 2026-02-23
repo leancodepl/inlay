@@ -210,4 +210,31 @@ class Add2AppNavigatorHostApi {
       return;
     }
   }
+
+  /// Return the full route data that the native host stored for this engine.
+  ///
+  /// Flutter calls this once at startup to retrieve the typed route object
+  /// (with all fields, including complex nested objects). Returns `null`
+  /// for the prewarm engine or when no data was set.
+  Future<PageSettings?> getInitialRouteData() async {
+    final pigeonVar_channelName = 'dev.flutter.pigeon.leancode_add2app.Add2AppNavigatorHostApi.getInitialRouteData$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(null);
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+    if (pigeonVar_replyList == null) {
+      throw _createConnectionError(pigeonVar_channelName);
+    } else if (pigeonVar_replyList.length > 1) {
+      throw PlatformException(
+        code: pigeonVar_replyList[0]! as String,
+        message: pigeonVar_replyList[1] as String?,
+        details: pigeonVar_replyList[2],
+      );
+    } else {
+      return (pigeonVar_replyList[0] as PageSettings?);
+    }
+  }
 }

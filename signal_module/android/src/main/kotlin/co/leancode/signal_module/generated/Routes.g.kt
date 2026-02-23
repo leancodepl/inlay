@@ -184,7 +184,7 @@ data class SoundsNotificationsPage(
         return "$basePath?${query.joinToString("&")}"
     }
 
-    override fun toPageSettings(): PageSettings = PageSettings(ROUTE_NAME, toMap(), toPath())
+    override fun toPageSettings(): PageSettings = PageSettings(ROUTE_NAME, toList(), toPath())
 }
 
 data class SetWallpaperPage(
@@ -223,7 +223,7 @@ data class SetWallpaperPage(
         return "$basePath?${query.joinToString("&")}"
     }
 
-    override fun toPageSettings(): PageSettings = PageSettings(ROUTE_NAME, toMap(), toPath())
+    override fun toPageSettings(): PageSettings = PageSettings(ROUTE_NAME, toList(), toPath())
 }
 
 data class ContactDetailsPage(
@@ -262,7 +262,7 @@ data class ContactDetailsPage(
         return "$basePath?${query.joinToString("&")}"
     }
 
-    override fun toPageSettings(): PageSettings = PageSettings(ROUTE_NAME, toMap(), toPath())
+    override fun toPageSettings(): PageSettings = PageSettings(ROUTE_NAME, toList(), toPath())
 }
 
 data class NativeEditProfilePage(

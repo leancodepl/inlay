@@ -45,7 +45,12 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import co.leancode.add2app.Add2AppFlutterScreen
 import co.leancode.add2app.KeyValueStorageImpl
+import co.leancode.signal_module.generated.DeliveryChannel
 import co.leancode.signal_module.generated.NotificationBehavior
+import co.leancode.signal_module.generated.NotificationPreferences
+import co.leancode.signal_module.generated.NotificationPreset
+import co.leancode.signal_module.generated.NotificationSound
+import co.leancode.signal_module.generated.QuietHours
 import co.leancode.signal_module.generated.SoundsNotificationsPage
 import co.leancode.signal_module.generated.SoundsNotificationsStore
 import co.leancode.signal_module.generated.VibrationLevel
@@ -127,6 +132,22 @@ private fun ComparisonNavHost(
             Add2AppFlutterScreen(
                 route = SoundsNotificationsPage(
                     contactId = entry.arguments!!.getString("id")!!,
+                    preferences = NotificationPreferences(
+                        sound = NotificationSound.chime,
+                        channels = listOf(DeliveryChannel.push, DeliveryChannel.email),
+                        quietHours = QuietHours(fromHour = 22, toHour = 7),
+                    ),
+                    presets = listOf(
+                        NotificationPreset(
+                            name = "Work",
+                            preferences = NotificationPreferences(
+                                sound = NotificationSound.pop,
+                                channels = listOf(DeliveryChannel.push),
+                                quietHours = null,
+                            ),
+                        ),
+                    ),
+                    fallbackChannel = DeliveryChannel.sms,
                 ),
                 modifier = Modifier.fillMaxSize(),
             )

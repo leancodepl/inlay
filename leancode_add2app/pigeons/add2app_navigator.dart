@@ -56,4 +56,11 @@ abstract class Add2AppNavigatorHostApi {
   /// If no handler is registered for the given `routeId`, this is a no-op
   /// (or throws, depending on platform configuration).
   void pushNativeRoute(PageSettings route);
+
+  /// Return the full route data that the native host stored for this engine.
+  ///
+  /// Flutter calls this once at startup to retrieve the typed route object
+  /// (with all fields, including complex nested objects). Returns `null`
+  /// for the prewarm engine or when no data was set.
+  PageSettings? getInitialRouteData();
 }

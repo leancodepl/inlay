@@ -147,14 +147,14 @@ void _writeRouteStruct(
       buffer
         ..writeln('    func toPageSettings() -> PageSettings {')
         ..writeln(
-          '        PageSettings(routeId: Self.routeName, params: toDict(), path: toPath())',
+          '        PageSettings(routeId: Self.routeName, params: toList(), path: toPath())',
         )
         ..writeln('    }');
     } else {
       buffer
         ..writeln('    func toPageSettings() -> PageSettings {')
         ..writeln(
-          '        PageSettings(routeId: Self.routeName, params: toDict())',
+          '        PageSettings(routeId: Self.routeName, params: toList())',
         )
         ..writeln('    }');
     }

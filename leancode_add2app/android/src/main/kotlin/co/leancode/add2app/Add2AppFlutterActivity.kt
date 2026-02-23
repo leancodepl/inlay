@@ -17,7 +17,8 @@ class Add2AppFlutterActivity : FlutterActivity() {
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
-        Add2AppNavigator.configureEngine(flutterEngine, this)
+        val routeData = Add2AppNavigator.extractRouteDataFromIntent(intent)
+        Add2AppNavigator.configureEngine(flutterEngine, this, routeData = routeData)
     }
 
     override fun cleanUpFlutterEngine(flutterEngine: FlutterEngine) {

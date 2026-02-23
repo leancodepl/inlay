@@ -165,11 +165,11 @@ void _writeRouteDataClass(
     buffer.writeln();
     if (path != null) {
       buffer.writeln(
-        '    override fun toPageSettings(): PageSettings = PageSettings(ROUTE_NAME, toMap(), toPath())',
+        '    override fun toPageSettings(): PageSettings = PageSettings(ROUTE_NAME, toList(), toPath())',
       );
     } else {
       buffer.writeln(
-        '    override fun toPageSettings(): PageSettings = PageSettings(ROUTE_NAME, toMap())',
+        '    override fun toPageSettings(): PageSettings = PageSettings(ROUTE_NAME, toList())',
       );
     }
   }

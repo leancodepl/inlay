@@ -30,7 +30,8 @@ final class Add2AppFlutterViewController: FlutterViewController {
         Add2AppNavigator.shared.configureEngine(
             engine,
             viewController: self,
-            onPop: onPop
+            onPop: onPop,
+            routeData: page
         )
     }
 

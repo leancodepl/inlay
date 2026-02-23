@@ -31,14 +31,16 @@ class Add2AppFlutterFragment : FlutterFragment() {
 
         val useBackDispatcher =
             arguments?.getBoolean(ARG_USE_BACK_DISPATCHER, false) ?: false
+        val fragmentId = arguments?.getString(EXTRA_FRAGMENT_ROUTE_ID)
+        val routeData = Add2AppNavigator.consumePendingRouteData(fragmentId)
 
         if (useBackDispatcher) {
             val componentActivity = requireActivity() as ComponentActivity
-            Add2AppNavigator.configureEngine(flutterEngine, requireActivity()) {
+            Add2AppNavigator.configureEngine(flutterEngine, requireActivity(), onPop = {
                 componentActivity.onBackPressedDispatcher.onBackPressed()
-            }
+            }, routeData = routeData)
         } else {
-            Add2AppNavigator.configureEngine(flutterEngine, requireActivity())
+            Add2AppNavigator.configureEngine(flutterEngine, requireActivity(), routeData = routeData)
         }
     }
 
@@ -56,5 +58,6 @@ class Add2AppFlutterFragment : FlutterFragment() {
          * of finishing the hosting Activity.
          */
         internal const val ARG_USE_BACK_DISPATCHER = "add2app_use_back_dispatcher"
+        private const val EXTRA_FRAGMENT_ROUTE_ID = "add2app_fragment_route_id"
     }
 }

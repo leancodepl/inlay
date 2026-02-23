@@ -229,6 +229,12 @@ protocol Add2AppNavigatorHostApi {
   /// If no handler is registered for the given `routeId`, this is a no-op
   /// (or throws, depending on platform configuration).
   func pushNativeRoute(route: PageSettings) throws
+  /// Return the full route data that the native host stored for this engine.
+  ///
+  /// Flutter calls this once at startup to retrieve the typed route object
+  /// (with all fields, including complex nested objects). Returns `null`
+  /// for the prewarm engine or when no data was set.
+  func getInitialRouteData() throws -> PageSettings?
 }
 
 /// Generated setup class from Pigeon to handle messages through the `binaryMessenger`.
@@ -286,6 +292,24 @@ class Add2AppNavigatorHostApiSetup {
       }
     } else {
       pushNativeRouteChannel.setMessageHandler(nil)
+    }
+    /// Return the full route data that the native host stored for this engine.
+    ///
+    /// Flutter calls this once at startup to retrieve the typed route object
+    /// (with all fields, including complex nested objects). Returns `null`
+    /// for the prewarm engine or when no data was set.
+    let getInitialRouteDataChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.leancode_add2app.Add2AppNavigatorHostApi.getInitialRouteData\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      getInitialRouteDataChannel.setMessageHandler { _, reply in
+        do {
+          let result = try api.getInitialRouteData()
+          reply(wrapResult(result))
+        } catch {
+          reply(wrapError(error))
+        }
+      }
+    } else {
+      getInitialRouteDataChannel.setMessageHandler(nil)
     }
   }
 }

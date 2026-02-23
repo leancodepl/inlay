@@ -1,5 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:leancode_add2app/leancode_add2app.dart';
+import 'package:signal_module/src/generated/routes.g.dart';
 import 'package:signal_module/src/screens/contact_details_screen.dart';
 import 'package:signal_module/src/screens/set_wallpaper_screen.dart';
 import 'package:signal_module/src/screens/sounds_notifications_screen.dart';
@@ -15,24 +17,31 @@ String normalizeSignalAutoRouteLocation(String platformLocation) {
   return location.startsWith('/') ? location : '/$location';
 }
 
-RootStackRouter createSignalAutoRouter() {
+RootStackRouter createSignalAutoRouter({FlutterRouteBase? routeData}) {
   return RootStackRouter.build(
     routes: [
       NamedRouteDef(
         name: 'SoundsNotificationsRoute',
-        path: '/sounds-notifications/:contactId',
-        builder: (_, data) => SoundsNotificationsScreen(
-          contactId: data.params.getString('contactId'),
-        ),
+        path: SoundsNotificationsPage.pathTemplate,
+        builder: (_, data) {
+          final page =
+              routeData is SoundsNotificationsPage ? routeData : null;
+          return SoundsNotificationsScreen(
+            contactId:
+                page?.contactId ?? data.params.getString('contactId'),
+            preferences: page?.preferences,
+            presets: page?.presets,
+            fallbackChannel: page?.fallbackChannel,
+          );
+        },
       ),
       NamedRouteDef(
         name: 'SetWallpaperRoute',
-        path: '/set-wallpaper/:recipientId',
+        path: SetWallpaperPage.pathTemplate,
         builder: (_, data) => SetWallpaperScreen(
           recipientId: data.params.optString('recipientId'),
         ),
       ),
-      // Keep support for opening wallpaper screen without a recipient id.
       NamedRouteDef(
         name: 'SetWallpaperGlobalRoute',
         path: '/set-wallpaper',
@@ -40,7 +49,7 @@ RootStackRouter createSignalAutoRouter() {
       ),
       NamedRouteDef(
         name: 'ContactDetailsRoute',
-        path: '/contact-details/:contactId',
+        path: ContactDetailsPage.pathTemplate,
         builder: (_, data) => ContactDetailsScreen(
           contactId: data.params.getString('contactId'),
         ),

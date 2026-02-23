@@ -308,12 +308,47 @@ class Add2AppNavigator {
   ///
   /// Use this as `initialLocation` for go_router, `initialDeepLink` for
   /// auto_route, or in a custom `RouteInformationProvider`.
+  @Deprecated('Use initialPath instead')
   static String initialLocationFromPlatform() {
+    return initialPath;
+  }
+
+  /// URL path from the platform's `defaultRouteName`
+  /// (e.g. `/sounds-notifications/42`).
+  ///
+  /// Synchronous — available the moment the Dart isolate starts.
+  /// For the prewarm engine or root, returns `/`.
+  ///
+  /// Use this as `initialLocation` for go_router, `initialDeepLink` for
+  /// auto_route, or in a custom `RouteInformationProvider`.
+  static String get initialPath {
     final raw =
         WidgetsBinding.instance.platformDispatcher.defaultRouteName;
     if (raw == '__add2app_prewarm__' || raw == '/') {
       return '/';
     }
     return raw;
+  }
+
+  /// Fetch the initial route data from the native host and decode it.
+  ///
+  /// [decoder] is the generated `decodeFlutterRouteData` function.
+  /// Returns the fully typed [FlutterRouteBase] subclass (including path
+  /// params like `contactId`), or `null` for the prewarm engine / when
+  /// native didn't set any data.
+  ///
+  /// ```dart
+  /// final route = await Add2AppNavigator.fetchInitialRoute(decodeFlutterRouteData);
+  /// if (route case SoundsNotificationsPage page) { ... }
+  /// ```
+  static Future<FlutterRouteBase?> fetchInitialRoute(
+    FlutterRouteBase? Function(PageSettings?) decoder,
+  ) async {
+    try {
+      final raw = await Add2AppNavigatorHostApi().getInitialRouteData();
+      return decoder(raw);
+    } catch (_) {
+      return null;
+    }
   }
 }

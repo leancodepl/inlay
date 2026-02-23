@@ -107,9 +107,22 @@ private struct ComparisonHubView: View {
                     Add2AppFlutterView(
                         route: SoundsNotificationsPage(
                             contactId: recipientId,
-                            preferences: nil,
-                            presets: nil,
-                            fallbackChannel: nil
+                            preferences: NotificationPreferences(
+                                sound: .chime,
+                                channels: [.push, .email],
+                                quietHours: QuietHours(fromHour: 22, toHour: 7)
+                            ),
+                            presets: [
+                                NotificationPreset(
+                                    name: "Work",
+                                    preferences: NotificationPreferences(
+                                        sound: .pop,
+                                        channels: [.push],
+                                        quietHours: nil
+                                    )
+                                ),
+                            ],
+                            fallbackChannel: .sms
                         )
                     )
                     .ignoresSafeArea()

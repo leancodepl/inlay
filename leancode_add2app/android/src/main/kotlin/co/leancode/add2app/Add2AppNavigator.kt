@@ -12,6 +12,8 @@ import io.flutter.embedding.engine.FlutterEngineGroup
 import io.flutter.embedding.engine.FlutterEngineGroupCache
 import io.flutter.embedding.engine.dart.DartExecutor
 import io.flutter.FlutterInjector
+import io.flutter.plugin.common.StandardMessageCodec
+import java.nio.ByteBuffer
 
 /**
  * Interface for handling native route requests dispatched from Flutter.
@@ -81,6 +83,8 @@ object Add2AppNavigator {
     private var isPrewarmEnabled: Boolean = true
     /** Hidden warm-up engine kept alive for app lifetime. */
     private var prewarmedEngine: FlutterEngine? = null
+    /** Route data for fragments, keyed by fragment ID (consumed once on configureEngine). */
+    private val pendingRouteData = mutableMapOf<String, PageSettings>()
 
     // ── Initialisation ───────────────────────────────────────────────────
 
@@ -163,6 +167,7 @@ object Add2AppNavigator {
                 override fun push(page: PageSettings) {}
                 override fun pop() {}
                 override fun pushNativeRoute(route: PageSettings) {}
+                override fun getInitialRouteData(): PageSettings? = null
             }
         )
         KeyValueStorageImpl.attachToEngine(engine)
@@ -251,13 +256,22 @@ object Add2AppNavigator {
     internal fun createFragment(context: Context, page: PageSettings): Add2AppFlutterFragment {
         init(context, prewarm = isPrewarmEnabled)
         val initialRoute = encodePageSettings(page)
-        return FlutterFragment.NewEngineInGroupFragmentBuilder(
+        val fragmentId = java.util.UUID.randomUUID().toString()
+        pendingRouteData[fragmentId] = page
+        val fragment = FlutterFragment.NewEngineInGroupFragmentBuilder(
             Add2AppFlutterFragment::class.java,
             ENGINE_GROUP_ID
         )
             .dartEntrypoint(DART_ENTRYPOINT)
             .initialRoute(initialRoute)
             .build<Add2AppFlutterFragment>()
+        fragment.arguments?.putString(EXTRA_FRAGMENT_ROUTE_ID, fragmentId)
+            ?: run {
+                val args = android.os.Bundle()
+                args.putString(EXTRA_FRAGMENT_ROUTE_ID, fragmentId)
+                fragment.arguments = args
+            }
+        return fragment
     }
 
     // ── Intent factory ───────────────────────────────────────────────────
@@ -265,13 +279,54 @@ object Add2AppNavigator {
     internal fun createIntent(context: Context, page: PageSettings): Intent {
         init(context, prewarm = isPrewarmEnabled)
         val initialRoute = encodePageSettings(page)
-        return FlutterActivity.NewEngineInGroupIntentBuilder(
+        val intent = FlutterActivity.NewEngineInGroupIntentBuilder(
             Add2AppFlutterActivity::class.java,
             ENGINE_GROUP_ID
         )
             .dartEntrypoint(DART_ENTRYPOINT)
             .initialRoute(initialRoute)
             .build(context)
+        putRouteDataExtra(intent, page)
+        return intent
+    }
+
+    // ── Route data serialization (Intent extras) ──────────────────────────
+
+    private const val EXTRA_FRAGMENT_ROUTE_ID = "add2app_fragment_route_id"
+    private const val EXTRA_ROUTE_ID = "add2app_route_id"
+    private const val EXTRA_ROUTE_PATH = "add2app_route_path"
+    private const val EXTRA_ROUTE_PARAMS = "add2app_route_params"
+
+    private fun putRouteDataExtra(intent: Intent, page: PageSettings) {
+        intent.putExtra(EXTRA_ROUTE_ID, page.routeId)
+        page.path?.let { intent.putExtra(EXTRA_ROUTE_PATH, it) }
+        page.params?.let { params ->
+            val buffer = StandardMessageCodec.INSTANCE.encodeMessage(params)
+            if (buffer != null) {
+                intent.putExtra(EXTRA_ROUTE_PARAMS, bufferToByteArray(buffer))
+            }
+        }
+    }
+
+    internal fun extractRouteDataFromIntent(intent: Intent): PageSettings? {
+        val routeId = intent.getStringExtra(EXTRA_ROUTE_ID) ?: return null
+        val path = intent.getStringExtra(EXTRA_ROUTE_PATH)
+        val paramsBytes = intent.getByteArrayExtra(EXTRA_ROUTE_PARAMS)
+        val params = paramsBytes?.let {
+            StandardMessageCodec.INSTANCE.decodeMessage(ByteBuffer.wrap(it))
+        }
+        return PageSettings(routeId, params, path)
+    }
+
+    internal fun consumePendingRouteData(fragmentId: String?): PageSettings? {
+        if (fragmentId == null) return null
+        return pendingRouteData.remove(fragmentId)
+    }
+
+    private fun bufferToByteArray(buffer: ByteBuffer): ByteArray {
+        val bytes = ByteArray(buffer.remaining())
+        buffer.get(bytes)
+        return bytes
     }
 
     // ── Engine configuration (called by Add2AppFlutterActivity / Fragment) ─
@@ -290,6 +345,7 @@ object Add2AppNavigator {
         engine: FlutterEngine,
         activity: Activity,
         onPop: (() -> Unit)? = null,
+        routeData: PageSettings? = null,
     ) {
         val hostApi = object : Add2AppNavigatorHostApi {
             override fun push(page: PageSettings) {
@@ -300,6 +356,9 @@ object Add2AppNavigator {
             }
             override fun pushNativeRoute(route: PageSettings) {
                 dispatchNativeRoute(activity, route)
+            }
+            override fun getInitialRouteData(): PageSettings? {
+                return routeData
             }
         }
         Add2AppNavigatorHostApi.setUp(engine.dartExecutor.binaryMessenger, hostApi)

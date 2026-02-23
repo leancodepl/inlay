@@ -54,6 +54,8 @@ String generateDartRoutes({
   // Generate FlutterRouteHandler if there are Flutter routes.
   if (schema.flutterRoutes.isNotEmpty) {
     _writeFlutterRouteHandler(buffer, schema.flutterRoutes);
+    buffer.writeln();
+    _writeDecodeFlutterRouteData(buffer, schema.flutterRoutes);
   }
 
   final output = buffer.toString();
@@ -441,6 +443,41 @@ void _writeFlutterRouteHandler(
     ..writeln(
       r"    return Center(child: Text('Unknown route: ${route.routeId}'));",
     )
+    ..writeln('  }')
+    ..writeln('}');
+}
+
+void _writeDecodeFlutterRouteData(
+  StringBuffer buffer,
+  List<RouteDefinition> routes,
+) {
+  buffer
+    ..writeln(
+      '/// Decodes [PageSettings] returned by the native host into a typed',
+    )
+    ..writeln(
+      '/// [FlutterRouteBase] subclass. Pass this to',
+    )
+    ..writeln(
+      '/// [Add2AppNavigator.fetchInitialRoute] as the decoder.',
+    )
+    ..writeln('FlutterRouteBase? decodeFlutterRouteData(PageSettings? settings) {')
+    ..writeln('  if (settings == null) return null;')
+    ..writeln('  final params = settings.params;')
+    ..writeln('  if (params is! List) return null;')
+    ..writeln('  switch (settings.routeId) {');
+
+  for (final route in routes) {
+    buffer
+      ..writeln('    case ${route.className}.routeName:')
+      ..writeln(
+        '      return ${route.className}.decode(params.cast<Object?>());',
+      );
+  }
+
+  buffer
+    ..writeln('    default:')
+    ..writeln('      return null;')
     ..writeln('  }')
     ..writeln('}');
 }
