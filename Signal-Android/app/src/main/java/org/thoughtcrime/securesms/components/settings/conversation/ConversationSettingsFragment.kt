@@ -108,6 +108,7 @@ import org.thoughtcrime.securesms.verify.VerifyIdentityActivity
 import org.thoughtcrime.securesms.wallpaper.ChatWallpaperActivity
 import co.leancode.add2app.Add2AppNavigator
 import co.leancode.signal_module.generated.SetWallpaperPage
+import co.leancode.signal_module.generated.WallpaperKind
 import org.thoughtcrime.securesms.flutter.ComposeFlutterComparisonActivity
 import org.thoughtcrime.securesms.flutter.FlutterSoundsNotificationsFragmentActivity
 import org.thoughtcrime.securesms.flutter.NativeSoundsNotificationsActivity
@@ -564,7 +565,11 @@ class ConversationSettingsFragment : DSLSettingsFragment(
             // ADD2APP: Flutter Set Wallpaper — uses Add2AppNavigator (engine group).
             Add2AppNavigator.push(
               requireContext(),
-              SetWallpaperPage(recipientId = state.recipient.id.serialize())
+              SetWallpaperPage(
+                recipientId = state.recipient.id.serialize(),
+                options = null,
+                preferredKind = WallpaperKind.staticImage
+              )
             )
           }
         )
