@@ -63,14 +63,10 @@ class CounterStore implements Add2AppSnapshotStore<CounterStoreSnapshot> {
   }) async {
     final entries = <StorageEntry>[];
     if (previous == null || previous.count != snapshot.count) {
-      entries.add(
-        StorageEntry(key: _key('count'), value: snapshot.count.toString()),
-      );
+      entries.add(StorageEntry(key: _key('count'), value: snapshot.count.toString()));
     }
     if (previous == null || previous.lastUpdatedBy != snapshot.lastUpdatedBy) {
-      entries.add(
-        StorageEntry(key: _key('lastUpdatedBy'), value: snapshot.lastUpdatedBy),
-      );
+      entries.add(StorageEntry(key: _key('lastUpdatedBy'), value: snapshot.lastUpdatedBy));
     }
     if (entries.isNotEmpty) {
       await _storage.putAll(entries);
@@ -94,7 +90,10 @@ class CounterStoreSnapshot {
   final int count;
   final String lastUpdatedBy;
 
-  CounterStoreSnapshot copyWith({int? count, String? lastUpdatedBy}) {
+  CounterStoreSnapshot copyWith({
+    int? count,
+    String? lastUpdatedBy,
+  }) {
     return CounterStoreSnapshot(
       count: count ?? this.count,
       lastUpdatedBy: lastUpdatedBy ?? this.lastUpdatedBy,
@@ -103,9 +102,8 @@ class CounterStoreSnapshot {
 }
 
 /// Generated store wrapper for UserPreferencesStore.
-class UserPreferencesStore
-    implements Add2AppSnapshotStore<UserPreferencesStoreSnapshot> {
-  UserPreferencesStore(this._storage, {required this.userId});
+class UserPreferencesStore implements Add2AppSnapshotStore<UserPreferencesStoreSnapshot> {
+  UserPreferencesStore(this._storage, {required this.userId, });
 
   final KeyValueStorage _storage;
   final String userId;
@@ -180,28 +178,16 @@ class UserPreferencesStore
   }) async {
     final entries = <StorageEntry>[];
     if (previous == null || previous.displayName != snapshot.displayName) {
-      entries.add(
-        StorageEntry(key: _key('displayName'), value: snapshot.displayName),
-      );
+      entries.add(StorageEntry(key: _key('displayName'), value: snapshot.displayName));
     }
     if (previous == null || previous.email != snapshot.email) {
       entries.add(StorageEntry(key: _key('email'), value: snapshot.email));
     }
     if (previous == null || previous.darkMode != snapshot.darkMode) {
-      entries.add(
-        StorageEntry(
-          key: _key('darkMode'),
-          value: snapshot.darkMode.toString(),
-        ),
-      );
+      entries.add(StorageEntry(key: _key('darkMode'), value: snapshot.darkMode.toString()));
     }
     if (previous == null || previous.theme != snapshot.theme) {
-      entries.add(
-        StorageEntry(
-          key: _key('theme'),
-          value: snapshot.theme.index.toString(),
-        ),
-      );
+      entries.add(StorageEntry(key: _key('theme'), value: snapshot.theme.index.toString()));
     }
     if (entries.isNotEmpty) {
       await _storage.putAll(entries);
@@ -243,3 +229,4 @@ class UserPreferencesStoreSnapshot {
     );
   }
 }
+

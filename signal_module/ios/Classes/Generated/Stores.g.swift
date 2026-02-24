@@ -8,6 +8,11 @@ struct SoundsNotificationsStore {
     private let storage: NativeStorageScope
     private let contactId: String
 
+    init(storage: NativeStorageScope, contactId: String) {
+        self.storage = storage
+        self.contactId = contactId
+    }
+
     private func key(_ field: String) -> String { "sounds_notifications/\(contactId)/\(field)" }
 
     var mute: Bool {
@@ -43,12 +48,16 @@ struct SoundsNotificationsStore {
         set { storage.put(key: key("behavior"), value: String(newValue.rawValue)) }
     }
 
-    func clear() { storage.removeByPrefix(key("")) }
+    func clear() { storage.removeByPrefix(prefix: key("")) }
 }
 
 /// Generated store wrapper for UserPreferencesStore.
 struct UserPreferencesStore {
     private let storage: NativeStorageScope
+
+    init(storage: NativeStorageScope) {
+        self.storage = storage
+    }
 
     private func key(_ field: String) -> String { "user_preferences/\(field)" }
 
@@ -71,13 +80,18 @@ struct UserPreferencesStore {
         set { storage.put(key: key("theme"), value: String(newValue.rawValue)) }
     }
 
-    func clear() { storage.removeByPrefix(key("")) }
+    func clear() { storage.removeByPrefix(prefix: key("")) }
 }
 
 /// Generated store wrapper for ThreadPreferencesStore.
 struct ThreadPreferencesStore {
     private let storage: NativeStorageScope
     private let threadId: Int
+
+    init(storage: NativeStorageScope, threadId: Int) {
+        self.storage = storage
+        self.threadId = threadId
+    }
 
     private func key(_ field: String) -> String { "thread_preferences/\(threadId)/\(field)" }
 
@@ -100,13 +114,18 @@ struct ThreadPreferencesStore {
         set { storage.put(key: key("behavior"), value: String(newValue.rawValue)) }
     }
 
-    func clear() { storage.removeByPrefix(key("")) }
+    func clear() { storage.removeByPrefix(prefix: key("")) }
 }
 
 /// Generated store wrapper for CategoryPreferencesStore.
 struct CategoryPreferencesStore {
     private let storage: NativeStorageScope
     private let category: ConversationCategory
+
+    init(storage: NativeStorageScope, category: ConversationCategory) {
+        self.storage = storage
+        self.category = category
+    }
 
     private func key(_ field: String) -> String { "category_preferences/\(category.name)/\(field)" }
 
@@ -120,6 +139,6 @@ struct CategoryPreferencesStore {
         set { storage.put(key: key("label"), value: newValue) }
     }
 
-    func clear() { storage.removeByPrefix(key("")) }
+    func clear() { storage.removeByPrefix(prefix: key("")) }
 }
 

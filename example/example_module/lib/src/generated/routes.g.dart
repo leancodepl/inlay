@@ -4,19 +4,36 @@
 import 'package:flutter/widgets.dart';
 import 'package:leancode_add2app/leancode_add2app.dart';
 
-enum GreetingStyle { casual, formal }
+enum GreetingStyle {
+  casual,
+  formal,
+}
 
-enum BadgeLevel { bronze, silver, gold }
+enum BadgeLevel {
+  bronze,
+  silver,
+  gold,
+}
 
-enum AppTheme { system, light, dark }
+enum AppTheme {
+  system,
+  light,
+  dark,
+}
 
 class UserBadge {
-  const UserBadge({required this.label, required this.level});
+  const UserBadge({
+    required this.label,
+    required this.level,
+  });
 
   final String label;
   final BadgeLevel level;
 
-  List<Object?> encode() => <Object?>[label, level.index];
+  List<Object?> encode() => <Object?>[
+    label,
+    level.index,
+  ];
 
   static UserBadge decode(List<Object?> list) {
     return UserBadge(
@@ -27,7 +44,10 @@ class UserBadge {
 }
 
 class GreetingPage extends FlutterRouteBase {
-  const GreetingPage({required this.name, this.style});
+  const GreetingPage({
+    required this.name,
+    this.style,
+  });
 
   final String name;
   final GreetingStyle? style;
@@ -52,12 +72,7 @@ class GreetingPage extends FlutterRouteBase {
   static GreetingPage decode(List<Object?> list) {
     return GreetingPage(
       name: list[0] as String,
-      style: list[1] != null
-          ? (() {
-              final v = list[1];
-              return GreetingStyle.values[v as int];
-            })()
-          : null,
+      style: list[1] != null ? (() { final v = list[1]; return GreetingStyle.values[v as int]; })() : null,
     );
   }
 
@@ -81,7 +96,9 @@ class GreetingPage extends FlutterRouteBase {
 }
 
 class CounterPage extends FlutterRouteBase {
-  const CounterPage({this.seed});
+  const CounterPage({
+    this.seed,
+  });
 
   final int? seed;
 
@@ -97,17 +114,19 @@ class CounterPage extends FlutterRouteBase {
     return '$basePath?${query.entries.map((e) => '${e.key}=${Uri.encodeComponent(e.value)}').join('&')}';
   }
 
-  List<Object?> encode() => <Object?>[seed != null ? seed! : null];
+  List<Object?> encode() => <Object?>[
+    seed != null ? seed! : null,
+  ];
 
   static CounterPage decode(List<Object?> list) {
-    return CounterPage(seed: list[0] as int?);
+    return CounterPage(
+      seed: list[0] as int?,
+    );
   }
 
   static CounterPage decodeFromMap(Map<Object?, Object?> map) {
     return CounterPage(
-      seed: map['seed'] != null
-          ? int.tryParse(map['seed'] as String? ?? '')
-          : null,
+      seed: map['seed'] != null ? int.tryParse(map['seed'] as String? ?? '') : null,
     );
   }
 
@@ -124,7 +143,10 @@ class CounterPage extends FlutterRouteBase {
 }
 
 class ProfilePage extends FlutterRouteBase {
-  const ProfilePage({required this.userId, this.badges});
+  const ProfilePage({
+    required this.userId,
+    this.badges,
+  });
 
   final String userId;
   final List<UserBadge>? badges;
@@ -146,14 +168,7 @@ class ProfilePage extends FlutterRouteBase {
   static ProfilePage decode(List<Object?> list) {
     return ProfilePage(
       userId: list[0] as String,
-      badges: list[1] != null
-          ? (() {
-              final v = list[1];
-              return (v as List<Object?>)
-                  .map((e) => UserBadge.decode(e as List<Object?>))
-                  .toList();
-            })()
-          : null,
+      badges: list[1] != null ? (() { final v = list[1]; return (v as List<Object?>).map((e) => UserBadge.decode(e as List<Object?>)).toList(); })() : null,
     );
   }
 
@@ -177,37 +192,51 @@ class ProfilePage extends FlutterRouteBase {
 }
 
 class NativeSettingsPage {
-  const NativeSettingsPage({this.source});
+  const NativeSettingsPage({
+    this.source,
+  });
 
   final String? source;
 
   static const String routeId = 'nativeSettings';
 
-  List<Object?> encode() => <Object?>[source != null ? source! : null];
+  List<Object?> encode() => <Object?>[
+    source != null ? source! : null,
+  ];
 
   static NativeSettingsPage decode(List<Object?> list) {
-    return NativeSettingsPage(source: list[0] as String?);
+    return NativeSettingsPage(
+      source: list[0] as String?,
+    );
   }
 
-  NativeRouteWrapper toNativeRoute() =>
-      NativeRouteWrapper(PageSettings(routeId: routeId, params: encode()));
+  NativeRouteWrapper toNativeRoute() => NativeRouteWrapper(
+    PageSettings(routeId: routeId, params: encode()),
+  );
 }
 
 class NativeAboutPage {
-  const NativeAboutPage({required this.appVersion});
+  const NativeAboutPage({
+    required this.appVersion,
+  });
 
   final String appVersion;
 
   static const String routeId = 'nativeAbout';
 
-  List<Object?> encode() => <Object?>[appVersion];
+  List<Object?> encode() => <Object?>[
+    appVersion,
+  ];
 
   static NativeAboutPage decode(List<Object?> list) {
-    return NativeAboutPage(appVersion: list[0] as String);
+    return NativeAboutPage(
+      appVersion: list[0] as String,
+    );
   }
 
-  NativeRouteWrapper toNativeRoute() =>
-      NativeRouteWrapper(PageSettings(routeId: routeId, params: encode()));
+  NativeRouteWrapper toNativeRoute() => NativeRouteWrapper(
+    PageSettings(routeId: routeId, params: encode()),
+  );
 }
 
 abstract class FlutterRouteHandler {
@@ -220,25 +249,19 @@ abstract class FlutterRouteHandler {
         return onGreeting(
           params is List
               ? GreetingPage.decode(params.cast<Object?>())
-              : GreetingPage.decodeFromMap(
-                  params as Map<Object?, Object?>? ?? {},
-                ),
+              : GreetingPage.decodeFromMap(params as Map<Object?, Object?>? ?? {}),
         );
       case 'counter':
         return onCounter(
           params is List
               ? CounterPage.decode(params.cast<Object?>())
-              : CounterPage.decodeFromMap(
-                  params as Map<Object?, Object?>? ?? {},
-                ),
+              : CounterPage.decodeFromMap(params as Map<Object?, Object?>? ?? {}),
         );
       case 'profile':
         return onProfile(
           params is List
               ? ProfilePage.decode(params.cast<Object?>())
-              : ProfilePage.decodeFromMap(
-                  params as Map<Object?, Object?>? ?? {},
-                ),
+              : ProfilePage.decodeFromMap(params as Map<Object?, Object?>? ?? {}),
         );
       default:
         return onUnknownRoute(route);
