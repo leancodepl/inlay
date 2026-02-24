@@ -324,6 +324,7 @@ object Add2AppNavigator {
     }
 
     private fun bufferToByteArray(buffer: ByteBuffer): ByteArray {
+        buffer.flip()
         val bytes = ByteArray(buffer.remaining())
         buffer.get(bytes)
         return bytes
