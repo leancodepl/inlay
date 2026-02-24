@@ -7,6 +7,10 @@ import Foundation
 struct CounterStore {
     private let storage: NativeStorageScope
 
+    init(storage: NativeStorageScope) {
+        self.storage = storage
+    }
+
     private func key(_ field: String) -> String { "counter/\(field)" }
 
     var count: Int {
@@ -19,13 +23,18 @@ struct CounterStore {
         set { storage.put(key: key("lastUpdatedBy"), value: newValue) }
     }
 
-    func clear() { storage.removeByPrefix(key("")) }
+    func clear() { storage.removeByPrefix(prefix: key("")) }
 }
 
 /// Generated store wrapper for UserPreferencesStore.
 struct UserPreferencesStore {
     private let storage: NativeStorageScope
     private let userId: String
+
+    init(storage: NativeStorageScope, userId: String) {
+        self.storage = storage
+        self.userId = userId
+    }
 
     private func key(_ field: String) -> String { "user_preferences/\(userId)/\(field)" }
 
@@ -53,6 +62,6 @@ struct UserPreferencesStore {
         set { storage.put(key: key("theme"), value: String(newValue.rawValue)) }
     }
 
-    func clear() { storage.removeByPrefix(key("")) }
+    func clear() { storage.removeByPrefix(prefix: key("")) }
 }
 

@@ -47,6 +47,24 @@ void _writeStoreStruct(
   }
   buffer.writeln();
 
+  // Explicit init — Swift's memberwise init is private when properties are.
+  if (keyField != null) {
+    final swiftType = _swiftStoreType(keyField.type.baseName, typeGraph);
+    buffer
+      ..writeln(
+        '    init(storage: NativeStorageScope, ${keyField.name}: $swiftType) {',
+      )
+      ..writeln('        self.storage = storage')
+      ..writeln('        self.${keyField.name} = ${keyField.name}')
+      ..writeln('    }');
+  } else {
+    buffer
+      ..writeln('    init(storage: NativeStorageScope) {')
+      ..writeln('        self.storage = storage')
+      ..writeln('    }');
+  }
+  buffer.writeln();
+
   // Key helper.
   if (keyField == null) {
     buffer.writeln(
@@ -68,7 +86,7 @@ void _writeStoreStruct(
 
   // clear() method.
   buffer
-    ..writeln('    func clear() { storage.removeByPrefix(key("")) }')
+    ..writeln('    func clear() { storage.removeByPrefix(prefix: key("")) }')
     ..writeln('}');
 }
 
