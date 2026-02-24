@@ -5,7 +5,5 @@ DerivedData/
 Pods/
 .symlinks/
 
-*.xcodeproj
-*.xcworkspace
 xcuserdata/
 *.xcuserstate
