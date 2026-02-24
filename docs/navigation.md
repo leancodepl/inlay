@@ -170,20 +170,25 @@ Add2AppNavigator.setNativeRouteHandler(object : NativeRouteHandler() {
 
 ## Flutter Router Integration
 
-When the native side opens a Flutter screen, the framework encodes the route as a URL path (e.g. `/contact-details/abc-123`) and passes it to the new Flutter engine as its initial route. A **Flutter routing library** on the Dart side matches that path to a widget.
+When the native side opens a Flutter screen, the framework encodes the route and passes it to the new Flutter engine. The Dart side needs to resolve that into the correct widget. The framework supports two integration styles:
 
-The framework supports any routing library that works with `MaterialApp.router`. Below are examples for the two most popular ones.
+1. **Declarative** — Works with `MaterialApp.router` and any Navigator 2.0 routing library (go_router, auto_route, etc.). The framework passes the initial route as a URL path and the router matches it to a screen.
+2. **Imperative** — Works with plain `MaterialApp` and no routing library. The framework passes `PageSettings` directly, and the generated `FlutterRouteHandler` dispatches to typed handler methods with full type safety.
 
-### go_router
+### Declarative (MaterialApp.router)
 
-go_router uses `GoRouter` which provides its own `routeInformationProvider`. The framework's `Add2AppNavigator.initialLocationFromPlatform()` gives you the path, and you pass it as `initialLocation`.
+The framework encodes the route as a URL path (e.g. `/contact-details/abc-123`) and passes it as the initial route for the new Flutter engine. A routing library on the Dart side matches that path to a widget.
 
-**Define routes:**
+The key integration point is `Add2AppNavigator.initialPath` — it reads the platform's `defaultRouteName` and returns the URL path. You pass this to your routing library as the initial location.
+
+`Add2AppBackButtonDispatcher` ensures that when the user presses back and the router stack is empty, the native container (Activity/ViewController) is dismissed instead of doing nothing.
+
+#### go_router example
 
 ```dart
 GoRouter createRouter() {
   return GoRouter(
-    initialLocation: Add2AppNavigator.initialLocationFromPlatform(),
+    initialLocation: Add2AppNavigator.initialPath,
     routes: [
       GoRoute(
         path: '/sounds-notifications/:contactId',
@@ -200,11 +205,7 @@ GoRouter createRouter() {
     ],
   );
 }
-```
 
-**Wire up in the entrypoint:**
-
-```dart
 @pragma('vm:entry-point')
 void add2appMain() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -223,13 +224,7 @@ void add2appMain() {
 }
 ```
 
-`Add2AppBackButtonDispatcher` ensures that when the user presses back and the router stack is empty, the native container (Activity/ViewController) is dismissed instead of doing nothing.
-
-### auto_route
-
-auto_route uses `RootStackRouter` and takes the initial location through its deep link builder.
-
-**Define routes:**
+#### auto_route example
 
 ```dart
 RootStackRouter createRouter() {
@@ -252,17 +247,13 @@ RootStackRouter createRouter() {
     ],
   );
 }
-```
 
-**Wire up in the entrypoint:**
-
-```dart
 @pragma('vm:entry-point')
 void add2appMain() {
   WidgetsFlutterBinding.ensureInitialized();
   KeyValueStorage.instance.init();
 
-  final initialLocation = Add2AppNavigator.initialLocationFromPlatform();
+  final initialLocation = Add2AppNavigator.initialPath;
   final router = createRouter();
 
   runApp(
@@ -280,9 +271,9 @@ void add2appMain() {
 }
 ```
 
-### Other routers / custom Router
+#### Other routing libraries
 
-For any other routing library, the framework provides `Add2AppRouteInformationProvider` — a drop-in replacement for `PlatformRouteInformationProvider` that seeds the router with the correct initial path:
+For any routing library that works with `MaterialApp.router`, the framework provides `Add2AppRouteInformationProvider` — a drop-in replacement for `PlatformRouteInformationProvider` that seeds the router with the correct initial path:
 
 ```dart
 MaterialApp.router(
@@ -292,6 +283,79 @@ MaterialApp.router(
   backButtonDispatcher: Add2AppBackButtonDispatcher(),
 )
 ```
+
+### Imperative (Add2AppPageHandler)
+
+If you don't use a declarative routing library, the framework supports a fully imperative approach via `Add2AppPageHandler` and the generated `FlutterRouteHandler`. Instead of mapping URL paths to routes, you resolve `PageSettings` directly to widgets with full type safety — no strings, no URL parsing.
+
+#### How it works
+
+1. The code generator produces a `FlutterRouteHandler` abstract class with a typed `onXxx(XxxPage page)` method for every `@Add2AppFlutterRoute`. It handles route-ID matching and parameter decoding internally.
+2. You implement `FlutterRouteHandler` **and** the framework's `Add2AppPageHandler` interface in a single class. The `Add2AppPageHandler.build` method delegates to the generated `handle` method.
+3. In the entrypoint you call `Add2AppNavigator.instance.runPageHandler(page, handler)` — a stateless, one-shot resolution with no global registration or mutable state.
+
+#### Define a page handler
+
+```dart
+class MyPageHandler extends FlutterRouteHandler
+    implements Add2AppPageHandler {
+  const MyPageHandler();
+
+  @override
+  Widget build(PageSettings page) => handle(page);
+
+  @override
+  Widget onContactDetails(ContactDetailsPage page) {
+    return ContactDetailsScreen(contactId: page.contactId);
+  }
+
+  @override
+  Widget onSoundsNotifications(SoundsNotificationsPage page) {
+    return SoundsNotificationsScreen(contactId: page.contactId);
+  }
+
+  @override
+  Widget onUnknownRoute(PageSettings route) {
+    if (route.routeId == '/' || route.routeId == '__add2app_prewarm__') {
+      return const HomeScreen();
+    }
+    return Center(child: Text('Unknown route: ${route.routeId}'));
+  }
+}
+```
+
+The generated `FlutterRouteHandler` gives you:
+- **Type-safe dispatch** — each `onXxx` method receives a fully decoded page object with typed fields, no manual string parsing
+- **Exhaustiveness** — adding a new `@Add2AppFlutterRoute` generates a new abstract `onXxx` method, so you get a compile-time error until you handle it
+- **`onUnknownRoute` fallback** — called for unrecognized route IDs (including the prewarm engine's placeholder route)
+
+#### Wire up in the entrypoint
+
+```dart
+@pragma('vm:entry-point')
+void add2appMain() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await KeyValueStorage.instance.init();
+
+  final handler = const MyPageHandler();
+  final typedRoute = await Add2AppNavigator.fetchInitialRoute(
+    decodeFlutterRouteData,
+  );
+  final page =
+      typedRoute?.toPageSettings() ??
+      Add2AppNavigator.initialPageFromPlatform();
+
+  runApp(
+    MaterialApp(
+      home: Add2AppNavigator.instance.runPageHandler(page, handler),
+    ),
+  );
+}
+```
+
+`fetchInitialRoute` retrieves the full route data (including non-path parameters) from the native host. If it returns `null` (e.g. prewarm engine), the code falls back to `initialPageFromPlatform()` which decodes the platform's `defaultRouteName`.
+
+Note that this approach uses a plain `MaterialApp` — not `MaterialApp.router` — because there's no declarative router involved.
 
 ## Setup
 
@@ -333,7 +397,7 @@ Add2AppNavigator.destroyPrewarmedEngine()
 
 1. **Native init** — `start()` / `init()` creates a `FlutterEngineGroup` and optionally prewarms one engine.
 2. **Push** — When a route is pushed, the framework encodes `PageSettings` into a URL string, creates a new engine from the group, and presents it in a native container (Activity / ViewController).
-3. **Dart entrypoint** — Every engine runs the same Dart entrypoint (`add2appMain`). The routing library reads the initial path and renders the correct screen.
+3. **Dart entrypoint** — Every engine runs the same Dart entrypoint (`add2appMain`). A routing library reads the initial path to render the correct screen, or the imperative `Add2AppPageHandler` resolves `PageSettings` directly to a widget.
 4. **Pop** — Dismissing the native container destroys the engine and cleans up platform channel registrations.
 
 Routes are serialized as:
@@ -342,4 +406,4 @@ Routes are serialized as:
 /path/with/:params?extraParam=value
 ```
 
-The Dart side decodes this with `Add2AppNavigator.initialLocationFromPlatform()`.
+The Dart side decodes this with `Add2AppNavigator.initialPath`.

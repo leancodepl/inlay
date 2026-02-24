@@ -10,6 +10,7 @@ class GenerationResult {
     this.kotlinRoutesCode,
     this.kotlinStoresCode,
     this.swiftRoutesCode,
+    this.swiftStoresCode,
   });
 
   final Schema schema;
@@ -19,6 +20,7 @@ class GenerationResult {
   final String? kotlinRoutesCode;
   final String? kotlinStoresCode;
   final String? swiftRoutesCode;
+  final String? swiftStoresCode;
 
   bool get hasRoutes =>
       schema.flutterRoutes.isNotEmpty ||

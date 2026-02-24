@@ -40,7 +40,9 @@ import Combine
 /// cleanup (especially when the view may reappear).
 final class Add2AppStorageObserver: ObservableObject {
 
-    private let scope: NativeStorageScope
+    /// The underlying storage scope. Use this to create generated store
+    /// structs for type-safe access while retaining observer lifecycle.
+    let scope: NativeStorageScope
 
     init() {
         scope = KeyValueStorageImpl.shared.createScope()

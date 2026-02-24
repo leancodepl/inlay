@@ -1,0 +1,5 @@
+targets:
+  $default:
+    builders:
+      leancode_add2app_gen|builder:
+        enabled: true
