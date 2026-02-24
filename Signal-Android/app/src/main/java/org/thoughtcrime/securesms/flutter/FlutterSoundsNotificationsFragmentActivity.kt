@@ -5,6 +5,11 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import co.leancode.add2app.Add2AppNavigator
+import co.leancode.signal_module.generated.DeliveryChannel
+import co.leancode.signal_module.generated.NotificationPreferences
+import co.leancode.signal_module.generated.NotificationPreset
+import co.leancode.signal_module.generated.NotificationSound
+import co.leancode.signal_module.generated.QuietHours
 import co.leancode.signal_module.generated.SoundsNotificationsPage
 
 /**
@@ -33,7 +38,33 @@ class FlutterSoundsNotificationsFragmentActivity : AppCompatActivity() {
             val recipientId = intent.getStringExtra(EXTRA_RECIPIENT_ID) ?: "1"
             val fragment = Add2AppNavigator.createFragment(
                 this,
-                SoundsNotificationsPage(contactId = recipientId)
+                SoundsNotificationsPage(
+                    contactId = recipientId,
+                    preferences = NotificationPreferences(
+                        sound = NotificationSound.chime,
+                        channels = listOf(DeliveryChannel.push, DeliveryChannel.email),
+                        quietHours = QuietHours(fromHour = 22, toHour = 7),
+                    ),
+                    presets = listOf(
+                        NotificationPreset(
+                            name = "Work",
+                            preferences = NotificationPreferences(
+                                sound = NotificationSound.pop,
+                                channels = listOf(DeliveryChannel.push),
+                                quietHours = null,
+                            ),
+                        ),
+                        NotificationPreset(
+                            name = "Silent",
+                            preferences = NotificationPreferences(
+                                sound = NotificationSound.defaultSound,
+                                channels = listOf(DeliveryChannel.sms),
+                                quietHours = QuietHours(fromHour = 0, toHour = 24),
+                            ),
+                        ),
+                    ),
+                    fallbackChannel = DeliveryChannel.sms,
+                )
             )
             supportFragmentManager.beginTransaction()
                 .replace(android.R.id.content, fragment, TAG_FLUTTER_FRAGMENT)

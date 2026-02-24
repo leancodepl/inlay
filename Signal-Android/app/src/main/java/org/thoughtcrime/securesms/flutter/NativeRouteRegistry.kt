@@ -1,9 +1,9 @@
 package org.thoughtcrime.securesms.flutter
 
 import android.content.Context
-import co.leancode.signal_module.navigator.NativeEditProfilePage
-import co.leancode.signal_module.navigator.NativeMediaViewerPage
-import co.leancode.signal_module.navigator.NativeRouteHandler
+import co.leancode.signal_module.generated.NativeEditProfilePage
+import co.leancode.signal_module.generated.NativeMediaViewerPage
+import co.leancode.signal_module.generated.NativeRouteHandler
 
 /**
  * Typed native route handler for Signal-Android.
