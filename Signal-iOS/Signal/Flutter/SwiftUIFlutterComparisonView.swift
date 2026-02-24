@@ -172,8 +172,8 @@ private struct NativeSwiftUISoundsNotifications: View {
     @State private var muteNotifications: Bool
     @State private var showPreviews: Bool
     @State private var notificationSound: String
-    @State private var vibrationLevel: LocalVibrationLevel
-    @State private var behavior: LocalNotificationBehavior
+    @State private var vibrationLevel: VibrationLevel
+    @State private var behavior: NotificationBehavior
 
     @State private var showSoundPicker = false
     @State private var showVibrationPicker = false
@@ -183,22 +183,29 @@ private struct NativeSwiftUISoundsNotifications: View {
     /// Self-notification suppression is automatic.
     @StateObject private var storage = Add2AppStorageObserver()
 
+    private var store: SoundsNotificationsStore {
+        SoundsNotificationsStore(storage: storage.scope, contactId: recipientId)
+    }
+
     init(recipientId: String) {
         self.recipientId = recipientId
 
-        let storage = KeyValueStorageImpl.shared.createScope()
-        func key(_ field: String) -> String {
-            "sounds_notifications/\(recipientId)/\(field)"
-        }
-        _muteNotifications = State(initialValue: storage.get(key: key("mute")) == "true")
-        _showPreviews = State(initialValue: storage.get(key: key("showPreviews")) != "false")
-        _notificationSound = State(initialValue: storage.get(key: key("sound")) ?? "Default")
-        _vibrationLevel = State(initialValue: LocalVibrationLevel.fromStorage(storage.get(key: key("vibration"))))
-        _behavior = State(initialValue: LocalNotificationBehavior.fromStorage(storage.get(key: key("behavior"))))
+        let scope = KeyValueStorageImpl.shared.createScope()
+        let store = SoundsNotificationsStore(storage: scope, contactId: recipientId)
+        _muteNotifications = State(initialValue: store.mute)
+        _showPreviews = State(initialValue: store.showPreviews)
+        _notificationSound = State(initialValue: store.sound)
+        _vibrationLevel = State(initialValue: store.vibration)
+        _behavior = State(initialValue: store.behavior)
+        scope.dispose()
     }
 
-    private func key(_ field: String) -> String {
-        "sounds_notifications/\(recipientId)/\(field)"
+    private func reloadFromStorage() {
+        muteNotifications = store.mute
+        showPreviews = store.showPreviews
+        notificationSound = store.sound
+        vibrationLevel = store.vibration
+        behavior = store.behavior
     }
 
     // MARK: - Custom bindings (write to storage only on user interaction)
@@ -208,7 +215,7 @@ private struct NativeSwiftUISoundsNotifications: View {
             get: { muteNotifications },
             set: { newValue in
                 muteNotifications = newValue
-                storage.put(key: key("mute"), value: String(newValue))
+                var s = store; s.mute = newValue
             }
         )
     }
@@ -218,7 +225,7 @@ private struct NativeSwiftUISoundsNotifications: View {
             get: { showPreviews },
             set: { newValue in
                 showPreviews = newValue
-                storage.put(key: key("showPreviews"), value: String(newValue))
+                var s = store; s.showPreviews = newValue
             }
         )
     }
@@ -360,35 +367,14 @@ private struct NativeSwiftUISoundsNotifications: View {
         .navigationTitle("Sounds & Notifications")
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
-            // Register observer for changes from Flutter / other sources.
             let prefix = "sounds_notifications/\(recipientId)/"
+
             storage.startObserving { entries in
-                for entry in entries {
-                    guard entry.key.hasPrefix(prefix) else { continue }
-                    let field = String(entry.key.dropFirst(prefix.count))
-                    switch field {
-                    case "mute":
-                        muteNotifications = entry.value == "true"
-                    case "showPreviews":
-                        showPreviews = entry.value != "false"
-                    case "sound":
-                        notificationSound = entry.value.isEmpty ? "Default" : entry.value
-                    case "vibration":
-                        vibrationLevel = LocalVibrationLevel.fromStorage(entry.value)
-                    case "behavior":
-                        behavior = LocalNotificationBehavior.fromStorage(entry.value)
-                    default:
-                        break
-                    }
-                }
+                guard entries.contains(where: { $0.key.hasPrefix(prefix) }) else { return }
+                reloadFromStorage()
             }
 
-            // Re-read when view reappears (values may have changed while off-screen).
-            muteNotifications = storage.get(key: key("mute")) == "true"
-            showPreviews = storage.get(key: key("showPreviews")) != "false"
-            notificationSound = storage.get(key: key("sound")) ?? "Default"
-            vibrationLevel = LocalVibrationLevel.fromStorage(storage.get(key: key("vibration")))
-            behavior = LocalNotificationBehavior.fromStorage(storage.get(key: key("behavior")))
+            reloadFromStorage()
         }
         .onDisappear {
             storage.stopObserving()
@@ -397,25 +383,25 @@ private struct NativeSwiftUISoundsNotifications: View {
             ForEach(["Default", "Signal", "Pulse", "Chime", "Bamboo", "None"], id: \.self) { sound in
                 Button(sound) {
                     notificationSound = sound
-                    storage.put(key: key("sound"), value: sound)
+                    var s = store; s.sound = sound
                 }
             }
             Button("Cancel", role: .cancel) {}
         }
         .confirmationDialog("Vibration Pattern", isPresented: $showVibrationPicker) {
-            ForEach(LocalVibrationLevel.storeValues, id: \.rawValue) { level in
+            ForEach(VibrationLevel.allCases, id: \.rawValue) { level in
                 Button(level.label) {
                     vibrationLevel = level
-                    storage.put(key: key("vibration"), value: String(level.rawValue))
+                    var s = store; s.vibration = level
                 }
             }
             Button("Cancel", role: .cancel) {}
         }
         .confirmationDialog("Notification Behavior", isPresented: $showBehaviorPicker) {
-            ForEach(LocalNotificationBehavior.storeValues, id: \.rawValue) { item in
+            ForEach(NotificationBehavior.allCases, id: \.rawValue) { item in
                 Button(item.label) {
                     behavior = item
-                    storage.put(key: key("behavior"), value: String(item.rawValue))
+                    var s = store; s.behavior = item
                 }
             }
             Button("Cancel", role: .cancel) {}
@@ -423,52 +409,3 @@ private struct NativeSwiftUISoundsNotifications: View {
     }
 }
 
-private enum LocalVibrationLevel: Int {
-    case off = 0
-    case normal = 1
-    case intense = 2
-}
-
-private enum LocalNotificationBehavior: Int {
-    case defaultBehavior = 0
-    case mentionsOnly = 1
-    case muted = 2
-}
-
-private extension LocalVibrationLevel {
-    static let storeValues: [LocalVibrationLevel] = [.off, .normal, .intense]
-
-    static func fromStorage(_ raw: String?) -> LocalVibrationLevel {
-        guard let raw, let intValue = Int(raw), let level = LocalVibrationLevel(rawValue: intValue) else {
-            return .normal
-        }
-        return level
-    }
-
-    var label: String {
-        switch self {
-        case .off: return "Off"
-        case .normal: return "Normal"
-        case .intense: return "Intense"
-        }
-    }
-}
-
-private extension LocalNotificationBehavior {
-    static let storeValues: [LocalNotificationBehavior] = [.defaultBehavior, .mentionsOnly, .muted]
-
-    static func fromStorage(_ raw: String?) -> LocalNotificationBehavior {
-        guard let raw, let intValue = Int(raw), let behavior = LocalNotificationBehavior(rawValue: intValue) else {
-            return .defaultBehavior
-        }
-        return behavior
-    }
-
-    var label: String {
-        switch self {
-        case .defaultBehavior: return "Default"
-        case .mentionsOnly: return "Mentions only"
-        case .muted: return "Muted"
-        }
-    }
-}

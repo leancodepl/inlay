@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Storage-backed native settings"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="Display name" />
+
+        <TextView
+            android:id="@+id/valueDisplayName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="-" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Email" />
+
+        <TextView
+            android:id="@+id/valueEmail"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="-" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Dark mode" />
+
+        <TextView
+            android:id="@+id/valueDarkMode"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="-" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Theme" />
+
+        <TextView
+            android:id="@+id/valueTheme"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="-" />
+
+        <Button
+            android:id="@+id/btnSetDemoValues"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Set demo values" />
+
+        <Button
+            android:id="@+id/btnToggleDarkMode"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Toggle dark mode" />
+
+        <Button
+            android:id="@+id/btnThemeSystem"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Theme: system" />
+
+        <Button
+            android:id="@+id/btnThemeLight"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Theme: light" />
+
+        <Button
+            android:id="@+id/btnThemeDark"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Theme: dark" />
+
+        <Button
+            android:id="@+id/btnOpenFlutterProfile"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Open Flutter Profile" />
+    </LinearLayout>
+</ScrollView>

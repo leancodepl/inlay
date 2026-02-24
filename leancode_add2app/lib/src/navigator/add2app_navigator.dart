@@ -59,7 +59,7 @@ abstract class Add2AppRoute {
 abstract class FlutterRouteBase extends Add2AppRoute {
   const FlutterRouteBase();
 
-  /// Unique route identifier (matches the key in the page registry).
+  /// Unique route identifier resolved by the page handler.
   String get routeId;
 
   /// Route parameters serialized as a list for StandardMessageCodec transport.
@@ -91,8 +91,13 @@ class NativeRouteWrapper extends Add2AppRoute {
   PageSettings toPageSettings() => page;
 }
 
-/// Signature for the factory that builds a [Widget] from the raw params.
-typedef PageBuilder = Widget Function(Object? params);
+/// Interface for route-to-widget resolution based on full [PageSettings].
+///
+/// Implement this when you want a single custom resolver with type-safe
+/// decoding logic (e.g. a generated route handler class).
+abstract interface class Add2AppPageHandler {
+  Widget build(PageSettings page);
+}
 
 /// Framework-level navigator for cross-boundary navigation in add2app.
 ///
@@ -180,26 +185,14 @@ class Add2AppNavigator {
 
   final _hostApi = Add2AppNavigatorHostApi();
 
-  /// Registry: routeId → widget builder.
-  final _pages = <String, PageBuilder>{};
+  // ── Stateless page resolution ──────────────────────────────────────
 
-  // ── Page registration ─────────────────────────────────────────────
-
-  /// Register a page builder for a given [routeId].
+  /// Resolve [page] using [handler].
   ///
-  /// Call this once per page, typically in your entrypoint before `runApp`.
-  void registerPage(String routeId, PageBuilder builder) {
-    _pages[routeId] = builder;
-  }
-
-  /// Build a widget for the given [PageSettings].
-  /// Returns an error widget if the route is not registered.
-  Widget buildPage(PageSettings page) {
-    final builder = _pages[page.routeId];
-    if (builder == null) {
-      return Center(child: Text('Unknown route: ${page.routeId}'));
-    }
-    return builder(page.params);
+  /// This keeps resolution logic explicit and type-safe, without mutable global
+  /// registration state.
+  Widget runPageHandler(PageSettings page, Add2AppPageHandler handler) {
+    return handler.build(page);
   }
 
   // ── Navigation ───────────────────────────────────────────────────────
@@ -301,19 +294,6 @@ class Add2AppNavigator {
     return decodeInitialRoute(initialRoute);
   }
 
-  /// Returns the raw URL path from the platform's `defaultRouteName`.
-  ///
-  /// For routes with a `path` annotation, this returns the full URL path
-  /// (e.g. `/sounds-notifications/42`). For the prewarm engine or root,
-  /// returns `/`.
-  ///
-  /// Use this as `initialLocation` for go_router, `initialDeepLink` for
-  /// auto_route, or in a custom `RouteInformationProvider`.
-  @Deprecated('Use initialPath instead')
-  static String initialLocationFromPlatform() {
-    return initialPath;
-  }
-
   /// URL path from the platform's `defaultRouteName`
   /// (e.g. `/sounds-notifications/42`).
   ///
@@ -344,30 +324,15 @@ class Add2AppNavigator {
   static Future<FlutterRouteBase?> fetchInitialRoute(
     FlutterRouteBase? Function(PageSettings?) decoder,
   ) async {
-    const maxAttempts = 25;
-    var delay = const Duration(milliseconds: 20);
-
-    for (var attempt = 1; attempt <= maxAttempts; attempt++) {
-      try {
-        final raw = await Add2AppNavigatorHostApi().getInitialRouteData();
-        return decoder(raw);
-      } on PlatformException catch (e, st) {
-        final isChannelError = e.code == 'channel-error';
-        if (!isChannelError || attempt == maxAttempts) {
-          debugPrint('Add2AppNavigator.fetchInitialRoute failed: $e\n$st');
-          return null;
-        }
-      } catch (e, st) {
-        debugPrint('Add2AppNavigator.fetchInitialRoute failed: $e\n$st');
-        return null;
-      }
-
-      await Future<void>.delayed(delay);
-      if (delay < const Duration(milliseconds: 320)) {
-        delay = Duration(milliseconds: delay.inMilliseconds * 2);
-      }
+    try {
+      final raw = await Add2AppNavigatorHostApi().getInitialRouteData();
+      return decoder(raw);
+    } on PlatformException catch (e, st) {
+      debugPrint('Add2AppNavigator.fetchInitialRoute failed: $e\n$st');
+      return null;
+    } catch (e, st) {
+      debugPrint('Add2AppNavigator.fetchInitialRoute failed: $e\n$st');
+      return null;
     }
-
-    return null;
   }
 }

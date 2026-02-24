@@ -20,6 +20,7 @@ final class NativeSoundsNotificationsViewController: UIViewController {
 
     /// Scoped storage handle — read, write, and observe with auto-suppression.
     private var storage: NativeStorageScope!
+    private var store: SoundsNotificationsStore!
 
     // UI references
     private let muteSwitch = UISwitch()
@@ -54,6 +55,7 @@ final class NativeSoundsNotificationsViewController: UIViewController {
         buildUI()
 
         storage = KeyValueStorageImpl.shared.createScope()
+        store = SoundsNotificationsStore(storage: storage, contactId: recipientId)
         loadState()
 
         storage.startObserving { [weak self] entries in
@@ -70,58 +72,33 @@ final class NativeSoundsNotificationsViewController: UIViewController {
         storage?.dispose()
     }
 
-    // MARK: - Storage key helpers
-
-    private func key(_ field: String) -> String {
-        "sounds_notifications/\(recipientId)/\(field)"
-    }
-
     // MARK: - Load from storage
 
     private func loadState() {
-        muteSwitch.isOn = storage.get(key: key("mute")) == "true"
-        previewsSwitch.isOn = storage.get(key: key("showPreviews")) != "false"
-        soundValueLabel.text = storage.get(key: key("sound")) ?? "Default"
-        vibrationValueLabel.text = LocalVibrationLevel.fromStorage(
-            storage.get(key: key("vibration"))
-        ).label
-        behaviorValueLabel.text = LocalNotificationBehavior.fromStorage(
-            storage.get(key: key("behavior"))
-        ).label
+        muteSwitch.isOn = store.mute
+        previewsSwitch.isOn = store.showPreviews
+        soundValueLabel.text = store.sound
+        vibrationValueLabel.text = store.vibration.label
+        behaviorValueLabel.text = store.behavior.label
     }
 
     // MARK: - Observer callback (only fires for changes from OTHER sources)
 
     private func onStorageChanged(entries: [StorageEntry]) {
         let prefix = "sounds_notifications/\(recipientId)/"
-        for entry in entries {
-            guard entry.key.hasPrefix(prefix) else { continue }
-            let field = String(entry.key.dropFirst(prefix.count))
-            switch field {
-            case "mute":
-                muteSwitch.isOn = entry.value == "true"
-            case "showPreviews":
-                previewsSwitch.isOn = entry.value != "false"
-            case "sound":
-                soundValueLabel.text = entry.value.isEmpty ? "Default" : entry.value
-            case "vibration":
-                vibrationValueLabel.text = LocalVibrationLevel.fromStorage(entry.value).label
-            case "behavior":
-                behaviorValueLabel.text = LocalNotificationBehavior.fromStorage(entry.value).label
-            default:
-                break
-            }
+        if entries.contains(where: { $0.key.hasPrefix(prefix) }) {
+            loadState()
         }
     }
 
     // MARK: - Actions
 
     @objc private func muteChanged(_ sender: UISwitch) {
-        storage.put(key: key("mute"), value: String(sender.isOn))
+        store.mute = sender.isOn
     }
 
     @objc private func previewsChanged(_ sender: UISwitch) {
-        storage.put(key: key("showPreviews"), value: String(sender.isOn))
+        store.showPreviews = sender.isOn
     }
 
     @objc private func showSoundPicker() {
@@ -130,7 +107,7 @@ final class NativeSoundsNotificationsViewController: UIViewController {
         for sound in sounds {
             alert.addAction(UIAlertAction(title: sound, style: .default) { [weak self] _ in
                 guard let self else { return }
-                self.storage.put(key: self.key("sound"), value: sound)
+                self.store.sound = sound
                 self.soundValueLabel.text = sound
             })
         }
@@ -140,10 +117,10 @@ final class NativeSoundsNotificationsViewController: UIViewController {
 
     @objc private func showVibrationPicker() {
         let alert = UIAlertController(title: "Vibration Pattern", message: nil, preferredStyle: .actionSheet)
-        for level in LocalVibrationLevel.storeValues {
+        for level in VibrationLevel.allCases {
             alert.addAction(UIAlertAction(title: level.label, style: .default) { [weak self] _ in
                 guard let self else { return }
-                self.storage.put(key: self.key("vibration"), value: String(level.rawValue))
+                self.store.vibration = level
                 self.vibrationValueLabel.text = level.label
             })
         }
@@ -153,10 +130,10 @@ final class NativeSoundsNotificationsViewController: UIViewController {
 
     @objc private func showBehaviorPicker() {
         let alert = UIAlertController(title: "Notification Behavior", message: nil, preferredStyle: .actionSheet)
-        for behavior in LocalNotificationBehavior.storeValues {
+        for behavior in NotificationBehavior.allCases {
             alert.addAction(UIAlertAction(title: behavior.label, style: .default) { [weak self] _ in
                 guard let self else { return }
-                self.storage.put(key: self.key("behavior"), value: String(behavior.rawValue))
+                self.store.behavior = behavior
                 self.behaviorValueLabel.text = behavior.label
             })
         }
@@ -266,7 +243,7 @@ final class NativeSoundsNotificationsViewController: UIViewController {
         vibTitle.font = .systemFont(ofSize: 16)
         stack.addArrangedSubview(vibTitle)
 
-        vibrationValueLabel.text = LocalVibrationLevel.normal.label
+        vibrationValueLabel.text = VibrationLevel.normal.label
         vibrationValueLabel.font = .systemFont(ofSize: 14)
         vibrationValueLabel.textColor = .secondaryLabel
         stack.addArrangedSubview(vibrationValueLabel)
@@ -282,7 +259,7 @@ final class NativeSoundsNotificationsViewController: UIViewController {
         behaviorTitle.font = .systemFont(ofSize: 16)
         stack.addArrangedSubview(behaviorTitle)
 
-        behaviorValueLabel.text = LocalNotificationBehavior.defaultBehavior.label
+        behaviorValueLabel.text = NotificationBehavior.defaultBehavior.label
         behaviorValueLabel.font = .systemFont(ofSize: 14)
         behaviorValueLabel.textColor = .secondaryLabel
         stack.addArrangedSubview(behaviorValueLabel)
@@ -354,27 +331,8 @@ final class NativeSoundsNotificationsViewController: UIViewController {
     }
 }
 
-private enum LocalVibrationLevel: Int {
-    case off = 0
-    case normal = 1
-    case intense = 2
-}
-
-private enum LocalNotificationBehavior: Int {
-    case defaultBehavior = 0
-    case mentionsOnly = 1
-    case muted = 2
-}
-
-private extension LocalVibrationLevel {
-    static let storeValues: [LocalVibrationLevel] = [.off, .normal, .intense]
-
-    static func fromStorage(_ raw: String?) -> LocalVibrationLevel {
-        guard let raw, let intValue = Int(raw), let level = LocalVibrationLevel(rawValue: intValue) else {
-            return .normal
-        }
-        return level
-    }
+extension VibrationLevel: @retroactive CaseIterable {
+    public static var allCases: [VibrationLevel] { [.off, .normal, .intense] }
 
     var label: String {
         switch self {
@@ -385,15 +343,8 @@ private extension LocalVibrationLevel {
     }
 }
 
-private extension LocalNotificationBehavior {
-    static let storeValues: [LocalNotificationBehavior] = [.defaultBehavior, .mentionsOnly, .muted]
-
-    static func fromStorage(_ raw: String?) -> LocalNotificationBehavior {
-        guard let raw, let intValue = Int(raw), let behavior = LocalNotificationBehavior(rawValue: intValue) else {
-            return .defaultBehavior
-        }
-        return behavior
-    }
+extension NotificationBehavior: @retroactive CaseIterable {
+    public static var allCases: [NotificationBehavior] { [.defaultBehavior, .mentionsOnly, .muted] }
 
     var label: String {
         switch self {

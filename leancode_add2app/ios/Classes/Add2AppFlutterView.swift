@@ -63,11 +63,6 @@ struct Add2AppFlutterView: UIViewControllerRepresentable {
         self.route = route.toPageSettings()
     }
 
-    /// Internal initializer for backward compatibility.
-    init(page: PageSettings) {
-        self.route = page
-    }
-
     @Environment(\.dismiss) private var dismiss
 
     // MARK: - UIViewControllerRepresentable

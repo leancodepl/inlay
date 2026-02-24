@@ -6,6 +6,7 @@ import 'package:leancode_add2app_gen/src/generators/dart/dart_store_generator.da
 import 'package:leancode_add2app_gen/src/generators/kotlin/kotlin_routes_generator.dart';
 import 'package:leancode_add2app_gen/src/generators/kotlin/kotlin_store_generator.dart';
 import 'package:leancode_add2app_gen/src/generators/swift/swift_routes_generator.dart';
+import 'package:leancode_add2app_gen/src/generators/swift/swift_store_generator.dart';
 import 'package:leancode_add2app_gen/src/models/schema.dart';
 import 'package:leancode_add2app_gen/src/parser/annotation_parser.dart';
 import 'package:leancode_add2app_gen/src/parser/type_resolver.dart';
@@ -93,6 +94,9 @@ class CodeGenerator {
       swiftRoutesCode: hasRoutes
           ? generateSwiftRoutes(schema: schema, typeGraph: typeGraph)
           : null,
+      swiftStoresCode: hasStores
+          ? generateSwiftStores(schema: schema, typeGraph: typeGraph)
+          : null,
     );
   }
 
@@ -179,6 +183,13 @@ void writeNativeFiles(
       final file = File(p.join(swiftDir, 'Routes.g.swift'));
       file.parent.createSync(recursive: true);
       file.writeAsStringSync(result.swiftRoutesCode!);
+      onFileWritten?.call(file.path);
+    }
+
+    if (result.swiftStoresCode != null) {
+      final file = File(p.join(swiftDir, 'Stores.g.swift'));
+      file.parent.createSync(recursive: true);
+      file.writeAsStringSync(result.swiftStoresCode!);
       onFileWritten?.call(file.path);
     }
   }

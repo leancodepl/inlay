@@ -1,0 +1,21 @@
+name: ExampleApp
+options:
+  createIntermediateGroups: true
+  deploymentTarget:
+    iOS: "16.0"
+
+targets:
+  ExampleApp:
+    type: application
+    platform: iOS
+    sources:
+      - path: Sources
+      - path: ../../leancode_add2app/ios/Classes
+      - path: ../example_module/ios/Classes/Generated
+    resources:
+      - path: Resources
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: co.leancode.add2app.example.ios
+        INFOPLIST_FILE: Resources/Info.plist
+        SWIFT_VERSION: 5.9

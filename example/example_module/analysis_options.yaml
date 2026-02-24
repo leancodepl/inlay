@@ -1,0 +1,10 @@
+include: package:leancode_lint/analysis_options.yaml
+
+analyzer:
+  exclude:
+    - lib/src/generated/**
+    - android/src/main/kotlin/co/leancode/example_module/generated/**
+    - ios/Classes/Generated/**
+
+# Additional information about this file can be found at
+# https://dart.dev/guides/language/analysis-options
