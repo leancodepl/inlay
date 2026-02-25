@@ -5,7 +5,10 @@ import 'package:leancode_add2app/leancode_add2app.dart';
 import 'src/generated/routes.g.dart';
 import 'src/router_auto.dart';
 import 'src/router_go.dart';
-import 'src/router_imperative.dart';
+import 'src/screens/counter_screen.dart';
+import 'src/screens/greeting_screen.dart';
+import 'src/screens/home_screen.dart';
+import 'src/screens/profile_screen.dart';
 
 void main() {
   runApp(const _StandaloneApp());
@@ -82,17 +85,24 @@ Future<void> _runAdd2AppImperative() async {
   WidgetsFlutterBinding.ensureInitialized();
   await KeyValueStorage.instance.init();
 
-  final handler = createImperativePageHandler();
-  final typedRoute = await Add2AppNavigator.fetchInitialRoute(
+  final route = await Add2AppNavigator.fetchInitialRoute(
     decodeFlutterRouteData,
   );
-  final page =
-      typedRoute?.toPageSettings() ??
-      Add2AppNavigator.initialPageFromPlatform();
 
-  runApp(
-    MaterialApp(home: Add2AppNavigator.instance.runPageHandler(page, handler)),
-  );
+  final widget = switch (route) {
+    GreetingPage(:final name, :final style) => GreetingScreen(
+      name: name,
+      style: style,
+    ),
+    CounterPage() => const CounterScreen(),
+    ProfilePage(:final userId, :final badges) => ProfileScreen(
+      userId: userId,
+      badges: badges ?? const [],
+    ),
+    null => const ExampleHomeScreen(),
+  };
+
+  runApp(MaterialApp(home: widget));
 }
 
 class _StandaloneApp extends StatelessWidget {

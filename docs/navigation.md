@@ -43,7 +43,7 @@ class ContactDetailsPage {
 ```
 
 The generator produces:
-- A Dart class extending `FlutterRouteBase` with serialization built in
+- A Dart class extending the generated `sealed class FlutterRoute` (which itself extends `FlutterRouteBase`) with serialization built in, enabling exhaustive pattern matching
 - A Swift struct / Kotlin data class with the same fields, usable directly in native code
 
 ### Native Routes
@@ -173,7 +173,7 @@ Add2AppNavigator.setNativeRouteHandler(object : NativeRouteHandler() {
 When the native side opens a Flutter screen, the framework encodes the route and passes it to the new Flutter engine. The Dart side needs to resolve that into the correct widget. The framework supports two integration styles:
 
 1. **Declarative** — Works with `MaterialApp.router` and any Navigator 2.0 routing library (go_router, auto_route, etc.). The framework passes the initial route as a URL path and the router matches it to a screen.
-2. **Imperative** — Works with plain `MaterialApp` and no routing library. The framework passes `PageSettings` directly, and the generated `FlutterRouteHandler` dispatches to typed handler methods with full type safety.
+2. **Imperative** — Works with plain `MaterialApp` and no routing library. The generated `sealed class FlutterRoute` hierarchy lets you use Dart pattern matching for exhaustive, type-safe route resolution — no strings, no handler classes.
 
 ### Declarative (MaterialApp.router)
 
@@ -284,50 +284,15 @@ MaterialApp.router(
 )
 ```
 
-### Imperative (Add2AppPageHandler)
+### Imperative (sealed class + pattern matching)
 
-If you don't use a declarative routing library, the framework supports a fully imperative approach via `Add2AppPageHandler` and the generated `FlutterRouteHandler`. Instead of mapping URL paths to routes, you resolve `PageSettings` directly to widgets with full type safety — no strings, no URL parsing.
+If you don't use a declarative routing library, the framework supports a fully imperative approach using Dart's sealed classes and pattern matching. Instead of mapping URL paths to routes, you decode `PageSettings` into a typed `FlutterRoute` and use a `switch` expression for exhaustive, type-safe route resolution — no strings, no handler classes, no abstract methods to override.
 
 #### How it works
 
-1. The code generator produces a `FlutterRouteHandler` abstract class with a typed `onXxx(XxxPage page)` method for every `@Add2AppFlutterRoute`. It handles route-ID matching and parameter decoding internally.
-2. You implement `FlutterRouteHandler` **and** the framework's `Add2AppPageHandler` interface in a single class. The `Add2AppPageHandler.build` method delegates to the generated `handle` method.
-3. In the entrypoint you call `Add2AppNavigator.instance.runPageHandler(page, handler)` — a stateless, one-shot resolution with no global registration or mutable state.
-
-#### Define a page handler
-
-```dart
-class MyPageHandler extends FlutterRouteHandler
-    implements Add2AppPageHandler {
-  const MyPageHandler();
-
-  @override
-  Widget build(PageSettings page) => handle(page);
-
-  @override
-  Widget onContactDetails(ContactDetailsPage page) {
-    return ContactDetailsScreen(contactId: page.contactId);
-  }
-
-  @override
-  Widget onSoundsNotifications(SoundsNotificationsPage page) {
-    return SoundsNotificationsScreen(contactId: page.contactId);
-  }
-
-  @override
-  Widget onUnknownRoute(PageSettings route) {
-    if (route.routeId == '/' || route.routeId == '__add2app_prewarm__') {
-      return const HomeScreen();
-    }
-    return Center(child: Text('Unknown route: ${route.routeId}'));
-  }
-}
-```
-
-The generated `FlutterRouteHandler` gives you:
-- **Type-safe dispatch** — each `onXxx` method receives a fully decoded page object with typed fields, no manual string parsing
-- **Exhaustiveness** — adding a new `@Add2AppFlutterRoute` generates a new abstract `onXxx` method, so you get a compile-time error until you handle it
-- **`onUnknownRoute` fallback** — called for unrecognized route IDs (including the prewarm engine's placeholder route)
+1. The code generator produces a `sealed class FlutterRoute` with a subclass for every `@Add2AppFlutterRoute`. All route classes extend this sealed type.
+2. The generated `decodeFlutterRouteData` function decodes `PageSettings` into the sealed `FlutterRoute?` type.
+3. You use `Add2AppNavigator.fetchInitialRoute(decodeFlutterRouteData)` to get the typed route, then pattern-match on it with a `switch` expression. The compiler enforces exhaustiveness — if you add a new route, you get a compile error until you handle it.
 
 #### Wire up in the entrypoint
 
@@ -337,23 +302,31 @@ void add2appMain() async {
   WidgetsFlutterBinding.ensureInitialized();
   await KeyValueStorage.instance.init();
 
-  final handler = const MyPageHandler();
-  final typedRoute = await Add2AppNavigator.fetchInitialRoute(
+  final route = await Add2AppNavigator.fetchInitialRoute(
     decodeFlutterRouteData,
   );
-  final page =
-      typedRoute?.toPageSettings() ??
-      Add2AppNavigator.initialPageFromPlatform();
 
-  runApp(
-    MaterialApp(
-      home: Add2AppNavigator.instance.runPageHandler(page, handler),
-    ),
-  );
+  final widget = switch (route) {
+    ContactDetailsPage(:final contactId) =>
+      ContactDetailsScreen(contactId: contactId),
+    SoundsNotificationsPage(:final contactId) =>
+      SoundsNotificationsScreen(contactId: contactId),
+    SetWallpaperPage(:final recipientId) =>
+      SetWallpaperScreen(recipientId: recipientId),
+    null => const HomeScreen(),
+  };
+
+  runApp(MaterialApp(home: widget));
 }
 ```
 
-`fetchInitialRoute` retrieves the full route data (including non-path parameters) from the native host. If it returns `null` (e.g. prewarm engine), the code falls back to `initialPageFromPlatform()` which decodes the platform's `defaultRouteName`.
+The sealed `FlutterRoute` hierarchy gives you:
+- **Exhaustive pattern matching** — the Dart compiler ensures every route is handled. Adding a new `@Add2AppFlutterRoute` makes the `switch` non-exhaustive, producing a compile error until you add a case.
+- **Field destructuring** — extract route fields directly in the pattern (e.g. `ContactDetailsPage(:final contactId)`) without manually accessing them from a page object.
+- **No boilerplate** — no handler class to extend, no interface to implement, no abstract methods. Just a `switch` expression.
+- **`null` handles unknowns** — `decodeFlutterRouteData` returns `null` for unrecognized route IDs (including the prewarm engine's placeholder), so you handle them naturally in the `null` branch.
+
+`fetchInitialRoute` retrieves the full route data (including non-path parameters like lists and complex objects) from the native host and returns the sealed type for exhaustive matching.
 
 Note that this approach uses a plain `MaterialApp` — not `MaterialApp.router` — because there's no declarative router involved.
 
@@ -397,7 +370,7 @@ Add2AppNavigator.destroyPrewarmedEngine()
 
 1. **Native init** — `start()` / `init()` creates a `FlutterEngineGroup` and optionally prewarms one engine.
 2. **Push** — When a route is pushed, the framework encodes `PageSettings` into a URL string, creates a new engine from the group, and presents it in a native container (Activity / ViewController).
-3. **Dart entrypoint** — Every engine runs the same Dart entrypoint (`add2appMain`). A routing library reads the initial path to render the correct screen, or the imperative `Add2AppPageHandler` resolves `PageSettings` directly to a widget.
+3. **Dart entrypoint** — Every engine runs the same Dart entrypoint (`add2appMain`). A routing library reads the initial path to render the correct screen, or the imperative approach decodes `PageSettings` into a sealed `FlutterRoute` for pattern matching.
 4. **Pop** — Dismissing the native container destroys the engine and cleans up platform channel registrations.
 
 Routes are serialized as:
