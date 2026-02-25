@@ -524,10 +524,7 @@ class SecondPage {
         typeGraph: result.typeGraph,
       );
 
-      expect(
-        code,
-        contains('class ContactDetailsPage extends FlutterRouteBase'),
-      );
+      expect(code, contains('class ContactDetailsPage extends FlutterRoute'));
       expect(code, contains('List<Object?> encode()'));
       expect(
         code,

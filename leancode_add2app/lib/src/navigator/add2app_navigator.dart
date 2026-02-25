@@ -91,14 +91,6 @@ class NativeRouteWrapper extends Add2AppRoute {
   PageSettings toPageSettings() => page;
 }
 
-/// Interface for route-to-widget resolution based on full [PageSettings].
-///
-/// Implement this when you want a single custom resolver with type-safe
-/// decoding logic (e.g. a generated route handler class).
-abstract interface class Add2AppPageHandler {
-  Widget build(PageSettings page);
-}
-
 /// Framework-level navigator for cross-boundary navigation in add2app.
 ///
 /// ## Overview
@@ -184,16 +176,6 @@ class Add2AppNavigator {
   static final instance = Add2AppNavigator._();
 
   final _hostApi = Add2AppNavigatorHostApi();
-
-  // ── Stateless page resolution ──────────────────────────────────────
-
-  /// Resolve [page] using [handler].
-  ///
-  /// This keeps resolution logic explicit and type-safe, without mutable global
-  /// registration state.
-  Widget runPageHandler(PageSettings page, Add2AppPageHandler handler) {
-    return handler.build(page);
-  }
 
   // ── Navigation ───────────────────────────────────────────────────────
 
@@ -313,16 +295,19 @@ class Add2AppNavigator {
   /// Fetch the initial route data from the native host and decode it.
   ///
   /// [decoder] is the generated `decodeFlutterRouteData` function.
-  /// Returns the fully typed [FlutterRouteBase] subclass (including path
-  /// params like `contactId`), or `null` for the prewarm engine / when
-  /// native didn't set any data.
+  /// The generic parameter `T` is inferred from the decoder's return type,
+  /// so when using the generated sealed `FlutterRoute` hierarchy you get
+  /// back the sealed type for exhaustive pattern matching:
   ///
   /// ```dart
   /// final route = await Add2AppNavigator.fetchInitialRoute(decodeFlutterRouteData);
-  /// if (route case SoundsNotificationsPage page) { ... }
+  /// final widget = switch (route) {
+  ///   MyPage(:final id) => MyScreen(id: id),
+  ///   null => const FallbackScreen(),
+  /// };
   /// ```
-  static Future<FlutterRouteBase?> fetchInitialRoute(
-    FlutterRouteBase? Function(PageSettings?) decoder,
+  static Future<T?> fetchInitialRoute<T extends FlutterRouteBase>(
+    T? Function(PageSettings?) decoder,
   ) async {
     try {
       final raw = await Add2AppNavigatorHostApi().getInitialRouteData();
