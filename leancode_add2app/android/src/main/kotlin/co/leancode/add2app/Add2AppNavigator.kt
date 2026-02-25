@@ -148,19 +148,20 @@ object Add2AppNavigator {
 
     /**
      * Boots a hidden engine once so first visible add2app navigation is faster.
+     *
+     * The engine is created **from the [FlutterEngineGroup]** so it initialises
+     * the shared Dart VM snapshot. Subsequent engines in the same group then
+     * skip that work and start much faster.
      */
     @Synchronized
     private fun prewarmEngineIfNeeded() {
         if (prewarmedEngine != null) return
 
-        val engine = FlutterEngine(appContext)
-        engine.navigationChannel.setInitialRoute(PREWARM_ROUTE_ID)
+        val engineGroup = FlutterEngineGroupCache.getInstance().get(ENGINE_GROUP_ID) ?: return
         val bundlePath = FlutterInjector.instance().flutterLoader().findAppBundlePath()
         val entrypoint = DartExecutor.DartEntrypoint(bundlePath, DART_ENTRYPOINT)
-        engine.dartExecutor.executeDartEntrypoint(entrypoint)
+        val engine = engineGroup.createAndRunEngine(appContext, entrypoint, PREWARM_ROUTE_ID)
 
-        // The Dart entrypoint initializes Add2App services, so we must register
-        // HostApi + storage even for a hidden warm-up engine.
         Add2AppNavigatorHostApi.setUp(
             engine.dartExecutor.binaryMessenger,
             object : Add2AppNavigatorHostApi {
