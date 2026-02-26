@@ -127,7 +127,9 @@ void _writeFlutterRouteSealedClass(StringBuffer buffer) {
     ..writeln('///   null => const FallbackScreen(),')
     ..writeln('/// };')
     ..writeln('/// ```')
-    ..writeln('sealed class FlutterRoute extends FlutterRouteBase {}');
+    ..writeln('sealed class FlutterRoute extends FlutterRouteBase {')
+    ..writeln('  const FlutterRoute();')
+    ..writeln('}');
 }
 
 void _writeFlutterRoute(
