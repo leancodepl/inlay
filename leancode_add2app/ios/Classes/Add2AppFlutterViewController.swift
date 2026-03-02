@@ -26,11 +26,23 @@ final class Add2AppFlutterViewController: FlutterViewController {
     /// still re-enabled manually so swipe-to-go-back works.
     var enableNativeNavigationBar = false
 
+    /// When `true` (default), opt into iOS 26's full-width back gesture via
+    /// `interactiveContentPopGestureRecognizer`.
+    ///
+    /// Set to `false` to force edge-only back gesture behavior.
+    var enableInteractiveContentPopGestureRecognizer = true
+
     /// Keep the previous nav-bar visibility so we can restore it when leaving.
     private var previousNavigationBarHiddenState = false
 
     /// Keep the previous gesture delegate so we can restore it when leaving.
     private weak var previousGestureDelegate: UIGestureRecognizerDelegate?
+    /// Keep the previous gesture enabled-state so we can restore it when leaving.
+    private var previousGestureEnabledState = true
+    /// Keep the previous full-width pop gesture delegate so we can restore it.
+    private weak var previousContentGestureDelegate: UIGestureRecognizerDelegate?
+    /// Keep the previous full-width pop gesture enabled-state.
+    private var previousContentGestureEnabledState = true
 
     // MARK: - Lifecycle
 
@@ -60,15 +72,40 @@ final class Add2AppFlutterViewController: FlutterViewController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
 
-        if !enableNativeNavigationBar, let navigationController {
+        guard let navigationController else { return }
+        let edgeGesture = navigationController.interactivePopGestureRecognizer
+        previousGestureEnabledState = edgeGesture?.isEnabled ?? true
+#if compiler(>=6.2)
+        if #available(iOS 26.0, *) {
+            previousContentGestureEnabledState =
+                navigationController.interactiveContentPopGestureRecognizer?.isEnabled ?? true
+        }
+#endif
+
+        if !enableNativeNavigationBar {
             // When the navigation bar is hidden, UINavigationController's
             // internal delegate disables the interactive pop gesture.
             // Override the delegate so swipe-to-go-back keeps working.
-            let gesture = navigationController.interactivePopGestureRecognizer
-            previousGestureDelegate = gesture?.delegate
-            gesture?.delegate = self
-            gesture?.isEnabled = true
+            previousGestureDelegate = edgeGesture?.delegate
+            edgeGesture?.delegate = self
+#if compiler(>=6.2)
+            if #available(iOS 26.0, *) {
+                previousContentGestureDelegate =
+                    navigationController.interactiveContentPopGestureRecognizer?.delegate
+                if enableInteractiveContentPopGestureRecognizer {
+                    navigationController.interactiveContentPopGestureRecognizer?.delegate = self
+                }
+            }
+#endif
         }
+
+        edgeGesture?.isEnabled = true
+#if compiler(>=6.2)
+        if #available(iOS 26.0, *) {
+            navigationController.interactiveContentPopGestureRecognizer?.isEnabled =
+                enableInteractiveContentPopGestureRecognizer
+        }
+#endif
     }
 
     override func viewWillDisappear(_ animated: Bool) {
@@ -80,9 +117,23 @@ final class Add2AppFlutterViewController: FlutterViewController {
             animated: animated
         )
 
+        let edgeGesture = navigationController.interactivePopGestureRecognizer
         if !enableNativeNavigationBar {
-            navigationController.interactivePopGestureRecognizer?.delegate = previousGestureDelegate
+            edgeGesture?.delegate = previousGestureDelegate
+#if compiler(>=6.2)
+            if #available(iOS 26.0, *) {
+                navigationController.interactiveContentPopGestureRecognizer?.delegate =
+                    previousContentGestureDelegate
+            }
+#endif
         }
+        edgeGesture?.isEnabled = previousGestureEnabledState
+#if compiler(>=6.2)
+        if #available(iOS 26.0, *) {
+            navigationController.interactiveContentPopGestureRecognizer?.isEnabled =
+                previousContentGestureEnabledState
+        }
+#endif
     }
 
     deinit {
@@ -95,6 +146,14 @@ final class Add2AppFlutterViewController: FlutterViewController {
 extension Add2AppFlutterViewController {
     override func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
         guard let navigationController else { return false }
+#if compiler(>=6.2)
+        if #available(iOS 26.0, *) {
+            if gestureRecognizer === navigationController.interactiveContentPopGestureRecognizer {
+                return enableInteractiveContentPopGestureRecognizer
+                    && navigationController.viewControllers.count > 1
+            }
+        }
+#endif
         return navigationController.viewControllers.count > 1
     }
 }
