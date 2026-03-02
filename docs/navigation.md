@@ -17,7 +17,7 @@ A few Flutter concepts referenced in this guide:
 - **Flutter route** — A screen rendered by Flutter. Navigating to it from native code creates a new engine inside a native container (Activity / ViewController). Navigating to it from within Flutter uses the existing engine's navigation stack.
 - **Native route** — A screen rendered by the native platform. Flutter can request navigation to it, and the native side decides how to present it.
 - **`Add2AppNavigator`** — The singleton that orchestrates all cross-boundary navigation. Accessed as `Add2AppNavigator.instance` (Dart), `Add2AppNavigator.shared` (iOS), or the `Add2AppNavigator` object (Android).
-- **`PageSettings`** — A data class that carries a `routeId` and optional `params` across the platform boundary. Generated route classes create this for you — you rarely touch it directly.
+- **`PageSettings`** — A data class that carries a `routeId`, optional `params`, and optional `path` across the platform boundary. Generated route classes create this for you — you rarely touch it directly.
 
 ## Defining Routes
 
@@ -179,16 +179,27 @@ When the native side opens a Flutter screen, the framework encodes the route and
 
 The framework encodes the route as a URL path (e.g. `/contact-details/abc-123`) and passes it as the initial route for the new Flutter engine. A routing library on the Dart side matches that path to a widget.
 
-The key integration point is `Add2AppNavigator.initialPath` — it reads the platform's `defaultRouteName` and returns the URL path. You pass this to your routing library as the initial location.
+There are two integration points:
+
+- **`Add2AppNavigator.initialPath`** — reads the platform's `defaultRouteName` and returns the URL path. You pass this to your routing library as the initial location. This is synchronous and carries path parameters only.
+- **`Add2AppNavigator.fetchInitialRoute(decodeFlutterRouteData)`** — fetches the full route data (including non-path parameters like lists and complex objects) from the native host and decodes it into a typed route object. Pass this as extra data to your router so builders can access non-path parameters.
+
+If your routes only use path parameters, `initialPath` alone is sufficient. If any route has non-path parameters (e.g. `List<ContactBadge>? badges`), you need both.
 
 `Add2AppBackButtonDispatcher` ensures that when the user presses back and the router stack is empty, the native container (Activity/ViewController) is dismissed instead of doing nothing.
+
+`Add2AppNativePopGestureObserver` syncs the iOS interactive back-swipe gesture with the Flutter navigation stack. Without it, the native swipe-back gesture may dismiss the entire Flutter container even when there are in-Flutter routes to pop. Wrap it around the router's child via `MaterialApp.router`'s `builder`.
 
 #### go_router example
 
 ```dart
-GoRouter createRouter() {
+GoRouter createRouter({
+  String initialLocation = '/',
+  FlutterRouteBase? initialExtra,
+}) {
   return GoRouter(
-    initialLocation: Add2AppNavigator.initialPath,
+    initialLocation: initialLocation,
+    initialExtra: initialExtra,
     routes: [
       GoRoute(
         path: '/sounds-notifications/:contactId',
@@ -198,20 +209,33 @@ GoRouter createRouter() {
       ),
       GoRoute(
         path: '/contact-details/:contactId',
-        builder: (_, state) => ContactDetailsScreen(
-          contactId: state.pathParameters['contactId']!,
-        ),
+        builder: (_, state) {
+          final page = state.extra is ContactDetailsPage
+              ? state.extra! as ContactDetailsPage
+              : null;
+          return ContactDetailsScreen(
+            contactId: state.pathParameters['contactId']!,
+            badges: page?.badges,
+          );
+        },
       ),
     ],
   );
 }
 
 @pragma('vm:entry-point')
-void add2appMain() {
+void add2appMain() async {
   WidgetsFlutterBinding.ensureInitialized();
-  KeyValueStorage.instance.init();
+  await KeyValueStorage.instance.init();
 
-  final router = createRouter();
+  final path = Add2AppNavigator.initialPath;
+  final route = await Add2AppNavigator.fetchInitialRoute(
+    decodeFlutterRouteData,
+  );
+  final router = createRouter(
+    initialLocation: path,
+    initialExtra: route,
+  );
 
   runApp(
     MaterialApp.router(
@@ -219,6 +243,9 @@ void add2appMain() {
       routeInformationParser: router.routeInformationParser,
       routerDelegate: router.routerDelegate,
       backButtonDispatcher: Add2AppBackButtonDispatcher(),
+      builder: (_, child) => Add2AppNativePopGestureObserver(
+        child: child ?? const SizedBox.shrink(),
+      ),
     ),
   );
 }
@@ -249,9 +276,9 @@ RootStackRouter createRouter() {
 }
 
 @pragma('vm:entry-point')
-void add2appMain() {
+void add2appMain() async {
   WidgetsFlutterBinding.ensureInitialized();
-  KeyValueStorage.instance.init();
+  await KeyValueStorage.instance.init();
 
   final initialLocation = Add2AppNavigator.initialPath;
   final router = createRouter();
@@ -266,6 +293,9 @@ void add2appMain() {
         rebuildStackOnDeepLink: true,
       ),
       backButtonDispatcher: Add2AppBackButtonDispatcher(),
+      builder: (_, child) => Add2AppNativePopGestureObserver(
+        child: child ?? const SizedBox.shrink(),
+      ),
     ),
   );
 }
@@ -281,6 +311,9 @@ MaterialApp.router(
   routeInformationParser: myCustomParser,
   routerDelegate: myCustomDelegate,
   backButtonDispatcher: Add2AppBackButtonDispatcher(),
+  builder: (_, child) => Add2AppNativePopGestureObserver(
+    child: child ?? const SizedBox.shrink(),
+  ),
 )
 ```
 
@@ -334,19 +367,19 @@ Note that this approach uses a plain `MaterialApp` — not `MaterialApp.router` 
 
 ### Native Initialization
 
-Call once at app startup to create the engine group:
+Call once at app startup to create the engine group. Both `start()` and `init()` accept an optional `prewarm` parameter (defaults to `true`) that controls whether a hidden engine is prewarmed immediately.
 
 **iOS (AppDelegate):**
 
 ```swift
-Add2AppNavigator.shared.start()
+Add2AppNavigator.shared.start() // prewarm: true by default
 Add2AppNavigator.shared.setNativeRouteHandler(MyNativeRouteHandler())
 ```
 
 **Android (Application.onCreate):**
 
 ```kotlin
-Add2AppNavigator.init(applicationContext)
+Add2AppNavigator.init(applicationContext) // prewarm = true by default
 Add2AppNavigator.setNativeRouteHandler(MyNativeRouteHandler())
 ```
 

@@ -121,6 +121,8 @@ store.stream.listen((snapshot) {
 2. Subscribing to the store's `stream` for cross-engine sync
 3. Persisting changes to the store on every state change (writing only the fields that actually changed)
 
+After construction, call `init()` to load the initial snapshot and start listening for cross-engine updates. The idiomatic way is to use Dart's cascade operator: `MyCubit(store)..init()`.
+
 If your team already uses bloc/Cubit in Flutter, this is a natural fit. If not, you can skip it entirely and use the store directly.
 
 **Define a Cubit:**
@@ -159,7 +161,7 @@ class SoundsNotificationsScreen extends StatelessWidget {
           KeyValueStorage.instance,
           contactId: contactId,
         ),
-      ),
+      )..init(),
       child: BlocBuilder<SoundsNotificationsCubit,
           Add2AppState<SoundsNotificationsStoreSnapshot>>(
         builder: (context, state) => switch (state) {
@@ -260,7 +262,7 @@ Initialize once per engine before `runApp`:
 
 ```dart
 WidgetsFlutterBinding.ensureInitialized();
-KeyValueStorage.instance.init();
+await KeyValueStorage.instance.init();
 ```
 
 ### API
