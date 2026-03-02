@@ -146,14 +146,30 @@ final class Add2AppNavigator {
     /// This is the **only** method native iOS code needs to call.
     /// No FlutterEngine, no entrypoints, no channels.
     ///
+    /// - Parameter enableNativeNavigationBar: When `true`, the native UIKit
+    ///   navigation bar is left visible (native back button + swipe gesture
+    ///   work out-of-the-box). When `false` (default), the bar is hidden and
+    ///   Flutter is expected to provide its own app bar. The interactive pop
+    ///   gesture is re-enabled in both modes.
+    ///
     /// ```swift
     /// Add2AppNavigator.shared.push(
     ///     from: self,
     ///     route: SoundsNotificationsPage(contactId: "42")
     /// )
     /// ```
-    func push(from viewController: UIViewController, route: FlutterRoute, animated: Bool = true) {
-        push(from: viewController, page: route.toPageSettings(), animated: animated)
+    func push(
+        from viewController: UIViewController,
+        route: FlutterRoute,
+        enableNativeNavigationBar: Bool = false,
+        animated: Bool = true
+    ) {
+        push(
+            from: viewController,
+            page: route.toPageSettings(),
+            enableNativeNavigationBar: enableNativeNavigationBar,
+            animated: animated
+        )
     }
 
     /// Present a Flutter page modally.
@@ -162,15 +178,33 @@ final class Add2AppNavigator {
     }
 
     /// Create a `FlutterViewController` configured for the given route.
-    func createFlutterViewController(route: FlutterRoute) -> Add2AppFlutterViewController {
-        createFlutterViewController(page: route.toPageSettings())
+    ///
+    /// - Parameter enableNativeNavigationBar: When `true`, the native UIKit
+    ///   navigation bar is left visible. See ``push(from:route:enableNativeNavigationBar:animated:)``
+    ///   for details.
+    func createFlutterViewController(
+        route: FlutterRoute,
+        enableNativeNavigationBar: Bool = false
+    ) -> Add2AppFlutterViewController {
+        createFlutterViewController(
+            page: route.toPageSettings(),
+            enableNativeNavigationBar: enableNativeNavigationBar
+        )
     }
 
     // MARK: - Internal PageSettings-based navigation (used by Pigeon HostApi)
 
-    func push(from viewController: UIViewController, page: PageSettings, animated: Bool = true) {
+    func push(
+        from viewController: UIViewController,
+        page: PageSettings,
+        enableNativeNavigationBar: Bool = false,
+        animated: Bool = true
+    ) {
         start(prewarm: isPrewarmEnabled)
-        let flutterVC = createFlutterViewController(page: page)
+        let flutterVC = createFlutterViewController(
+            page: page,
+            enableNativeNavigationBar: enableNativeNavigationBar
+        )
         viewController.navigationController?.pushViewController(flutterVC, animated: animated)
             ?? viewController.present(flutterVC, animated: animated)
     }
@@ -214,7 +248,10 @@ final class Add2AppNavigator {
     // MARK: - ViewController factory
 
     /// Create a `FlutterViewController` configured for the given page.
-    func createFlutterViewController(page: PageSettings) -> Add2AppFlutterViewController {
+    func createFlutterViewController(
+        page: PageSettings,
+        enableNativeNavigationBar: Bool = false
+    ) -> Add2AppFlutterViewController {
         start(prewarm: isPrewarmEnabled)
 
         let initialRoute = Self.encodePageSettings(page)
@@ -226,6 +263,7 @@ final class Add2AppNavigator {
 
         let vc = Add2AppFlutterViewController(engine: engine, nibName: nil, bundle: nil)
         vc.page = page
+        vc.enableNativeNavigationBar = enableNativeNavigationBar
 
         // Configure HostApi + storage immediately after engine creation.
         // Dart may start executing before `viewDidLoad`, so delaying setup can

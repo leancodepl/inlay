@@ -30,7 +30,13 @@ class ProfileScreen extends StatelessWidget {
               final snapshot = state.requireData;
               final cubit = context.read<ProfileCubit>();
               return Scaffold(
-                appBar: AppBar(title: Text('Profile $userId')),
+                appBar: AppBar(
+                  leading: BackButton(
+                    onPressed: () =>
+                        Add2AppNavigator.instance.maybePop(context),
+                  ),
+                  title: Text('Profile $userId'),
+                ),
                 body: ListView(
                   padding: const EdgeInsets.all(16),
                   children: [

@@ -58,9 +58,14 @@ struct Add2AppFlutterView: UIViewControllerRepresentable {
     /// The Flutter page to display, described as a `PageSettings`.
     let route: PageSettings
 
+    /// When `true`, the native UIKit navigation bar is left visible.
+    /// See ``Add2AppFlutterViewController/enableNativeNavigationBar``.
+    let enableNativeNavigationBar: Bool
+
     /// Convenience initializer that accepts a type-safe `FlutterRoute`.
-    init(route: FlutterRoute) {
+    init(route: FlutterRoute, enableNativeNavigationBar: Bool = false) {
         self.route = route.toPageSettings()
+        self.enableNativeNavigationBar = enableNativeNavigationBar
     }
 
     @Environment(\.dismiss) private var dismiss
@@ -72,7 +77,10 @@ struct Add2AppFlutterView: UIViewControllerRepresentable {
     }
 
     func makeUIViewController(context: Context) -> Add2AppFlutterViewController {
-        let vc = Add2AppNavigator.shared.createFlutterViewController(page: route)
+        let vc = Add2AppNavigator.shared.createFlutterViewController(
+            page: route,
+            enableNativeNavigationBar: enableNativeNavigationBar
+        )
 
         // Wire up the dismiss action through the coordinator so it stays
         // up-to-date across SwiftUI view updates.

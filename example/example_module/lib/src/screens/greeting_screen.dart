@@ -18,7 +18,12 @@ class GreetingScreen extends StatelessWidget {
     };
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Greeting')),
+      appBar: AppBar(
+        leading: BackButton(
+          onPressed: () => Add2AppNavigator.instance.maybePop(context),
+        ),
+        title: const Text('Greeting'),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(

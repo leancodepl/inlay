@@ -25,7 +25,12 @@ class CounterScreen extends StatelessWidget {
           final snapshot = state.requireData;
           final cubit = context.read<CounterCubit>();
           return Scaffold(
-            appBar: AppBar(title: const Text('Counter')),
+            appBar: AppBar(
+              leading: BackButton(
+                onPressed: () => Add2AppNavigator.instance.maybePop(context),
+              ),
+              title: const Text('Counter'),
+            ),
             body: Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
