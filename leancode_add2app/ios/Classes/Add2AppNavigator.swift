@@ -151,6 +151,8 @@ final class Add2AppNavigator {
     ///   work out-of-the-box). When `false` (default), the bar is hidden and
     ///   Flutter is expected to provide its own app bar. The interactive pop
     ///   gesture is re-enabled in both modes.
+    /// - Parameter enableInteractiveContentPopGestureRecognizer: Opt in/out of
+    ///   iOS 26's full-width back gesture. Defaults to `true`.
     ///
     /// ```swift
     /// Add2AppNavigator.shared.push(
@@ -162,19 +164,31 @@ final class Add2AppNavigator {
         from viewController: UIViewController,
         route: FlutterRoute,
         enableNativeNavigationBar: Bool = false,
-        animated: Bool = true
+        animated: Bool = true,
+        enableInteractiveContentPopGestureRecognizer: Bool = true
     ) {
         push(
             from: viewController,
             page: route.toPageSettings(),
             enableNativeNavigationBar: enableNativeNavigationBar,
-            animated: animated
+            animated: animated,
+            enableInteractiveContentPopGestureRecognizer: enableInteractiveContentPopGestureRecognizer
         )
     }
 
     /// Present a Flutter page modally.
-    func present(from viewController: UIViewController, route: FlutterRoute, animated: Bool = true) {
-        present(from: viewController, page: route.toPageSettings(), animated: animated)
+    func present(
+        from viewController: UIViewController,
+        route: FlutterRoute,
+        animated: Bool = true,
+        enableInteractiveContentPopGestureRecognizer: Bool = true
+    ) {
+        present(
+            from: viewController,
+            page: route.toPageSettings(),
+            animated: animated,
+            enableInteractiveContentPopGestureRecognizer: enableInteractiveContentPopGestureRecognizer
+        )
     }
 
     /// Create a `FlutterViewController` configured for the given route.
@@ -184,11 +198,13 @@ final class Add2AppNavigator {
     ///   for details.
     func createFlutterViewController(
         route: FlutterRoute,
-        enableNativeNavigationBar: Bool = false
+        enableNativeNavigationBar: Bool = false,
+        enableInteractiveContentPopGestureRecognizer: Bool = true
     ) -> Add2AppFlutterViewController {
         createFlutterViewController(
             page: route.toPageSettings(),
-            enableNativeNavigationBar: enableNativeNavigationBar
+            enableNativeNavigationBar: enableNativeNavigationBar,
+            enableInteractiveContentPopGestureRecognizer: enableInteractiveContentPopGestureRecognizer
         )
     }
 
@@ -198,20 +214,30 @@ final class Add2AppNavigator {
         from viewController: UIViewController,
         page: PageSettings,
         enableNativeNavigationBar: Bool = false,
-        animated: Bool = true
+        animated: Bool = true,
+        enableInteractiveContentPopGestureRecognizer: Bool = true
     ) {
         start(prewarm: isPrewarmEnabled)
         let flutterVC = createFlutterViewController(
             page: page,
-            enableNativeNavigationBar: enableNativeNavigationBar
+            enableNativeNavigationBar: enableNativeNavigationBar,
+            enableInteractiveContentPopGestureRecognizer: enableInteractiveContentPopGestureRecognizer
         )
         viewController.navigationController?.pushViewController(flutterVC, animated: animated)
             ?? viewController.present(flutterVC, animated: animated)
     }
 
-    func present(from viewController: UIViewController, page: PageSettings, animated: Bool = true) {
+    func present(
+        from viewController: UIViewController,
+        page: PageSettings,
+        animated: Bool = true,
+        enableInteractiveContentPopGestureRecognizer: Bool = true
+    ) {
         start(prewarm: isPrewarmEnabled)
-        let flutterVC = createFlutterViewController(page: page)
+        let flutterVC = createFlutterViewController(
+            page: page,
+            enableInteractiveContentPopGestureRecognizer: enableInteractiveContentPopGestureRecognizer
+        )
         viewController.present(flutterVC, animated: animated)
     }
 
@@ -250,7 +276,8 @@ final class Add2AppNavigator {
     /// Create a `FlutterViewController` configured for the given page.
     func createFlutterViewController(
         page: PageSettings,
-        enableNativeNavigationBar: Bool = false
+        enableNativeNavigationBar: Bool = false,
+        enableInteractiveContentPopGestureRecognizer: Bool = true
     ) -> Add2AppFlutterViewController {
         start(prewarm: isPrewarmEnabled)
 
@@ -264,6 +291,7 @@ final class Add2AppNavigator {
         let vc = Add2AppFlutterViewController(engine: engine, nibName: nil, bundle: nil)
         vc.page = page
         vc.enableNativeNavigationBar = enableNativeNavigationBar
+        vc.enableInteractiveContentPopGestureRecognizer = enableInteractiveContentPopGestureRecognizer
 
         // Configure HostApi + storage immediately after engine creation.
         // Dart may start executing before `viewDidLoad`, so delaying setup can

@@ -62,10 +62,19 @@ struct Add2AppFlutterView: UIViewControllerRepresentable {
     /// See ``Add2AppFlutterViewController/enableNativeNavigationBar``.
     let enableNativeNavigationBar: Bool
 
+    /// When `true` (default), enables iOS 26 full-width back gesture
+    /// (`interactiveContentPopGestureRecognizer`).
+    let enableInteractiveContentPopGestureRecognizer: Bool
+
     /// Convenience initializer that accepts a type-safe `FlutterRoute`.
-    init(route: FlutterRoute, enableNativeNavigationBar: Bool = false) {
+    init(
+        route: FlutterRoute,
+        enableNativeNavigationBar: Bool = false,
+        enableInteractiveContentPopGestureRecognizer: Bool = true
+    ) {
         self.route = route.toPageSettings()
         self.enableNativeNavigationBar = enableNativeNavigationBar
+        self.enableInteractiveContentPopGestureRecognizer = enableInteractiveContentPopGestureRecognizer
     }
 
     @Environment(\.dismiss) private var dismiss
@@ -79,7 +88,8 @@ struct Add2AppFlutterView: UIViewControllerRepresentable {
     func makeUIViewController(context: Context) -> Add2AppFlutterViewController {
         let vc = Add2AppNavigator.shared.createFlutterViewController(
             page: route,
-            enableNativeNavigationBar: enableNativeNavigationBar
+            enableNativeNavigationBar: enableNativeNavigationBar,
+            enableInteractiveContentPopGestureRecognizer: enableInteractiveContentPopGestureRecognizer
         )
 
         // Wire up the dismiss action through the coordinator so it stays
