@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:leancode_add2app/leancode_add2app.dart';
 
 import '../cubits/counter_cubit.dart';
@@ -61,6 +62,22 @@ class CounterScreen extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 16),
+                  OutlinedButton(
+                    onPressed: () {
+                      const page = ProfilePage(
+                        userId: '42',
+                        badges: [
+                          UserBadge(
+                            label: 'In-Flutter demo',
+                            level: BadgeLevel.bronze,
+                          ),
+                        ],
+                      );
+                      context.push(page.toPath(), extra: page);
+                    },
+                    child: const Text('Open Profile (same Flutter stack)'),
+                  ),
+                  const SizedBox(height: 8),
                   OutlinedButton(
                     onPressed: () {
                       Add2AppNavigator.instance.push(
