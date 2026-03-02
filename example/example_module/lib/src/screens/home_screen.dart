@@ -14,8 +14,21 @@ class ExampleHomeScreen extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         children: [
           ListTile(
+            title: const Text('In-Flutter flow demo'),
+            subtitle: const Text(
+              'Native -> Flutter -> Flutter (same container)',
+            ),
+            onTap: () {
+              const page = GreetingPage(
+                name: 'Marcin',
+                style: GreetingStyle.casual,
+              );
+              context.push(page.toPath(), extra: page);
+            },
+          ),
+          ListTile(
             title: const Text('Greeting'),
-            subtitle: const Text('Route with path parameter + enum'),
+            subtitle: const Text('Router path demo (replace current route)'),
             onTap: () => context.go(
               const GreetingPage(
                 name: 'Marcin',
@@ -25,12 +38,12 @@ class ExampleHomeScreen extends StatelessWidget {
           ),
           ListTile(
             title: const Text('Counter'),
-            subtitle: const Text('Shared store + Add2AppCubit'),
+            subtitle: const Text('Router path demo (replace current route)'),
             onTap: () => context.go(const CounterPage().toPath()),
           ),
           ListTile(
             title: const Text('Profile'),
-            subtitle: const Text('Keyed store + data class list params'),
+            subtitle: const Text('Router path demo (replace current route)'),
             onTap: () => context.go(
               const ProfilePage(
                 userId: '42',

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:leancode_add2app/leancode_add2app.dart';
 
 import '../cubits/profile_cubit.dart';
@@ -80,6 +81,17 @@ class ProfileScreen extends StatelessWidget {
                           .toList(),
                     ),
                     const SizedBox(height: 20),
+                    OutlinedButton(
+                      onPressed: () {
+                        const page = GreetingPage(
+                          name: 'Nested Flutter',
+                          style: GreetingStyle.formal,
+                        );
+                        context.push(page.toPath(), extra: page);
+                      },
+                      child: const Text('Open Greeting (same Flutter stack)'),
+                    ),
+                    const SizedBox(height: 12),
                     Text(
                       'Badges from route params',
                       style: Theme.of(context).textTheme.titleMedium,

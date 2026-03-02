@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:leancode_add2app/leancode_add2app.dart';
 
 import '../generated/routes.g.dart';
@@ -33,12 +34,33 @@ class GreetingScreen extends StatelessWidget {
             const SizedBox(height: 24),
             FilledButton(
               onPressed: () {
-                Add2AppNavigator.instance.push(const CounterPage());
+                const page = CounterPage();
+                context.push(page.toPath(), extra: page);
               },
-              child: const Text('Open Counter (new Flutter engine)'),
+              child: const Text('Open Counter (same Flutter stack)'),
             ),
             const SizedBox(height: 12),
             FilledButton(
+              onPressed: () {
+                const page = ProfilePage(
+                  userId: '42',
+                  badges: [
+                    UserBadge(label: 'Helper', level: BadgeLevel.silver),
+                  ],
+                );
+                context.push(page.toPath(), extra: page);
+              },
+              child: const Text('Open Profile (same Flutter stack)'),
+            ),
+            const SizedBox(height: 12),
+            OutlinedButton(
+              onPressed: () {
+                Add2AppNavigator.instance.push(const CounterPage());
+              },
+              child: const Text('Open Counter (new engine/container)'),
+            ),
+            const SizedBox(height: 12),
+            OutlinedButton(
               onPressed: () {
                 Add2AppNavigator.instance.push(
                   const ProfilePage(
@@ -49,7 +71,7 @@ class GreetingScreen extends StatelessWidget {
                   ),
                 );
               },
-              child: const Text('Open Profile (new Flutter engine)'),
+              child: const Text('Open Profile (new engine/container)'),
             ),
             const SizedBox(height: 12),
             OutlinedButton(
