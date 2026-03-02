@@ -201,6 +201,26 @@ class Add2AppNavigator {
     await _hostApi.pop();
   }
 
+  /// Pops the topmost Flutter route if the navigator can pop, otherwise
+  /// closes the native container (Activity/ViewController).
+  ///
+  /// Use this as the handler for custom back buttons in add-to-app screens:
+  ///
+  /// ```dart
+  /// IconButton(
+  ///   icon: const Icon(Icons.arrow_back),
+  ///   onPressed: () => Add2AppNavigator.instance.maybePop(context),
+  /// )
+  /// ```
+  Future<void> maybePop(BuildContext context) async {
+    final navigator = Navigator.of(context);
+    if (navigator.canPop()) {
+      navigator.pop();
+    } else {
+      await pop();
+    }
+  }
+
   // ── Internal route dispatch ───────────────────────────────────────
 
   /// Starts a new Activity/ViewController with a new Flutter engine.
