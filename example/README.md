@@ -5,7 +5,7 @@ This folder contains a standalone showcase for the add2app framework:
 - `example_module` - Flutter module with routes, stores, cubits, and three integrations:
   - go_router
   - auto_route
-  - Navigator 1.0 via `registerPage` / `buildPage`
+  - Imperative via sealed class pattern matching (`fetchInitialRoute` / `decodeFlutterRouteData`)
 - `example_android` - Native Android host app (Activity + Fragment + Compose demos)
 - `example_ios` - Native iOS host app (UIKit + SwiftUI demos)
 
