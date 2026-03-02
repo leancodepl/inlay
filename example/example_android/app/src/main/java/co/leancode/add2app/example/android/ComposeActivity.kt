@@ -1,8 +1,8 @@
 package co.leancode.add2app.example.android
 
 import android.os.Bundle
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -19,6 +19,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -31,7 +32,7 @@ import co.leancode.example_module.generated.CounterStore
 import co.leancode.example_module.generated.ProfilePage
 import co.leancode.example_module.generated.UserBadge
 
-class ComposeActivity : ComponentActivity() {
+class ComposeActivity : AppCompatActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     setContent {
@@ -50,6 +51,7 @@ private fun ComposeHost() {
       Column(
         modifier = Modifier
           .fillMaxSize()
+          .statusBarsPadding()
           .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
       ) {
@@ -69,7 +71,9 @@ private fun ComposeHost() {
     composable("flutter-counter") {
       Add2AppFlutterScreen(
         route = CounterPage(seed = null),
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+          .fillMaxSize()
+          .statusBarsPadding(),
       )
     }
 
@@ -80,18 +84,22 @@ private fun ComposeHost() {
           userId = userId,
           badges = listOf(UserBadge("Compose badge", BadgeLevel.silver)),
         ),
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+          .fillMaxSize()
+          .statusBarsPadding(),
       )
     }
 
     composable("native-counter") {
-      NativeCounterComposeScreen()
+      NativeCounterComposeScreen(
+        onBack = { navController.popBackStack() },
+      )
     }
   }
 }
 
 @Composable
-private fun NativeCounterComposeScreen() {
+private fun NativeCounterComposeScreen(onBack: () -> Unit) {
   val storage = remember { KeyValueStorageImpl.createScope() }
   val store = remember { CounterStore(storage) }
 
@@ -111,9 +119,13 @@ private fun NativeCounterComposeScreen() {
   Column(
     modifier = Modifier
       .fillMaxSize()
+      .statusBarsPadding()
       .padding(16.dp),
     verticalArrangement = Arrangement.spacedBy(12.dp),
   ) {
+    Button(onClick = onBack) {
+      Text("Back")
+    }
     Text("Native Compose Counter")
     Text("Count: $count")
     Text("Last updated by: $updatedBy")

@@ -5,6 +5,7 @@
     <application
         android:name=".ExampleApplication"
         android:allowBackup="true"
+        android:enableOnBackInvokedCallback="true"
         android:icon="@mipmap/ic_launcher"
         android:label="Example Android"
         android:supportsRtl="true"
