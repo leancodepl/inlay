@@ -168,6 +168,7 @@ object Add2AppNavigator {
                 override fun push(page: PageSettings) {}
                 override fun pop() {}
                 override fun pushNativeRoute(route: PageSettings) {}
+                override fun setNativePopGestureEnabled(enabled: Boolean) {}
                 override fun getInitialRouteData(): PageSettings? = null
             }
         )
@@ -358,6 +359,9 @@ object Add2AppNavigator {
             }
             override fun pushNativeRoute(route: PageSettings) {
                 dispatchNativeRoute(activity, route)
+            }
+            override fun setNativePopGestureEnabled(enabled: Boolean) {
+                // iOS-only gesture toggle. No-op on Android.
             }
             override fun getInitialRouteData(): PageSettings? {
                 return routeData

@@ -201,6 +201,15 @@ class Add2AppNavigator {
     await _hostApi.pop();
   }
 
+  /// Enable/disable native iOS swipe-back gesture for this container.
+  ///
+  /// This is used by `Add2AppNativePopGestureObserver` to prevent native
+  /// container pop while the in-Flutter navigator can handle back.
+  /// No-op on Android.
+  Future<void> setNativePopGestureEnabled(bool enabled) async {
+    await _hostApi.setNativePopGestureEnabled(enabled);
+  }
+
   /// Pops the topmost Flutter route if the navigator can pop, otherwise
   /// closes the native container (Activity/ViewController).
   ///

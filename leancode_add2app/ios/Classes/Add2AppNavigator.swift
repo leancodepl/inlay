@@ -440,6 +440,13 @@ private class Add2AppNavigatorHostApiImpl: Add2AppNavigatorHostApi {
         }
     }
 
+    func setNativePopGestureEnabled(enabled: Bool) throws {
+        DispatchQueue.main.async { [weak self] in
+            guard let vc = self?.viewController as? Add2AppFlutterViewController else { return }
+            vc.setNativePopGestureEnabled(enabled)
+        }
+    }
+
     func getInitialRouteData() throws -> PageSettings? {
         return routeData
     }
@@ -450,5 +457,6 @@ private class Add2AppNavigatorPrewarmHostApi: Add2AppNavigatorHostApi {
     func push(page: PageSettings) throws {}
     func pop() throws {}
     func pushNativeRoute(route: PageSettings) throws {}
+    func setNativePopGestureEnabled(enabled: Bool) throws {}
     func getInitialRouteData() throws -> PageSettings? { nil }
 }

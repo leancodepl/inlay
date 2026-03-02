@@ -60,6 +60,9 @@ Future<void> _runAdd2AppWithGoRouter() async {
       routeInformationParser: router.routeInformationParser,
       routerDelegate: router.routerDelegate,
       backButtonDispatcher: Add2AppBackButtonDispatcher(),
+      builder: (_, child) => Add2AppNativePopGestureObserver(
+        child: child ?? const SizedBox.shrink(),
+      ),
     ),
   );
 }
@@ -87,6 +90,9 @@ Future<void> _runAdd2AppWithAutoRoute() async {
         rebuildStackOnDeepLink: true,
       ),
       backButtonDispatcher: Add2AppBackButtonDispatcher(),
+      builder: (_, child) => Add2AppNativePopGestureObserver(
+        child: child ?? const SizedBox.shrink(),
+      ),
     ),
   );
 }
