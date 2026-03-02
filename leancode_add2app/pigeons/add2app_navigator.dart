@@ -50,6 +50,12 @@ abstract class Add2AppNavigatorHostApi {
   /// Pop the current Flutter Activity/ViewController.
   void pop();
 
+  /// Enable/disable native iOS back gesture for this container.
+  ///
+  /// Used by Flutter to disable container-level swipe-back while the in-Flutter
+  /// navigator can handle pop, preventing double-pop.
+  void setNativePopGestureEnabled(bool enabled);
+
   /// Open a native Activity/ViewController identified by [route].
   ///
   /// The platform side dispatches to a registered native route handler.

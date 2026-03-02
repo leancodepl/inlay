@@ -43,6 +43,20 @@ final class Add2AppFlutterViewController: FlutterViewController {
     private weak var previousContentGestureDelegate: UIGestureRecognizerDelegate?
     /// Keep the previous full-width pop gesture enabled-state.
     private var previousContentGestureEnabledState = true
+    /// Runtime state controlled from Flutter to avoid container pop
+    /// while nested Flutter routes can handle back.
+    private var nativePopGestureEnabled = true
+
+    func setNativePopGestureEnabled(_ enabled: Bool) {
+        nativePopGestureEnabled = enabled
+        navigationController?.interactivePopGestureRecognizer?.isEnabled = enabled
+#if compiler(>=6.2)
+        if #available(iOS 26.0, *) {
+            navigationController?.interactiveContentPopGestureRecognizer?.isEnabled =
+                enabled && enableInteractiveContentPopGestureRecognizer
+        }
+#endif
+    }
 
     // MARK: - Lifecycle
 
@@ -99,11 +113,11 @@ final class Add2AppFlutterViewController: FlutterViewController {
 #endif
         }
 
-        edgeGesture?.isEnabled = true
+        edgeGesture?.isEnabled = nativePopGestureEnabled
 #if compiler(>=6.2)
         if #available(iOS 26.0, *) {
             navigationController.interactiveContentPopGestureRecognizer?.isEnabled =
-                enableInteractiveContentPopGestureRecognizer
+                nativePopGestureEnabled && enableInteractiveContentPopGestureRecognizer
         }
 #endif
     }
@@ -145,11 +159,12 @@ final class Add2AppFlutterViewController: FlutterViewController {
 
 extension Add2AppFlutterViewController {
     override func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
-        guard let navigationController else { return false }
+        guard nativePopGestureEnabled, let navigationController else { return false }
 #if compiler(>=6.2)
         if #available(iOS 26.0, *) {
             if gestureRecognizer === navigationController.interactiveContentPopGestureRecognizer {
-                return enableInteractiveContentPopGestureRecognizer
+                return nativePopGestureEnabled
+                    && enableInteractiveContentPopGestureRecognizer
                     && navigationController.viewControllers.count > 1
             }
         }

@@ -168,6 +168,13 @@ interface Add2AppNavigatorHostApi {
   /** Pop the current Flutter Activity/ViewController. */
   fun pop()
   /**
+   * Enable/disable native iOS back gesture for this container.
+   *
+   * Used by Flutter to disable container-level swipe-back while the in-Flutter
+   * navigator can handle pop, preventing double-pop.
+   */
+  fun setNativePopGestureEnabled(enabled: Boolean)
+  /**
    * Open a native Activity/ViewController identified by [route].
    *
    * The platform side dispatches to a registered native route handler.
@@ -217,6 +224,24 @@ interface Add2AppNavigatorHostApi {
           channel.setMessageHandler { _, reply ->
             val wrapped: List<Any?> = try {
               api.pop()
+              listOf(null)
+            } catch (exception: Throwable) {
+              Add2AppNavigatorApiPigeonUtils.wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.leancode_add2app.Add2AppNavigatorHostApi.setNativePopGestureEnabled$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val enabledArg = args[0] as Boolean
+            val wrapped: List<Any?> = try {
+              api.setNativePopGestureEnabled(enabledArg)
               listOf(null)
             } catch (exception: Throwable) {
               Add2AppNavigatorApiPigeonUtils.wrapError(exception)
