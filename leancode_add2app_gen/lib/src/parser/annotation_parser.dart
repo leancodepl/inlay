@@ -10,6 +10,7 @@ import 'package:leancode_add2app_gen/src/utils/naming.dart';
 
 /// Annotation names that the parser looks for.
 const _flutterRouteAnnotations = ['Add2AppFlutterRoute'];
+const _flutterDialogAnnotations = ['Add2AppFlutterDialog'];
 const _nativeRouteAnnotations = ['Add2AppNativeRoute', 'add2AppNativeRoute'];
 const _storeAnnotations = ['Add2AppStore', 'add2AppStore'];
 const _storeKeyFieldAnnotations = ['Add2AppStoreKey', 'add2AppStoreKey'];
@@ -35,6 +36,7 @@ class AnnotationParser {
 
     return Schema(
       flutterRoutes: visitor.flutterRoutes,
+      flutterDialogRoutes: visitor.flutterDialogRoutes,
       nativeRoutes: visitor.nativeRoutes,
       stores: visitor.stores,
       dataClasses: visitor.dataClasses,
@@ -46,6 +48,7 @@ class AnnotationParser {
 /// AST visitor that collects schema definitions.
 class _SchemaCollectorVisitor extends RecursiveAstVisitor<void> {
   final List<RouteDefinition> flutterRoutes = [];
+  final List<RouteDefinition> flutterDialogRoutes = [];
   final List<RouteDefinition> nativeRoutes = [];
   final List<StoreDefinition> stores = [];
   final List<DataClassDefinition> dataClasses = [];
@@ -58,13 +61,31 @@ class _SchemaCollectorVisitor extends RecursiveAstVisitor<void> {
     // Check for route annotations.
     final flutterAnnotation = _findAnnotation(node, _flutterRouteAnnotations);
     if (flutterAnnotation != null) {
-      final routeName = routeIdFromClassName(className);
+      final routeName = _extractRouteName(flutterAnnotation, className);
       final path = _extractPositionalStringArg(flutterAnnotation);
       final fields = _extractFields(node);
       flutterRoutes.add(
         RouteDefinition(
           className: className,
           routeType: RouteType.flutter,
+          routeName: routeName,
+          fields: fields,
+          path: path,
+        ),
+      );
+      super.visitClassDeclaration(node);
+      return;
+    }
+
+    final dialogAnnotation = _findAnnotation(node, _flutterDialogAnnotations);
+    if (dialogAnnotation != null) {
+      final routeName = routeIdFromClassName(className);
+      final path = _extractPositionalStringArg(dialogAnnotation);
+      final fields = _extractFields(node);
+      flutterDialogRoutes.add(
+        RouteDefinition(
+          className: className,
+          routeType: RouteType.flutterDialog,
           routeName: routeName,
           fields: fields,
           path: path,

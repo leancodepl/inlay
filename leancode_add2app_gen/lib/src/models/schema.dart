@@ -5,6 +5,7 @@ import 'package:leancode_add2app_gen/src/models/store_definition.dart';
 class Schema {
   const Schema({
     this.flutterRoutes = const [],
+    this.flutterDialogRoutes = const [],
     this.nativeRoutes = const [],
     this.stores = const [],
     this.dataClasses = const [],
@@ -12,15 +13,21 @@ class Schema {
   });
 
   final List<RouteDefinition> flutterRoutes;
+  final List<RouteDefinition> flutterDialogRoutes;
   final List<RouteDefinition> nativeRoutes;
   final List<StoreDefinition> stores;
   final List<DataClassDefinition> dataClasses;
   final List<EnumDefinition> enums;
 
-  List<RouteDefinition> get allRoutes => [...flutterRoutes, ...nativeRoutes];
+  List<RouteDefinition> get allRoutes => [
+    ...flutterRoutes,
+    ...flutterDialogRoutes,
+    ...nativeRoutes,
+  ];
 
   Schema merge(Schema other) => Schema(
     flutterRoutes: [...flutterRoutes, ...other.flutterRoutes],
+    flutterDialogRoutes: [...flutterDialogRoutes, ...other.flutterDialogRoutes],
     nativeRoutes: [...nativeRoutes, ...other.nativeRoutes],
     stores: [...stores, ...other.stores],
     dataClasses: [...dataClasses, ...other.dataClasses],

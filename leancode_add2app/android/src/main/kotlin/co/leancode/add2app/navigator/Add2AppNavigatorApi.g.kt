@@ -190,6 +190,14 @@ interface Add2AppNavigatorHostApi {
    * for the prewarm engine or when no data was set.
    */
   fun getInitialRouteData(): PageSettings?
+  /**
+   * Present a Flutter dialog in a transparent native container.
+   *
+   * The native side creates a transparent Activity/ViewController and
+   * starts a new Flutter engine. Flutter renders the dialog content
+   * (barrier, animation, positioning) over the native screen underneath.
+   */
+  fun presentDialog(page: PageSettings)
 
   companion object {
     /** The codec used by Add2AppNavigatorHostApi. */
@@ -276,6 +284,24 @@ interface Add2AppNavigatorHostApi {
           channel.setMessageHandler { _, reply ->
             val wrapped: List<Any?> = try {
               listOf(api.getInitialRouteData())
+            } catch (exception: Throwable) {
+              Add2AppNavigatorApiPigeonUtils.wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.leancode_add2app.Add2AppNavigatorHostApi.presentDialog$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val pageArg = args[0] as PageSettings
+            val wrapped: List<Any?> = try {
+              api.presentDialog(pageArg)
+              listOf(null)
             } catch (exception: Throwable) {
               Add2AppNavigatorApiPigeonUtils.wrapError(exception)
             }

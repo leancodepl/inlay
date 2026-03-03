@@ -6,7 +6,7 @@ import 'add2app_navigator.g.dart';
 export 'add2app_navigator.g.dart' show PageSettings;
 
 /// Route target understood by [Add2AppNavigator].
-enum Add2AppRouteType { flutter, native }
+enum Add2AppRouteType { flutter, native, flutterDialog }
 
 /// Common abstraction for all pushable destinations.
 abstract class Add2AppRoute {
@@ -69,6 +69,31 @@ abstract class FlutterRouteBase extends Add2AppRoute {
   Add2AppRouteType get type => Add2AppRouteType.flutter;
 
   /// Convert to the Pigeon-generated [PageSettings].
+  @override
+  PageSettings toPageSettings() {
+    return PageSettings(routeId: routeId, params: params);
+  }
+}
+
+/// A typed Flutter dialog route description for cross-boundary navigation.
+///
+/// Like [FlutterRouteBase] but the native side opens a transparent container
+/// so the underlying screen is visible. Flutter code renders the dialog content
+/// (barrier, animation, positioning).
+///
+/// Generated dialog route classes extend this.
+abstract class FlutterDialogRouteBase extends Add2AppRoute {
+  const FlutterDialogRouteBase();
+
+  /// Unique route identifier resolved by the page handler.
+  String get routeId;
+
+  /// Route parameters serialized as a list for StandardMessageCodec transport.
+  Object? get params;
+
+  @override
+  Add2AppRouteType get type => Add2AppRouteType.flutterDialog;
+
   @override
   PageSettings toPageSettings() {
     return PageSettings(routeId: routeId, params: params);
@@ -193,6 +218,8 @@ class Add2AppNavigator {
         await pushFlutterRoute(page);
       case Add2AppRouteType.native:
         await pushNativeRoute(page);
+      case Add2AppRouteType.flutterDialog:
+        await presentFlutterDialog(page);
     }
   }
 
@@ -271,6 +298,15 @@ class Add2AppNavigator {
     await _hostApi.pushNativeRoute(page);
   }
 
+  /// Present a Flutter dialog in a transparent native container.
+  ///
+  /// The native side creates a transparent Activity/ViewController with a
+  /// new Flutter engine. Flutter renders the dialog content (barrier,
+  /// animation, positioning) over the native screen underneath.
+  Future<void> presentFlutterDialog(PageSettings page) async {
+    await _hostApi.presentDialog(page);
+  }
+
   // ── Initial route parsing ─────────────────────────────────────────
 
   /// Decode the `initialRoute` string (set by the platform) back into
@@ -335,7 +371,7 @@ class Add2AppNavigator {
   ///   null => const FallbackScreen(),
   /// };
   /// ```
-  static Future<T?> fetchInitialRoute<T extends FlutterRouteBase>(
+  static Future<T?> fetchInitialRoute<T extends Add2AppRoute>(
     T? Function(PageSettings?) decoder,
   ) async {
     try {

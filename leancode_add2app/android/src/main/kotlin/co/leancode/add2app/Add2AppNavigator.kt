@@ -3,16 +3,19 @@ package co.leancode.add2app
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.os.Bundle
 import co.leancode.add2app.navigator.Add2AppNavigatorHostApi
 import co.leancode.add2app.navigator.PageSettings
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.android.FlutterFragment
+import io.flutter.embedding.android.TransparencyMode
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.embedding.engine.FlutterEngineGroup
 import io.flutter.embedding.engine.FlutterEngineGroupCache
 import io.flutter.embedding.engine.dart.DartExecutor
 import io.flutter.FlutterInjector
 import io.flutter.plugin.common.StandardMessageCodec
+import androidx.fragment.app.FragmentActivity
 import java.nio.ByteBuffer
 
 /**
@@ -170,6 +173,7 @@ object Add2AppNavigator {
                 override fun pushNativeRoute(route: PageSettings) {}
                 override fun setNativePopGestureEnabled(enabled: Boolean) {}
                 override fun getInitialRouteData(): PageSettings? = null
+                override fun presentDialog(page: PageSettings) {}
             }
         )
         KeyValueStorageImpl.attachToEngine(engine)
@@ -191,6 +195,67 @@ object Add2AppNavigator {
     fun push(context: Context, route: FlutterRoute) {
         init(context, prewarm = isPrewarmEnabled)
         context.startActivity(createIntent(context, route.toPageSettings()))
+    }
+
+    // ── Dialog API ────────────────────────────────────────────────────────
+
+    /**
+     * Present a Flutter dialog in a transparent native container.
+     *
+     * Shows a [Add2AppFlutterDialogFragment] that hosts a Flutter engine
+     * with a fullscreen transparent window. Flutter renders the dialog content.
+     *
+     * ```kotlin
+     * Add2AppNavigator.presentDialog(activity, ConfirmDeleteDialog(itemId = "42"))
+     * ```
+     */
+    fun presentDialog(activity: FragmentActivity, route: FlutterDialogRoute) {
+        init(activity, prewarm = isPrewarmEnabled)
+        val page = route.toPageSettings()
+        val dialogFragment = createDialogFragment(activity, page)
+        dialogFragment.show(activity.supportFragmentManager, page.routeId)
+    }
+
+    /**
+     * Create a [Add2AppFlutterDialogFragment] configured for the given page.
+     */
+    fun createDialogFragment(context: Context, route: FlutterDialogRoute): Add2AppFlutterDialogFragment {
+        return createDialogFragment(context, route.toPageSettings())
+    }
+
+    internal fun createDialogFragment(context: Context, page: PageSettings): Add2AppFlutterDialogFragment {
+        init(context, prewarm = isPrewarmEnabled)
+        val fragmentId = java.util.UUID.randomUUID().toString()
+        pendingRouteData[fragmentId] = page
+        val fragment = Add2AppFlutterDialogFragment()
+        fragment.arguments = Bundle().apply {
+            putString(Add2AppFlutterDialogFragment.EXTRA_DIALOG_ROUTE_ID, fragmentId)
+        }
+        return fragment
+    }
+
+    /**
+     * Create an [Add2AppFlutterFragment] with transparent background for use
+     * inside a [Add2AppFlutterDialogFragment].
+     */
+    internal fun createDialogFlutterFragment(context: Context, page: PageSettings): Add2AppFlutterFragment {
+        init(context, prewarm = isPrewarmEnabled)
+        val initialRoute = encodePageSettings(page)
+        val fragmentId = java.util.UUID.randomUUID().toString()
+        pendingRouteData[fragmentId] = page
+        val fragment = FlutterFragment.NewEngineInGroupFragmentBuilder(
+            Add2AppFlutterFragment::class.java,
+            ENGINE_GROUP_ID
+        )
+            .dartEntrypoint(DART_ENTRYPOINT)
+            .initialRoute(initialRoute)
+            .transparencyMode(TransparencyMode.transparent)
+            .build<Add2AppFlutterFragment>()
+        fragment.arguments = (fragment.arguments ?: Bundle()).apply {
+            putString(EXTRA_FRAGMENT_ROUTE_ID, fragmentId)
+            putBoolean(Add2AppFlutterFragment.ARG_USE_BACK_DISPATCHER, true)
+        }
+        return fragment
     }
 
     // ── Native route handler ────────────────────────────────────────────
@@ -365,6 +430,13 @@ object Add2AppNavigator {
             }
             override fun getInitialRouteData(): PageSettings? {
                 return routeData
+            }
+            override fun presentDialog(page: PageSettings) {
+                val fragmentActivity = activity as? FragmentActivity ?: return
+                val dialogFragment = createDialogFragment(activity, page)
+                fragmentActivity.supportFragmentManager.let { fm ->
+                    dialogFragment.show(fm, page.routeId)
+                }
             }
         }
         Add2AppNavigatorHostApi.setUp(engine.dartExecutor.binaryMessenger, hostApi)

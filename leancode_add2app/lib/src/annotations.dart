@@ -38,6 +38,32 @@ class Add2AppFlutterRoute {
   final String path;
 }
 
+/// Marks a class as a Flutter dialog route (native -> Flutter overlay).
+///
+/// Like [Add2AppFlutterRoute] but the native side opens a transparent container
+/// so the underlying screen is visible. Flutter code renders the dialog content
+/// (barrier, animation, positioning).
+///
+/// Example:
+/// ```dart
+/// @Add2AppFlutterDialog('/confirm-delete/:itemId')
+/// class ConfirmDeleteDialog {
+///   const ConfirmDeleteDialog({required this.itemId, this.title});
+///   final String itemId;
+///   final String? title;
+/// }
+/// ```
+class Add2AppFlutterDialog {
+  /// Creates an annotation for a Flutter dialog route.
+  ///
+  /// [path] is the URL path template for this dialog. Path parameters use
+  /// `:fieldName` syntax matching the class fields.
+  const Add2AppFlutterDialog(this.path);
+
+  /// URL path template, e.g. '/confirm-delete/:itemId'.
+  final String path;
+}
+
 /// Marks a class as a native route (Flutter -> native).
 ///
 /// The generator creates:

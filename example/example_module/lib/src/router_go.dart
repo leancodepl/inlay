@@ -3,14 +3,16 @@ import 'package:go_router/go_router.dart';
 import 'package:leancode_add2app/leancode_add2app.dart';
 
 import 'generated/routes.g.dart';
+import 'screens/confirm_action_content.dart';
 import 'screens/counter_screen.dart';
 import 'screens/greeting_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/profile_screen.dart';
+import 'screens/theme_picker_content.dart';
 
 GoRouter createExampleGoRouter({
   String initialLocation = '/',
-  FlutterRouteBase? initialExtra,
+  Add2AppRoute? initialExtra,
 }) {
   return GoRouter(
     initialLocation: initialLocation,
@@ -41,6 +43,33 @@ GoRouter createExampleGoRouter({
           return ProfileScreen(
             userId: page?.userId ?? state.pathParameters['userId'] ?? 'guest',
             badges: page?.badges ?? const [],
+          );
+        },
+      ),
+      GoRoute(
+        path: ConfirmActionDialog.pathTemplate,
+        pageBuilder: (_, state) {
+          final dialog = state.extra is ConfirmActionDialog
+              ? state.extra! as ConfirmActionDialog
+              : null;
+          final action = dialog?.action ?? state.pathParameters['action'] ?? '';
+          return Add2AppDialogPage(
+            builder: (_) =>
+                ConfirmActionContent(action: action, message: dialog?.message),
+          );
+        },
+      ),
+      GoRoute(
+        path: ThemePickerDialog.pathTemplate,
+        pageBuilder: (_, state) {
+          final dialog = state.extra is ThemePickerDialog
+              ? state.extra! as ThemePickerDialog
+              : null;
+          final userId = dialog?.userId ?? state.pathParameters['userId'] ?? '';
+          return Add2AppBottomSheetPage(
+            isScrollControlled: true,
+            showDragHandle: true,
+            builder: (_) => ThemePickerContent(userId: userId),
           );
         },
       ),

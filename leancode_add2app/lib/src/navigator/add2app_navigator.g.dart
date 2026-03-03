@@ -273,4 +273,34 @@ class Add2AppNavigatorHostApi {
       return (pigeonVar_replyList[0] as PageSettings?);
     }
   }
+
+  /// Present a Flutter dialog in a transparent native container.
+  ///
+  /// The native side creates a transparent Activity/ViewController and
+  /// starts a new Flutter engine. Flutter renders the dialog content
+  /// (barrier, animation, positioning) over the native screen underneath.
+  Future<void> presentDialog(PageSettings page) async {
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.leancode_add2app.Add2AppNavigatorHostApi.presentDialog$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(
+      <Object?>[page],
+    );
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+    if (pigeonVar_replyList == null) {
+      throw _createConnectionError(pigeonVar_channelName);
+    } else if (pigeonVar_replyList.length > 1) {
+      throw PlatformException(
+        code: pigeonVar_replyList[0]! as String,
+        message: pigeonVar_replyList[1] as String?,
+        details: pigeonVar_replyList[2],
+      );
+    } else {
+      return;
+    }
+  }
 }

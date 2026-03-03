@@ -52,6 +52,22 @@ final class HomeViewController: UIViewController {
             )
         })
 
+        stack.addArrangedSubview(makeButton("Open Confirm Dialog") { [weak self] in
+            guard let self else { return }
+            Add2AppNavigator.shared.presentDialog(
+                from: self,
+                route: ConfirmActionDialog(action: "delete", message: "Are you sure?")
+            )
+        })
+
+        stack.addArrangedSubview(makeButton("Open Theme Picker Dialog") { [weak self] in
+            guard let self else { return }
+            Add2AppNavigator.shared.presentDialog(
+                from: self,
+                route: ThemePickerDialog(userId: "42")
+            )
+        })
+
         if #available(iOS 16.0, *) {
             stack.addArrangedSubview(makeButton("Open SwiftUI Counter View") { [weak self] in
                 guard let self else { return }

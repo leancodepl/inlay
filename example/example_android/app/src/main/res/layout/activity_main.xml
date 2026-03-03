@@ -53,5 +53,17 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Open Compose + Flutter demo" />
+
+        <Button
+            android:id="@+id/btnConfirmDialog"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Open Confirm Dialog" />
+
+        <Button
+            android:id="@+id/btnThemePickerDialog"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Open Theme Picker Dialog" />
     </LinearLayout>
 </ScrollView>

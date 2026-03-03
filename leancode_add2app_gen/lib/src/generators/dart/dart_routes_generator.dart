@@ -50,6 +50,18 @@ String generateDartRoutes({
     buffer.writeln();
   }
 
+  if (schema.flutterDialogRoutes.isNotEmpty) {
+    // Sealed base class for exhaustive pattern matching on dialog routes.
+    _writeFlutterDialogRouteSealedClass(buffer);
+    buffer.writeln();
+  }
+
+  // Generate Flutter dialog route classes.
+  for (final route in schema.flutterDialogRoutes) {
+    _writeFlutterDialogRoute(buffer, route, typeGraph);
+    buffer.writeln();
+  }
+
   // Generate native route classes.
   for (final route in schema.nativeRoutes) {
     _writeNativeRoute(buffer, route, typeGraph);
@@ -59,6 +71,23 @@ String generateDartRoutes({
   // Generate decoder function for Flutter routes.
   if (schema.flutterRoutes.isNotEmpty) {
     _writeDecodeFlutterRouteData(buffer, schema.flutterRoutes);
+    buffer.writeln();
+  }
+
+  // Generate decoder function for Flutter dialog routes.
+  if (schema.flutterDialogRoutes.isNotEmpty) {
+    _writeDecodeFlutterDialogRouteData(buffer, schema.flutterDialogRoutes);
+    buffer.writeln();
+  }
+
+  // Generate combined decoder if both page and dialog routes exist.
+  if (schema.flutterRoutes.isNotEmpty ||
+      schema.flutterDialogRoutes.isNotEmpty) {
+    _writeDecodeAdd2AppRouteData(
+      buffer,
+      hasFlutterRoutes: schema.flutterRoutes.isNotEmpty,
+      hasDialogRoutes: schema.flutterDialogRoutes.isNotEmpty,
+    );
   }
 
   final output = buffer.toString();
@@ -411,6 +440,191 @@ void _writeNativeRoute(
     ..writeln('    PageSettings(routeId: routeId, params: encode()),')
     ..writeln('  );')
     ..writeln('}');
+}
+
+void _writeFlutterDialogRouteSealedClass(StringBuffer buffer) {
+  buffer
+    ..writeln('/// Sealed base for all Flutter dialog routes in this module.')
+    ..writeln('/// Use Dart pattern matching for exhaustive route resolution:')
+    ..writeln('///')
+    ..writeln('/// ```dart')
+    ..writeln('/// final widget = switch (route) {')
+    ..writeln('///   ConfirmDialog(:final action) => ConfirmContent(action),')
+    ..writeln('///   null => const SizedBox.shrink(),')
+    ..writeln('/// };')
+    ..writeln('/// ```')
+    ..writeln(
+      'sealed class FlutterDialogRoute extends FlutterDialogRouteBase {',
+    )
+    ..writeln('  const FlutterDialogRoute();')
+    ..writeln('}');
+}
+
+void _writeFlutterDialogRoute(
+  StringBuffer buffer,
+  RouteDefinition route,
+  Map<String, TypeDefinition> typeGraph,
+) {
+  final className = route.className;
+  final fields = route.fields;
+  final routeName = route.routeName;
+  final path = route.path;
+
+  buffer
+    ..writeln('class $className extends FlutterDialogRoute {')
+    ..write('  const $className(');
+  if (fields.isNotEmpty) {
+    buffer.writeln('{');
+    for (final field in fields) {
+      final required = field.isRequired ? 'required ' : '';
+      buffer.writeln('    ${required}this.${field.name},');
+    }
+    buffer.write('  }');
+  }
+  buffer
+    ..writeln(');')
+    ..writeln();
+
+  for (final field in fields) {
+    buffer.writeln('  final ${field.type.toSource()} ${field.name};');
+  }
+
+  if (fields.isNotEmpty) {
+    buffer.writeln();
+  }
+
+  buffer.writeln("  static const String routeName = '$routeName';");
+
+  if (path != null) {
+    final pathParamNames = extractPathParamNames(path);
+    final queryFields = fields.where(
+      (f) =>
+          !pathParamNames.contains(f.name) && isSimpleType(f.type, typeGraph),
+    );
+
+    buffer
+      ..writeln()
+      ..writeln("  static const String pathTemplate = '$path';")
+      ..writeln()
+      ..writeln('  String toPath() {');
+
+    var pathExpr = path;
+    for (final paramName in pathParamNames) {
+      final field = fields.where((f) => f.name == paramName).firstOrNull;
+      final isNullable = field?.type.isNullable ?? false;
+      final encode = isNullable
+          ? "\${Uri.encodeComponent($paramName ?? '')}"
+          : '\${Uri.encodeComponent($paramName)}';
+      pathExpr = pathExpr.replaceAll(':$paramName', encode);
+    }
+    buffer.writeln("    final basePath = '$pathExpr';");
+
+    if (queryFields.isEmpty) {
+      buffer.writeln('    return basePath;');
+    } else {
+      buffer.writeln('    final query = <String, String>{};');
+      for (final field in queryFields) {
+        final valueExpr = _dartFieldToQueryValue(field);
+        if (field.type.isNullable) {
+          buffer.writeln(
+            "    if (${field.name} != null) query['${field.name}'] = $valueExpr;",
+          );
+        } else {
+          buffer.writeln("    query['${field.name}'] = $valueExpr;");
+        }
+      }
+      buffer
+        ..writeln('    if (query.isEmpty) return basePath;')
+        ..writeln(
+          r"    return '$basePath?${query.entries.map((e) => '${e.key}=${Uri.encodeComponent(e.value)}').join('&')}';",
+        );
+    }
+    buffer.writeln('  }');
+  }
+
+  buffer
+    ..writeln()
+    ..writeln('  ${generateDartEncodeMethod(fields, typeGraph)};')
+    ..writeln()
+    ..writeln('  ${generateDartDecodeMethod(className, fields, typeGraph)}')
+    ..writeln()
+    ..writeln('  ${_generateDecodeFromMapMethod(className, fields, typeGraph)}')
+    ..writeln()
+    ..writeln('  @override')
+    ..writeln('  String get routeId => routeName;')
+    ..writeln()
+    ..writeln('  @override')
+    ..writeln('  Object? get params => encode();');
+
+  if (path != null) {
+    buffer
+      ..writeln()
+      ..writeln('  @override')
+      ..writeln('  PageSettings toPageSettings() {')
+      ..writeln(
+        '    return PageSettings(routeId: routeId, params: params, path: toPath());',
+      )
+      ..writeln('  }');
+  }
+
+  buffer.writeln('}');
+}
+
+void _writeDecodeFlutterDialogRouteData(
+  StringBuffer buffer,
+  List<RouteDefinition> routes,
+) {
+  buffer
+    ..writeln(
+      '/// Decodes [PageSettings] into a typed [FlutterDialogRoute] subclass.',
+    )
+    ..writeln(
+      'FlutterDialogRoute? decodeFlutterDialogRouteData(PageSettings? settings) {',
+    )
+    ..writeln('  if (settings == null) return null;')
+    ..writeln('  final params = settings.params;')
+    ..writeln('  if (params is! List) return null;')
+    ..writeln('  return switch (settings.routeId) {');
+
+  for (final route in routes) {
+    buffer.writeln(
+      '    ${route.className}.routeName => ${route.className}.decode(params.cast<Object?>()),',
+    );
+  }
+
+  buffer
+    ..writeln('    _ => null,')
+    ..writeln('  };')
+    ..writeln('}');
+}
+
+void _writeDecodeAdd2AppRouteData(
+  StringBuffer buffer, {
+  required bool hasFlutterRoutes,
+  required bool hasDialogRoutes,
+}) {
+  buffer
+    ..writeln('/// Combined decoder — tries page routes, then dialog routes.')
+    ..writeln('///')
+    ..writeln(
+      '/// Pass this to [Add2AppNavigator.fetchInitialRoute] as the decoder',
+    )
+    ..writeln(
+      '/// when you need a single entrypoint that handles both pages and dialogs.',
+    )
+    ..writeln('Add2AppRoute? decodeAdd2AppRouteData(PageSettings? settings) {');
+
+  if (hasFlutterRoutes && hasDialogRoutes) {
+    buffer.writeln(
+      '  return decodeFlutterRouteData(settings) ?? decodeFlutterDialogRouteData(settings);',
+    );
+  } else if (hasFlutterRoutes) {
+    buffer.writeln('  return decodeFlutterRouteData(settings);');
+  } else {
+    buffer.writeln('  return decodeFlutterDialogRouteData(settings);');
+  }
+
+  buffer.writeln('}');
 }
 
 void _writeDecodeFlutterRouteData(

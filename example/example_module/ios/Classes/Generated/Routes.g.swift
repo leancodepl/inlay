@@ -154,6 +154,80 @@ struct ProfilePage: FlutterRoute {
     }
 }
 
+struct ConfirmActionDialog: FlutterDialogRoute {
+    let action: String
+    let message: String?
+
+    static let routeName = "confirmActionDialog"
+    static let pathTemplate = "/confirm-action/:action"
+
+    static func fromList(_ list: [Any?]) -> ConfirmActionDialog {
+        ConfirmActionDialog(
+            action: list[0] as! String,
+            message: list[1] as? String
+        )
+    }
+
+    func toList() -> [Any?] {
+        [
+            action,
+            message.map { $0 },
+        ]
+    }
+
+    func toDict() -> [String: String] {
+        [
+            "action": action,
+            "message": message ?? ""
+        ]
+    }
+
+    func toPath() -> String {
+        let basePath = "/confirm-action/\(action.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? action)"
+        var query: [String] = []
+        if let messageVal = message { query.append("message=\(messageVal.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? messageVal)") }
+        if query.isEmpty { return basePath }
+        return "\(basePath)?\(query.joined(separator: "&"))"
+    }
+
+    func toPageSettings() -> PageSettings {
+        PageSettings(routeId: Self.routeName, params: toList(), path: toPath())
+    }
+}
+
+struct ThemePickerDialog: FlutterDialogRoute {
+    let userId: String
+
+    static let routeName = "themePickerDialog"
+    static let pathTemplate = "/theme-picker/:userId"
+
+    static func fromList(_ list: [Any?]) -> ThemePickerDialog {
+        ThemePickerDialog(
+            userId: list[0] as! String
+        )
+    }
+
+    func toList() -> [Any?] {
+        [
+            userId,
+        ]
+    }
+
+    func toDict() -> [String: String] {
+        [
+            "userId": userId
+        ]
+    }
+
+    func toPath() -> String {
+        "/theme-picker/\(userId.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? userId)"
+    }
+
+    func toPageSettings() -> PageSettings {
+        PageSettings(routeId: Self.routeName, params: toList(), path: toPath())
+    }
+}
+
 struct NativeSettingsPage {
     let source: String?
 

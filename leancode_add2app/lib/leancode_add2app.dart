@@ -14,6 +14,7 @@ export 'src/cubit/add2app_cubit.dart';
 export 'src/cubit/add2app_state.dart';
 export 'src/cubit/add2app_store_observer.dart';
 export 'src/navigator/add2app_back_button_dispatcher.dart';
+export 'src/navigator/add2app_dialog.dart';
 export 'src/navigator/add2app_native_pop_gesture_observer.dart';
 export 'src/navigator/add2app_navigator.dart';
 export 'src/navigator/integrations/navigator2_integration.dart';

@@ -208,6 +208,57 @@ final class Add2AppNavigator {
         )
     }
 
+    // MARK: - Dialog API
+
+    /// Present a Flutter dialog in a transparent native container.
+    ///
+    /// The dialog VC is presented modally with `.overCurrentContext` style,
+    /// so the underlying screen remains visible. Flutter renders the dialog
+    /// content (barrier, animation, positioning).
+    func presentDialog(
+        from viewController: UIViewController,
+        route: FlutterDialogRoute,
+        animated: Bool = true
+    ) {
+        presentDialog(from: viewController, page: route.toPageSettings(), animated: animated)
+    }
+
+    func presentDialog(
+        from viewController: UIViewController,
+        page: PageSettings,
+        animated: Bool = true
+    ) {
+        start(prewarm: isPrewarmEnabled)
+        let vc = createFlutterDialogViewController(page: page)
+        vc.modalPresentationStyle = .overFullScreen
+        vc.modalTransitionStyle = .crossDissolve
+        viewController.present(vc, animated: animated)
+    }
+
+    /// Create a transparent `FlutterViewController` configured for a dialog overlay.
+    func createFlutterDialogViewController(
+        page: PageSettings
+    ) -> Add2AppFlutterDialogViewController {
+        start(prewarm: isPrewarmEnabled)
+
+        let initialRoute = Self.encodePageSettings(page)
+
+        let options = FlutterEngineGroupOptions()
+        options.entrypoint = Self.dartEntrypoint
+        options.initialRoute = initialRoute
+        let engine = engineGroup!.makeEngine(with: options)
+
+        let vc = Add2AppFlutterDialogViewController(engine: engine, nibName: nil, bundle: nil)
+        vc.page = page
+
+        configureEngine(
+            engine,
+            viewController: vc,
+            routeData: page
+        )
+        return vc
+    }
+
     // MARK: - Internal PageSettings-based navigation (used by Pigeon HostApi)
 
     func push(
@@ -450,6 +501,13 @@ private class Add2AppNavigatorHostApiImpl: Add2AppNavigatorHostApi {
     func getInitialRouteData() throws -> PageSettings? {
         return routeData
     }
+
+    func presentDialog(page: PageSettings) throws {
+        DispatchQueue.main.async { [weak self] in
+            guard let self, let vc = self.viewController, let nav = self.navigator else { return }
+            nav.presentDialog(from: vc, page: page)
+        }
+    }
 }
 
 /// No-op HostApi for the hidden warm-up engine.
@@ -459,4 +517,5 @@ private class Add2AppNavigatorPrewarmHostApi: Add2AppNavigatorHostApi {
     func pushNativeRoute(route: PageSettings) throws {}
     func setNativePopGestureEnabled(enabled: Bool) throws {}
     func getInitialRouteData() throws -> PageSettings? { nil }
+    func presentDialog(page: PageSettings) throws {}
 }

@@ -174,6 +174,25 @@ enum ConversationCategory {
 }
 ''';
 
+const _dialogRoutesSource = '''
+import 'package:leancode_add2app/leancode_add2app.dart';
+
+@Add2AppFlutterDialog('/confirm-action/:action')
+class ConfirmActionDialog {
+  const ConfirmActionDialog({required this.action, this.message});
+
+  final String action;
+  final String? message;
+}
+
+@Add2AppFlutterDialog('/theme-picker/:userId')
+class ThemePickerDialog {
+  const ThemePickerDialog({required this.userId});
+
+  final String userId;
+}
+''';
+
 const _invalidStoreMultipleKeysSource = '''
 import 'package:leancode_add2app/leancode_add2app.dart';
 
@@ -373,6 +392,25 @@ void main() {
       );
       expect(metadataField.type.baseName, 'Map');
       expect(metadataField.type.typeArguments, hasLength(2));
+    });
+
+    test('parses flutter dialog annotations', () {
+      final schema = parser.parse(_dialogRoutesSource);
+
+      expect(schema.flutterDialogRoutes, hasLength(2));
+
+      final confirmAction = schema.flutterDialogRoutes[0];
+      expect(confirmAction.className, 'ConfirmActionDialog');
+      expect(confirmAction.routeName, 'confirmActionDialog');
+      expect(confirmAction.routeType.name, 'flutterDialog');
+      expect(confirmAction.path, '/confirm-action/:action');
+      expect(confirmAction.fields, hasLength(2));
+
+      final themePicker = schema.flutterDialogRoutes[1];
+      expect(themePicker.className, 'ThemePickerDialog');
+      expect(themePicker.routeName, 'themePickerDialog');
+      expect(themePicker.path, '/theme-picker/:userId');
+      expect(themePicker.fields, hasLength(1));
     });
 
     test('parses enhanced enum declarations', () {
@@ -587,6 +625,57 @@ class SecondPage {
       expect(code, contains('DeliveryChannel.values[list[0] as int]'));
     });
 
+    test('generates dialog routes with sealed class and decoder', () {
+      final schema = parser.parse(_dialogRoutesSource);
+      final resolver = TypeResolver();
+      final result = resolver.resolve(schema);
+
+      final code = generateDartRoutes(
+        schema: schema,
+        typeGraph: result.typeGraph,
+      );
+
+      expect(
+        code,
+        contains(
+          'sealed class FlutterDialogRoute extends FlutterDialogRouteBase',
+        ),
+      );
+      expect(
+        code,
+        contains('class ConfirmActionDialog extends FlutterDialogRoute'),
+      );
+      expect(
+        code,
+        contains('class ThemePickerDialog extends FlutterDialogRoute'),
+      );
+      expect(code, contains('decodeFlutterDialogRouteData'));
+      expect(code, contains('decodeAdd2AppRouteData'));
+    });
+
+    test('generates combined decoder for pages and dialogs', () {
+      final routesSchema = parser.parse(_routesSource);
+      final dialogSchema = parser.parse(_dialogRoutesSource);
+      final merged = routesSchema.merge(dialogSchema);
+      final resolver = TypeResolver();
+      final result = resolver.resolve(merged);
+
+      final code = generateDartRoutes(
+        schema: merged,
+        typeGraph: result.typeGraph,
+      );
+
+      expect(code, contains('decodeFlutterRouteData'));
+      expect(code, contains('decodeFlutterDialogRouteData'));
+      expect(code, contains('Add2AppRoute? decodeAdd2AppRouteData'));
+      expect(
+        code,
+        contains(
+          'return decodeFlutterRouteData(settings) ?? decodeFlutterDialogRouteData(settings);',
+        ),
+      );
+    });
+
     test('generates Dart key helpers for int and enum keys', () {
       final schema = parser.parse(_storeKeyTypesSource);
       final resolver = TypeResolver();
@@ -656,6 +745,23 @@ class SecondPage {
       );
     });
 
+    test('generates dialog route data classes with FlutterDialogRoute', () {
+      final schema = parser.parse(_dialogRoutesSource);
+      final resolver = TypeResolver();
+      final result = resolver.resolve(schema);
+
+      final code = generateKotlinRoutes(
+        schema: schema,
+        typeGraph: result.typeGraph,
+        packageName: 'com.example.generated',
+      );
+
+      expect(code, contains('import co.leancode.add2app.FlutterDialogRoute'));
+      expect(code, contains('data class ConfirmActionDialog('));
+      expect(code, contains(') : FlutterDialogRoute {'));
+      expect(code, contains('override fun toPageSettings()'));
+    });
+
     test('generates Kotlin key helpers for int and enum keys', () {
       final schema = parser.parse(_storeKeyTypesSource);
       final resolver = TypeResolver();
@@ -695,10 +801,27 @@ class SecondPage {
         typeGraph: result.typeGraph,
       );
 
-      expect(code, contains('struct ContactDetailsPage {'));
+      expect(code, contains('struct ContactDetailsPage: FlutterRoute {'));
       expect(code, contains('func toList() -> [Any?]'));
       expect(code, contains('static func fromList(_ list: [Any?])'));
       expect(code, contains('static let routeName = "contactDetails"'));
+    });
+
+    test('generates dialog route structs with FlutterDialogRoute', () {
+      final schema = parser.parse(_dialogRoutesSource);
+      final resolver = TypeResolver();
+      final result = resolver.resolve(schema);
+
+      final code = generateSwiftRoutes(
+        schema: schema,
+        typeGraph: result.typeGraph,
+      );
+
+      expect(
+        code,
+        contains('struct ConfirmActionDialog: FlutterDialogRoute {'),
+      );
+      expect(code, contains('func toPageSettings() -> PageSettings'));
     });
 
     test('generates enums with raw values', () {

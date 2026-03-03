@@ -5,3 +5,7 @@ import co.leancode.add2app.navigator.PageSettings
 interface FlutterRoute {
     fun toPageSettings(): PageSettings
 }
+
+interface FlutterDialogRoute {
+    fun toPageSettings(): PageSettings
+}

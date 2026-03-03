@@ -46,6 +46,12 @@ String generateSwiftRoutes({
     buffer.writeln();
   }
 
+  // Generate structs for Flutter dialog routes.
+  for (final route in schema.flutterDialogRoutes) {
+    _writeRouteStruct(buffer, route, typeGraph);
+    buffer.writeln();
+  }
+
   // Generate structs for native routes.
   for (final route in schema.nativeRoutes) {
     _writeRouteStruct(buffer, route, typeGraph);
@@ -89,11 +95,14 @@ void _writeRouteStruct(
   final structName = route.className;
   final fields = route.fields;
   final isFlutterRoute = route.routeType == RouteType.flutter;
+  final isDialogRoute = route.routeType == RouteType.flutterDialog;
   final path = route.path;
 
-  // Flutter routes conform to FlutterRoute protocol.
+  // Flutter routes conform to FlutterRoute, dialog routes to FlutterDialogRoute.
   if (isFlutterRoute) {
     buffer.writeln('struct $structName: FlutterRoute {');
+  } else if (isDialogRoute) {
+    buffer.writeln('struct $structName: FlutterDialogRoute {');
   } else {
     buffer.writeln('struct $structName {');
   }
@@ -123,8 +132,8 @@ void _writeRouteStruct(
     // toList() method.
     ..writeln('    ${generateSwiftToListMethod(fields, typeGraph)}');
 
-  // For Flutter routes, add toDict(), toPath(), and toPageSettings().
-  if (isFlutterRoute) {
+  // For Flutter/dialog routes, add toDict(), toPath(), and toPageSettings().
+  if (isFlutterRoute || isDialogRoute) {
     final dictFields = fields
         .where((f) => isSimpleType(f.type, typeGraph))
         .toList();

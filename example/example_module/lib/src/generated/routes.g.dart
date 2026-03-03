@@ -188,6 +188,104 @@ class ProfilePage extends FlutterRoute {
   }
 }
 
+/// Sealed base for all Flutter dialog routes in this module.
+/// Use Dart pattern matching for exhaustive route resolution:
+///
+/// ```dart
+/// final widget = switch (route) {
+///   ConfirmDialog(:final action) => ConfirmContent(action),
+///   null => const SizedBox.shrink(),
+/// };
+/// ```
+sealed class FlutterDialogRoute extends FlutterDialogRouteBase {
+  const FlutterDialogRoute();
+}
+
+class ConfirmActionDialog extends FlutterDialogRoute {
+  const ConfirmActionDialog({required this.action, this.message});
+
+  final String action;
+  final String? message;
+
+  static const String routeName = 'confirmActionDialog';
+
+  static const String pathTemplate = '/confirm-action/:action';
+
+  String toPath() {
+    final basePath = '/confirm-action/${Uri.encodeComponent(action)}';
+    final query = <String, String>{};
+    if (message != null) query['message'] = message!;
+    if (query.isEmpty) return basePath;
+    return '$basePath?${query.entries.map((e) => '${e.key}=${Uri.encodeComponent(e.value)}').join('&')}';
+  }
+
+  List<Object?> encode() => <Object?>[
+    action,
+    message != null ? message! : null,
+  ];
+
+  static ConfirmActionDialog decode(List<Object?> list) {
+    return ConfirmActionDialog(
+      action: list[0] as String,
+      message: list[1] as String?,
+    );
+  }
+
+  static ConfirmActionDialog decodeFromMap(Map<Object?, Object?> map) {
+    return ConfirmActionDialog(
+      action: map['action'] as String? ?? '',
+      message: map['message'] as String?,
+    );
+  }
+
+  @override
+  String get routeId => routeName;
+
+  @override
+  Object? get params => encode();
+
+  @override
+  PageSettings toPageSettings() {
+    return PageSettings(routeId: routeId, params: params, path: toPath());
+  }
+}
+
+class ThemePickerDialog extends FlutterDialogRoute {
+  const ThemePickerDialog({required this.userId});
+
+  final String userId;
+
+  static const String routeName = 'themePickerDialog';
+
+  static const String pathTemplate = '/theme-picker/:userId';
+
+  String toPath() {
+    final basePath = '/theme-picker/${Uri.encodeComponent(userId)}';
+    return basePath;
+  }
+
+  List<Object?> encode() => <Object?>[userId];
+
+  static ThemePickerDialog decode(List<Object?> list) {
+    return ThemePickerDialog(userId: list[0] as String);
+  }
+
+  static ThemePickerDialog decodeFromMap(Map<Object?, Object?> map) {
+    return ThemePickerDialog(userId: map['userId'] as String? ?? '');
+  }
+
+  @override
+  String get routeId => routeName;
+
+  @override
+  Object? get params => encode();
+
+  @override
+  PageSettings toPageSettings() {
+    return PageSettings(routeId: routeId, params: params, path: toPath());
+  }
+}
+
 class NativeSettingsPage {
   const NativeSettingsPage({this.source});
 
@@ -236,4 +334,29 @@ FlutterRoute? decodeFlutterRouteData(PageSettings? settings) {
     ProfilePage.routeName => ProfilePage.decode(params.cast<Object?>()),
     _ => null,
   };
+}
+
+/// Decodes [PageSettings] into a typed [FlutterDialogRoute] subclass.
+FlutterDialogRoute? decodeFlutterDialogRouteData(PageSettings? settings) {
+  if (settings == null) return null;
+  final params = settings.params;
+  if (params is! List) return null;
+  return switch (settings.routeId) {
+    ConfirmActionDialog.routeName => ConfirmActionDialog.decode(
+      params.cast<Object?>(),
+    ),
+    ThemePickerDialog.routeName => ThemePickerDialog.decode(
+      params.cast<Object?>(),
+    ),
+    _ => null,
+  };
+}
+
+/// Combined decoder — tries page routes, then dialog routes.
+///
+/// Pass this to [Add2AppNavigator.fetchInitialRoute] as the decoder
+/// when you need a single entrypoint that handles both pages and dialogs.
+Add2AppRoute? decodeAdd2AppRouteData(PageSettings? settings) {
+  return decodeFlutterRouteData(settings) ??
+      decodeFlutterDialogRouteData(settings);
 }

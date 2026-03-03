@@ -6,10 +6,12 @@ import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
 import co.leancode.add2app.Add2AppNavigator
 import co.leancode.example_module.generated.BadgeLevel
+import co.leancode.example_module.generated.ConfirmActionDialog
 import co.leancode.example_module.generated.CounterPage
 import co.leancode.example_module.generated.GreetingPage
 import co.leancode.example_module.generated.GreetingStyle
 import co.leancode.example_module.generated.ProfilePage
+import co.leancode.example_module.generated.ThemePickerDialog
 import co.leancode.example_module.generated.UserBadge
 
 class MainActivity : AppCompatActivity() {
@@ -48,6 +50,20 @@ class MainActivity : AppCompatActivity() {
 
     findViewById<Button>(R.id.btnComposeDemo).setOnClickListener {
       startActivity(Intent(this, ComposeActivity::class.java))
+    }
+
+    findViewById<Button>(R.id.btnConfirmDialog).setOnClickListener {
+      Add2AppNavigator.presentDialog(
+        this,
+        ConfirmActionDialog(action = "delete", message = "Are you sure?"),
+      )
+    }
+
+    findViewById<Button>(R.id.btnThemePickerDialog).setOnClickListener {
+      Add2AppNavigator.presentDialog(
+        this,
+        ThemePickerDialog(userId = "42"),
+      )
     }
   }
 }

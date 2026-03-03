@@ -21,6 +21,7 @@ String generateKotlinRoutes({
   required String packageName,
 }) {
   final hasFlutterRoutes = schema.flutterRoutes.isNotEmpty;
+  final hasDialogRoutes = schema.flutterDialogRoutes.isNotEmpty;
   final buffer = StringBuffer()
     // Header.
     ..writeln('// GENERATED CODE — DO NOT MODIFY BY HAND')
@@ -32,6 +33,9 @@ String generateKotlinRoutes({
     ..writeln('import android.net.Uri');
   if (hasFlutterRoutes) {
     buffer.writeln('import co.leancode.add2app.FlutterRoute');
+  }
+  if (hasDialogRoutes) {
+    buffer.writeln('import co.leancode.add2app.FlutterDialogRoute');
   }
   buffer
     ..writeln(
@@ -54,6 +58,12 @@ String generateKotlinRoutes({
 
   // Generate data classes for Flutter routes.
   for (final route in schema.flutterRoutes) {
+    _writeRouteDataClass(buffer, route, typeGraph);
+    buffer.writeln();
+  }
+
+  // Generate data classes for Flutter dialog routes.
+  for (final route in schema.flutterDialogRoutes) {
     _writeRouteDataClass(buffer, route, typeGraph);
     buffer.writeln();
   }
@@ -105,6 +115,7 @@ void _writeRouteDataClass(
   final className = route.className;
   final fields = route.fields;
   final isFlutterRoute = route.routeType == RouteType.flutter;
+  final isDialogRoute = route.routeType == RouteType.flutterDialog;
   final path = route.path;
 
   buffer.write('data class $className(');
@@ -118,9 +129,11 @@ void _writeRouteDataClass(
     }
   }
 
-  // Flutter routes implement FlutterRoute interface.
+  // Flutter routes implement FlutterRoute interface, dialog routes implement FlutterDialogRoute.
   if (isFlutterRoute) {
     buffer.writeln(') : FlutterRoute {');
+  } else if (isDialogRoute) {
+    buffer.writeln(') : FlutterDialogRoute {');
   } else {
     buffer.writeln(') {');
   }
@@ -142,8 +155,8 @@ void _writeRouteDataClass(
     // toList() method.
     ..writeln('    ${generateKotlinToListMethod(fields, typeGraph)}');
 
-  // For Flutter routes, add toMap(), toPath(), and toPageSettings().
-  if (isFlutterRoute) {
+  // For Flutter/dialog routes, add toMap(), toPath(), and toPageSettings().
+  if (isFlutterRoute || isDialogRoute) {
     buffer
       ..writeln()
       ..writeln('    fun toMap(): Map<String, String> = mapOf(');

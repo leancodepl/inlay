@@ -8,7 +8,7 @@ import 'screens/greeting_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/profile_screen.dart';
 
-RootStackRouter createExampleAutoRouter({FlutterRouteBase? routeData}) {
+RootStackRouter createExampleAutoRouter({Add2AppRoute? routeData}) {
   return RootStackRouter.build(
     routes: [
       NamedRouteDef(
