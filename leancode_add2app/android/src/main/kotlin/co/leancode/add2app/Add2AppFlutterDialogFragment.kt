@@ -56,6 +56,10 @@ class Add2AppFlutterDialogFragment : DialogFragment() {
                 requireContext(),
                 routeData,
             )
+            // Dismiss the DialogFragment directly instead of going through
+            // onBackPressedDispatcher, which would re-enter the FlutterFragment's
+            // own back-pressed callback and finish the activity.
+            fragment.onPopOverride = { dismiss() }
             childFragmentManager.beginTransaction()
                 .replace(view.id, fragment)
                 .commitNow()
@@ -71,6 +75,8 @@ class Add2AppFlutterDialogFragment : DialogFragment() {
             )
             setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
             clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
+            // Extend the window behind system bars so no black bars appear.
+            addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS)
         }
     }
 

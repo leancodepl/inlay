@@ -64,7 +64,11 @@ class _DialogLauncherState extends State<_DialogLauncher> {
   }
 }
 
-/// A [Page] that shows a dialog overlay via [DialogRoute].
+/// A [Page] that shows a dialog overlay.
+///
+/// The dialog is launched via [showDialog] as a non-page route so that
+/// barrier dismissal bypasses go_router's `onPopPage` (which would block
+/// the pop when the dialog is the only route in the engine).
 ///
 /// Use in go_router's `pageBuilder`:
 /// ```dart
@@ -92,18 +96,14 @@ class Add2AppDialogPage<T> extends Page<T> {
 
   @override
   Route<T> createRoute(BuildContext context) {
-    return _NativePopDialogRoute<T>(
-      context: context,
-      builder: builder,
-      barrierDismissible: barrierDismissible,
-      barrierColor: barrierColor ?? Colors.black54,
-      barrierLabel: barrierLabel,
-      settings: this,
-    );
+    return _Add2AppDialogPageRoute<T>(page: this);
   }
 }
 
-/// A [Page] that shows a modal bottom sheet via [ModalBottomSheetRoute].
+/// A [Page] that shows a modal bottom sheet.
+///
+/// Like [Add2AppDialogPage], the sheet is launched via
+/// [showModalBottomSheet] as a non-page route.
 class Add2AppBottomSheetPage<T> extends Page<T> {
   const Add2AppBottomSheetPage({
     required this.builder,
@@ -123,56 +123,198 @@ class Add2AppBottomSheetPage<T> extends Page<T> {
 
   @override
   Route<T> createRoute(BuildContext context) {
-    return _NativePopBottomSheetRoute<T>(
-      builder: builder,
-      isScrollControlled: isScrollControlled,
-      showDragHandle: showDragHandle,
-      backgroundColor: backgroundColor,
-      modalBarrierColor: modalBarrierColor,
-      settings: this,
+    return _Add2AppBottomSheetPageRoute<T>(page: this);
+  }
+}
+
+/// Transparent [PageRoute] that immediately shows a [showDialog] on first
+/// frame. When the dialog is dismissed, the native container is popped.
+class _Add2AppDialogPageRoute<T> extends PageRoute<T> {
+  _Add2AppDialogPageRoute({required Add2AppDialogPage<T> page})
+    : _page = page,
+      super(settings: page);
+
+  final Add2AppDialogPage<T> _page;
+
+  @override
+  bool get opaque => false;
+
+  @override
+  bool get barrierDismissible => false;
+
+  @override
+  Color? get barrierColor => null;
+
+  @override
+  String? get barrierLabel => null;
+
+  @override
+  bool get maintainState => false;
+
+  @override
+  Duration get transitionDuration => Duration.zero;
+
+  @override
+  Widget buildPage(
+    BuildContext context,
+    Animation<double> animation,
+    Animation<double> secondaryAnimation,
+  ) {
+    return _ShowDialogOnReady(
+      builder: _page.builder,
+      barrierDismissible: _page.barrierDismissible,
+      barrierColor: _page.barrierColor,
+      barrierLabel: _page.barrierLabel,
     );
   }
 }
 
-/// [DialogRoute] that dismisses the native transparent container when popped.
-class _NativePopDialogRoute<T> extends DialogRoute<T> {
-  _NativePopDialogRoute({
-    required super.context,
-    required super.builder,
-    super.barrierDismissible,
-    super.barrierColor,
-    super.barrierLabel,
-    super.settings,
-  });
+/// Transparent [PageRoute] that immediately shows a [showModalBottomSheet] on
+/// first frame. When the sheet is dismissed, the native container is popped.
+class _Add2AppBottomSheetPageRoute<T> extends PageRoute<T> {
+  _Add2AppBottomSheetPageRoute({required Add2AppBottomSheetPage<T> page})
+    : _page = page,
+      super(settings: page);
+
+  final Add2AppBottomSheetPage<T> _page;
 
   @override
-  bool didPop(T? result) {
-    final popped = super.didPop(result);
-    if (popped) {
-      unawaited(Add2AppNavigator.instance.pop().catchError((_) {}));
-    }
-    return popped;
+  bool get opaque => false;
+
+  @override
+  bool get barrierDismissible => false;
+
+  @override
+  Color? get barrierColor => null;
+
+  @override
+  String? get barrierLabel => null;
+
+  @override
+  bool get maintainState => false;
+
+  @override
+  Duration get transitionDuration => Duration.zero;
+
+  @override
+  Widget buildPage(
+    BuildContext context,
+    Animation<double> animation,
+    Animation<double> secondaryAnimation,
+  ) {
+    return _ShowBottomSheetOnReady(
+      builder: _page.builder,
+      isScrollControlled: _page.isScrollControlled,
+      showDragHandle: _page.showDragHandle,
+      backgroundColor: _page.backgroundColor,
+      modalBarrierColor: _page.modalBarrierColor,
+    );
   }
 }
 
-/// [ModalBottomSheetRoute] that dismisses the native transparent container
-/// when popped.
-class _NativePopBottomSheetRoute<T> extends ModalBottomSheetRoute<T> {
-  _NativePopBottomSheetRoute({
-    required super.builder,
-    super.isScrollControlled = false,
-    super.showDragHandle,
-    super.backgroundColor,
-    super.modalBarrierColor,
-    super.settings,
+class _ShowDialogOnReady extends StatefulWidget {
+  const _ShowDialogOnReady({
+    required this.builder,
+    required this.barrierDismissible,
+    this.barrierColor,
+    this.barrierLabel,
   });
 
+  final WidgetBuilder builder;
+  final bool barrierDismissible;
+  final Color? barrierColor;
+  final String? barrierLabel;
+
   @override
-  bool didPop(T? result) {
-    final popped = super.didPop(result);
-    if (popped) {
-      unawaited(Add2AppNavigator.instance.pop().catchError((_) {}));
-    }
-    return popped;
+  State<_ShowDialogOnReady> createState() => _ShowDialogOnReadyState();
+}
+
+class _ShowDialogOnReadyState extends State<_ShowDialogOnReady> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) {
+        return;
+      }
+      final navigator = Navigator.of(context);
+      final route = DialogRoute<void>(
+        context: context,
+        builder: widget.builder,
+        themes: InheritedTheme.capture(from: context, to: navigator.context),
+        barrierDismissible: widget.barrierDismissible,
+        barrierColor: widget.barrierColor ?? Colors.black54,
+        barrierLabel: widget.barrierLabel,
+      );
+      unawaited(navigator.push(route));
+      // route.completed (from TransitionRoute) resolves after the reverse
+      // animation ends, unlike the Future from showDialog which resolves
+      // immediately on pop.
+      await route.completed;
+      if (!mounted) {
+        return;
+      }
+      await Add2AppNavigator.instance.pop();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return const ColoredBox(color: Colors.transparent);
+  }
+}
+
+class _ShowBottomSheetOnReady extends StatefulWidget {
+  const _ShowBottomSheetOnReady({
+    required this.builder,
+    required this.isScrollControlled,
+    this.showDragHandle,
+    this.backgroundColor,
+    this.modalBarrierColor,
+  });
+
+  final WidgetBuilder builder;
+  final bool isScrollControlled;
+  final bool? showDragHandle;
+  final Color? backgroundColor;
+  final Color? modalBarrierColor;
+
+  @override
+  State<_ShowBottomSheetOnReady> createState() =>
+      _ShowBottomSheetOnReadyState();
+}
+
+class _ShowBottomSheetOnReadyState extends State<_ShowBottomSheetOnReady> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) {
+        return;
+      }
+      final navigator = Navigator.of(context);
+      final route = ModalBottomSheetRoute<void>(
+        builder: widget.builder,
+        capturedThemes: InheritedTheme.capture(
+          from: context,
+          to: navigator.context,
+        ),
+        isScrollControlled: widget.isScrollControlled,
+        showDragHandle: widget.showDragHandle,
+        backgroundColor: widget.backgroundColor,
+        modalBarrierColor: widget.modalBarrierColor,
+      );
+      unawaited(navigator.push(route));
+      await route.completed;
+      if (!mounted) {
+        return;
+      }
+      await Add2AppNavigator.instance.pop();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return const ColoredBox(color: Colors.transparent);
   }
 }

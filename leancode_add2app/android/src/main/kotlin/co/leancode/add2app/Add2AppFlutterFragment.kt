@@ -26,15 +26,28 @@ import io.flutter.embedding.engine.FlutterEngine
  */
 class Add2AppFlutterFragment : FlutterFragment() {
 
+    /**
+     * Optional override for the pop behaviour. When set, this is called
+     * instead of the default `activity.finish()` or back-dispatcher logic.
+     *
+     * Used by [Add2AppFlutterDialogFragment] to dismiss the dialog directly,
+     * bypassing `onBackPressedDispatcher` (which would re-enter the Flutter
+     * engine's own back-pressed callback and cause the activity to finish).
+     */
+    internal var onPopOverride: (() -> Unit)? = null
+
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
 
+        val customOnPop = onPopOverride
         val useBackDispatcher =
             arguments?.getBoolean(ARG_USE_BACK_DISPATCHER, false) ?: false
         val fragmentId = arguments?.getString(EXTRA_FRAGMENT_ROUTE_ID)
         val routeData = Add2AppNavigator.consumePendingRouteData(fragmentId)
 
-        if (useBackDispatcher) {
+        if (customOnPop != null) {
+            Add2AppNavigator.configureEngine(flutterEngine, requireActivity(), onPop = customOnPop, routeData = routeData)
+        } else if (useBackDispatcher) {
             val componentActivity = requireActivity() as ComponentActivity
             Add2AppNavigator.configureEngine(flutterEngine, requireActivity(), onPop = {
                 componentActivity.onBackPressedDispatcher.onBackPressed()
