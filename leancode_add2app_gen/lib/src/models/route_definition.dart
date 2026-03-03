@@ -1,6 +1,6 @@
 import 'package:leancode_add2app_gen/src/models/type_info.dart';
 
-enum RouteType { flutter, native }
+enum RouteType { flutter, native, flutterDialog }
 
 class RouteDefinition {
   const RouteDefinition({

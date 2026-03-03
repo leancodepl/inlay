@@ -57,6 +57,9 @@ void runGenerator(GeneratorConfig config) {
       stdout
         ..writeln('Parsed:')
         ..writeln('  - ${schema.flutterRoutes.length} flutter route(s)')
+        ..writeln(
+          '  - ${schema.flutterDialogRoutes.length} flutter dialog route(s)',
+        )
         ..writeln('  - ${schema.nativeRoutes.length} native route(s)')
         ..writeln('  - ${schema.stores.length} store(s)')
         ..writeln('  - ${schema.dataClasses.length} data class(es)')

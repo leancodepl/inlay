@@ -69,4 +69,11 @@ abstract class Add2AppNavigatorHostApi {
   /// (with all fields, including complex nested objects). Returns `null`
   /// for the prewarm engine or when no data was set.
   PageSettings? getInitialRouteData();
+
+  /// Present a Flutter dialog in a transparent native container.
+  ///
+  /// The native side creates a transparent Activity/ViewController and
+  /// starts a new Flutter engine. Flutter renders the dialog content
+  /// (barrier, animation, positioning) over the native screen underneath.
+  void presentDialog(PageSettings page);
 }

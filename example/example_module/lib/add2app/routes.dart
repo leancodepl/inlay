@@ -23,6 +23,21 @@ class ProfilePage {
   final List<UserBadge>? badges;
 }
 
+@Add2AppFlutterDialog('/confirm-action/:action')
+class ConfirmActionDialog {
+  const ConfirmActionDialog({required this.action, this.message});
+
+  final String action;
+  final String? message;
+}
+
+@Add2AppFlutterDialog('/theme-picker/:userId')
+class ThemePickerDialog {
+  const ThemePickerDialog({required this.userId});
+
+  final String userId;
+}
+
 @Add2AppNativeRoute()
 class NativeSettingsPage {
   const NativeSettingsPage({this.source});

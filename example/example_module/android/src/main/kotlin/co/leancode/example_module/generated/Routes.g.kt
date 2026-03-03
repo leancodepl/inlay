@@ -6,6 +6,7 @@ package co.leancode.example_module.generated
 import android.content.Context
 import android.net.Uri
 import co.leancode.add2app.FlutterRoute
+import co.leancode.add2app.FlutterDialogRoute
 import co.leancode.add2app.NativeRouteHandler as NativeRouteHandling
 import co.leancode.add2app.navigator.PageSettings
 
@@ -134,6 +135,66 @@ data class ProfilePage(
     )
 
     fun toPath(): String = "/profile/${Uri.encode(userId)}"
+
+    override fun toPageSettings(): PageSettings = PageSettings(ROUTE_NAME, toList(), toPath())
+}
+
+data class ConfirmActionDialog(
+    val action: String,
+    val message: String?
+) : FlutterDialogRoute {
+    companion object {
+        const val ROUTE_NAME = "confirmActionDialog"
+        const val PATH_TEMPLATE = "/confirm-action/:action"
+
+        fun fromList(list: List<Any?>): ConfirmActionDialog = ConfirmActionDialog(
+            action = list[0] as String,
+            message = (list[1] as? String)?.let { it as String },
+        )
+    }
+
+    fun toList(): List<Any?> = listOf(
+        action,
+        message?.let { it },
+    )
+
+    fun toMap(): Map<String, String> = mapOf(
+        "action" to action.toString(),
+        "message" to (message?.toString() ?: "")
+    )
+
+    fun toPath(): String {
+        val basePath = "/confirm-action/${Uri.encode(action)}"
+        val query = mutableListOf<String>()
+        message?.let { query.add("message=${Uri.encode(it.toString())}") }
+        if (query.isEmpty()) return basePath
+        return "$basePath?${query.joinToString("&")}"
+    }
+
+    override fun toPageSettings(): PageSettings = PageSettings(ROUTE_NAME, toList(), toPath())
+}
+
+data class ThemePickerDialog(
+    val userId: String
+) : FlutterDialogRoute {
+    companion object {
+        const val ROUTE_NAME = "themePickerDialog"
+        const val PATH_TEMPLATE = "/theme-picker/:userId"
+
+        fun fromList(list: List<Any?>): ThemePickerDialog = ThemePickerDialog(
+            userId = list[0] as String,
+        )
+    }
+
+    fun toList(): List<Any?> = listOf(
+        userId,
+    )
+
+    fun toMap(): Map<String, String> = mapOf(
+        "userId" to userId.toString()
+    )
+
+    fun toPath(): String = "/theme-picker/${Uri.encode(userId)}"
 
     override fun toPageSettings(): PageSettings = PageSettings(ROUTE_NAME, toList(), toPath())
 }

@@ -23,10 +23,13 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.dialog
 import androidx.navigation.compose.rememberNavController
+import co.leancode.add2app.Add2AppFlutterDialogScreen
 import co.leancode.add2app.Add2AppFlutterScreen
 import co.leancode.add2app.KeyValueStorageImpl
 import co.leancode.example_module.generated.BadgeLevel
+import co.leancode.example_module.generated.ConfirmActionDialog
 import co.leancode.example_module.generated.CounterPage
 import co.leancode.example_module.generated.CounterStore
 import co.leancode.example_module.generated.ProfilePage
@@ -65,6 +68,9 @@ private fun ComposeHost() {
         Button(onClick = { navController.navigate("native-counter") }) {
           Text("Open native Compose Counter")
         }
+        Button(onClick = { navController.navigate("confirm-dialog/delete") }) {
+          Text("Open Confirm Dialog")
+        }
       }
     }
 
@@ -87,6 +93,14 @@ private fun ComposeHost() {
         modifier = Modifier
           .fillMaxSize()
           .statusBarsPadding(),
+      )
+    }
+
+    dialog("confirm-dialog/{action}") { backStackEntry ->
+      val action = backStackEntry.arguments?.getString("action") ?: "delete"
+      Add2AppFlutterDialogScreen(
+        route = ConfirmActionDialog(action = action, message = "Are you sure?"),
+        modifier = Modifier.fillMaxSize(),
       )
     }
 

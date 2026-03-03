@@ -240,6 +240,12 @@ protocol Add2AppNavigatorHostApi {
   /// (with all fields, including complex nested objects). Returns `null`
   /// for the prewarm engine or when no data was set.
   func getInitialRouteData() throws -> PageSettings?
+  /// Present a Flutter dialog in a transparent native container.
+  ///
+  /// The native side creates a transparent Activity/ViewController and
+  /// starts a new Flutter engine. Flutter renders the dialog content
+  /// (barrier, animation, positioning) over the native screen underneath.
+  func presentDialog(page: PageSettings) throws
 }
 
 /// Generated setup class from Pigeon to handle messages through the `binaryMessenger`.
@@ -334,6 +340,26 @@ class Add2AppNavigatorHostApiSetup {
       }
     } else {
       getInitialRouteDataChannel.setMessageHandler(nil)
+    }
+    /// Present a Flutter dialog in a transparent native container.
+    ///
+    /// The native side creates a transparent Activity/ViewController and
+    /// starts a new Flutter engine. Flutter renders the dialog content
+    /// (barrier, animation, positioning) over the native screen underneath.
+    let presentDialogChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.leancode_add2app.Add2AppNavigatorHostApi.presentDialog\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      presentDialogChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let pageArg = args[0] as! PageSettings
+        do {
+          try api.presentDialog(page: pageArg)
+          reply(wrapResult(nil))
+        } catch {
+          reply(wrapError(error))
+        }
+      }
+    } else {
+      presentDialogChannel.setMessageHandler(nil)
     }
   }
 }

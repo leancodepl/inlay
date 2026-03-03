@@ -5,10 +5,12 @@ import 'package:leancode_add2app/leancode_add2app.dart';
 import 'src/generated/routes.g.dart';
 import 'src/router_auto.dart';
 import 'src/router_go.dart';
+import 'src/screens/confirm_action_content.dart';
 import 'src/screens/counter_screen.dart';
 import 'src/screens/greeting_screen.dart';
 import 'src/screens/home_screen.dart';
 import 'src/screens/profile_screen.dart';
+import 'src/screens/theme_picker_content.dart';
 
 void main() {
   runApp(const _StandaloneApp());
@@ -40,15 +42,22 @@ Future<void> _runAdd2AppWithGoRouter() async {
 
   final path = Add2AppNavigator.initialPath;
   final route = await Add2AppNavigator.fetchInitialRoute(
-    decodeFlutterRouteData,
+    decodeAdd2AppRouteData,
   );
   final router = createExampleGoRouter(
     initialLocation: path,
     initialExtra: route,
   );
 
+  final isDialog = route is FlutterDialogRoute;
+
   runApp(
     MaterialApp.router(
+      theme: isDialog
+          ? ThemeData.light().copyWith(
+              scaffoldBackgroundColor: Colors.transparent,
+            )
+          : ThemeData.light(),
       routeInformationProvider: router.routeInformationProvider,
       routeInformationParser: router.routeInformationParser,
       routerDelegate: router.routerDelegate,
@@ -66,7 +75,7 @@ Future<void> _runAdd2AppWithAutoRoute() async {
 
   final path = Add2AppNavigator.initialPath;
   final route = await Add2AppNavigator.fetchInitialRoute(
-    decodeFlutterRouteData,
+    decodeAdd2AppRouteData,
   );
   final router = createExampleAutoRouter(routeData: route);
 
@@ -92,23 +101,43 @@ Future<void> _runAdd2AppImperative() async {
   await KeyValueStorage.instance.init();
 
   final route = await Add2AppNavigator.fetchInitialRoute(
-    decodeFlutterRouteData,
+    decodeAdd2AppRouteData,
   );
 
-  final widget = switch (route) {
-    GreetingPage(:final name, :final style) => GreetingScreen(
-      name: name,
-      style: style,
-    ),
-    CounterPage() => const CounterScreen(),
-    ProfilePage(:final userId, :final badges) => ProfileScreen(
-      userId: userId,
-      badges: badges ?? const [],
-    ),
-    null => const ExampleHomeScreen(),
-  };
-
-  runApp(MaterialApp(home: widget));
+  switch (route) {
+    case GreetingPage(:final name, :final style):
+      runApp(
+        MaterialApp(
+          home: GreetingScreen(name: name, style: style),
+        ),
+      );
+    case CounterPage():
+      runApp(const MaterialApp(home: CounterScreen()));
+    case ProfilePage(:final userId, :final badges):
+      runApp(
+        MaterialApp(
+          home: ProfileScreen(userId: userId, badges: badges ?? const []),
+        ),
+      );
+    case ConfirmActionDialog(:final action, :final message):
+      runAdd2AppDialog(
+        onReady: (context) => showDialog(
+          context: context,
+          builder: (_) =>
+              ConfirmActionContent(action: action, message: message),
+        ),
+      );
+    case ThemePickerDialog(:final userId):
+      runAdd2AppDialog(
+        onReady: (context) => showModalBottomSheet(
+          context: context,
+          isScrollControlled: true,
+          builder: (_) => ThemePickerContent(userId: userId),
+        ),
+      );
+    case null:
+      runApp(const MaterialApp(home: ExampleHomeScreen()));
+  }
 }
 
 class _StandaloneApp extends StatelessWidget {
