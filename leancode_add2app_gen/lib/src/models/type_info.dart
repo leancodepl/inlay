@@ -10,6 +10,11 @@ class TypeInfo {
   final List<TypeInfo> typeArguments;
 
   String get baseName => name;
+
+  TypeInfo toNonNullable() => isNullable
+      ? TypeInfo(name: name, isNullable: false, typeArguments: typeArguments)
+      : this;
+
   bool get isPrimitive =>
       const ['bool', 'int', 'double', 'String', 'num'].contains(name);
   bool get isList => name == 'List';

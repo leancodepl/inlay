@@ -61,41 +61,60 @@ class CodeGenerator {
     required Map<String, TypeDefinition> typeGraph,
     String? kotlinPackage,
   }) {
+    // Split types: route-referenced types go to routes file,
+    // store-only types go to stores file.
+    final types = schema.classifyTypes();
+
+    final routeSchema = Schema(
+      flutterRoutes: schema.flutterRoutes,
+      flutterDialogRoutes: schema.flutterDialogRoutes,
+      nativeRoutes: schema.nativeRoutes,
+      dataClasses: types.routeDataClasses,
+      enums: types.routeEnums,
+    );
+
+    final storeSchema = Schema(
+      stores: schema.stores,
+      dataClasses: types.storeOnlyDataClasses,
+      enums: types.storeOnlyEnums,
+    );
+
     final hasRoutes =
         schema.flutterRoutes.isNotEmpty ||
+        schema.flutterDialogRoutes.isNotEmpty ||
         schema.nativeRoutes.isNotEmpty ||
-        schema.dataClasses.isNotEmpty ||
-        schema.enums.isNotEmpty;
+        types.routeDataClasses.isNotEmpty ||
+        types.routeEnums.isNotEmpty;
     final hasStores = schema.stores.isNotEmpty;
 
     return GenerationResult(
       schema: schema,
       typeGraph: typeGraph,
       dartRoutesCode: hasRoutes
-          ? generateDartRoutes(schema: schema, typeGraph: typeGraph)
+          ? generateDartRoutes(schema: routeSchema, typeGraph: typeGraph)
           : null,
       dartStoresCode: hasStores
-          ? generateDartStores(schema: schema, typeGraph: typeGraph)
+          ? generateDartStores(schema: storeSchema, typeGraph: typeGraph)
           : null,
       kotlinRoutesCode: hasRoutes && kotlinPackage != null
           ? generateKotlinRoutes(
-              schema: schema,
+              schema: routeSchema,
               typeGraph: typeGraph,
               packageName: kotlinPackage,
             )
           : null,
       kotlinStoresCode: hasStores && kotlinPackage != null
           ? generateKotlinStores(
-              schema: schema,
+              schema: storeSchema,
               typeGraph: typeGraph,
               packageName: kotlinPackage,
             )
           : null,
       swiftRoutesCode: hasRoutes
-          ? generateSwiftRoutes(schema: schema, typeGraph: typeGraph)
+          ? generateSwiftRoutes(schema: routeSchema, typeGraph: typeGraph)
           : null,
       swiftStoresCode: hasStores
-          ? generateSwiftStores(schema: schema, typeGraph: typeGraph)
+          ? generateSwiftStores(schema: storeSchema, typeGraph: typeGraph)
           : null,
     );
   }

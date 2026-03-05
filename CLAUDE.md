@@ -89,4 +89,6 @@ Generated outputs go to `lib/src/*/...g.dart`, `android/src/.../...Api.g.kt`, `i
 - **After changing Dart code:** run `dart analyze` then `dart format .`.
 - **Signal forks:** prefer modifying existing native screens over adding new ones — this better validates framework usability.
 - **Linting:** all packages use `leancode_lint` (analysis_options.yaml includes `package:leancode_lint/analysis_options_package.yaml`).
+- **Feature independence:** future plan involves splitting the current framework into separate packages so that features (navigation, stores, BLoC integration) can be used separately. Do not introduce cross-feature dependencies that will be hard to resolve later.
+- **Example:** any new feature added to the framework should have a use case added to the main example in `example` folder. Always consider example in the plan mode. Prefer expanding existing pages over adding new pages and complicating the example if possible.
 - **Docs:** after introducing any changes inspect the `docs` folder and `README.md` and introduce any updates if necessary. `README.md` is supposed to be a general overview and shouldn't include too many details. Prefer directing the reader to detailed docs in the `docs` folder.

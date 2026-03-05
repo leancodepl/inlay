@@ -5,6 +5,41 @@ package co.leancode.example_module.generated
 
 import co.leancode.add2app.NativeStorageScope
 import co.leancode.add2app.storage.StorageEntry
+import org.json.JSONArray
+import org.json.JSONObject
+
+private fun jsonToKotlin(json: Any?): Any? {
+    return when (json) {
+        is JSONArray -> (0 until json.length()).map { jsonToKotlin(json.opt(it)) }
+        is JSONObject -> json.keys().asSequence().associateWith { jsonToKotlin(json.opt(it)) }
+        JSONObject.NULL -> null
+        is Number -> json.toLong().let { l -> if (l in Int.MIN_VALUE..Int.MAX_VALUE) l.toInt() else l }
+        else -> json
+    }
+}
+
+enum class AppTheme {
+    system,
+    light,
+    dark
+}
+
+data class NotificationPreferences(
+    val sound: String,
+    val vibration: Boolean
+) {
+    companion object {
+        fun fromList(list: List<Any?>): NotificationPreferences = NotificationPreferences(
+            sound = list[0] as String,
+            vibration = list[1] as Boolean,
+        )
+    }
+
+    fun toList(): List<Any?> = listOf(
+        sound,
+        vibration,
+    )
+}
 
 /**
  * Generated store wrapper for CounterStore.
@@ -59,6 +94,28 @@ class UserPreferencesStore(
     var theme: AppTheme
         get() = storage.get(key("theme"))?.toIntOrNull()?.let { AppTheme.entries[it] } ?: AppTheme.system
         set(value) = storage.put(key("theme"), value.ordinal.toString())
+
+    var tags: List<String>
+        get() {
+            val raw = storage.get(key("tags")) ?: return emptyList()
+            val decoded = jsonToKotlin(JSONArray(raw))
+            return (decoded as List<*>).filterIsInstance<String>()
+        }
+        set(value) = storage.put(key("tags"), JSONArray(value).toString())
+
+    var notificationPreferences: NotificationPreferences?
+        get() {
+            val raw = storage.get(key("notificationPreferences")) ?: return null
+            val decoded = jsonToKotlin(JSONArray(raw))
+            return NotificationPreferences.fromList(decoded as List<Any?>)
+        }
+        set(value) {
+            if (value == null) {
+                storage.remove(key("notificationPreferences"))
+                return
+            }
+            storage.put(key("notificationPreferences"), JSONArray(value.toList()).toString())
+        }
 
     fun clear() = storage.removeByPrefix(key(""))
 }

@@ -1,4 +1,5 @@
 import 'package:leancode_add2app_gen/src/generators/kotlin/kotlin_serialization.dart';
+import 'package:leancode_add2app_gen/src/models/data_type_definition.dart';
 import 'package:leancode_add2app_gen/src/models/schema.dart';
 import 'package:leancode_add2app_gen/src/models/store_definition.dart';
 import 'package:leancode_add2app_gen/src/models/type_info.dart';
@@ -13,6 +14,7 @@ String generateKotlinStores({
   required Map<String, TypeDefinition> typeGraph,
   required String packageName,
 }) {
+  final needsJson = _storesRequireJson(schema, typeGraph);
   final buffer = StringBuffer()
     // Header.
     ..writeln('// GENERATED CODE — DO NOT MODIFY BY HAND')
@@ -21,8 +23,32 @@ String generateKotlinStores({
     ..writeln('package $packageName')
     ..writeln()
     ..writeln('import co.leancode.add2app.NativeStorageScope')
-    ..writeln('import co.leancode.add2app.storage.StorageEntry')
-    ..writeln();
+    ..writeln('import co.leancode.add2app.storage.StorageEntry');
+
+  if (needsJson) {
+    buffer
+      ..writeln('import org.json.JSONArray')
+      ..writeln('import org.json.JSONObject');
+  }
+
+  buffer.writeln();
+
+  if (needsJson) {
+    _writeJsonToKotlinHelper(buffer);
+    buffer.writeln();
+  }
+
+  // Generate store-only enums.
+  for (final enumDef in schema.enums) {
+    _writeEnum(buffer, enumDef);
+    buffer.writeln();
+  }
+
+  // Generate store-only data classes.
+  for (final dataClass in schema.dataClasses) {
+    _writeDataClass(buffer, dataClass, typeGraph);
+    buffer.writeln();
+  }
 
   // Generate store classes.
   for (final store in schema.stores) {
@@ -100,6 +126,18 @@ void _writeProperty(
   FieldInfo field,
   Map<String, TypeDefinition> typeGraph,
 ) {
+  if (isSimpleStoreType(field.type, typeGraph)) {
+    _writeSimpleProperty(buffer, field, typeGraph);
+  } else {
+    _writeComplexProperty(buffer, field, typeGraph);
+  }
+}
+
+void _writeSimpleProperty(
+  StringBuffer buffer,
+  FieldInfo field,
+  Map<String, TypeDefinition> typeGraph,
+) {
   final baseName = field.type.baseName;
   final enumType = typeGraph[baseName] is EnumType
       ? typeGraph[baseName]! as EnumType
@@ -163,6 +201,70 @@ void _writeProperty(
   }
 }
 
+void _writeComplexProperty(
+  StringBuffer buffer,
+  FieldInfo field,
+  Map<String, TypeDefinition> typeGraph,
+) {
+  final kotlinType = dartTypeToKotlin(field.type);
+  final jsonWrapper = _jsonWrapperType(field.type, typeGraph);
+
+  buffer.writeln('    var ${field.name}: $kotlinType');
+
+  // Getter.
+  if (field.type.isNullable) {
+    final decodeExpr = generateKotlinDecode(
+      'decoded',
+      field.type.toNonNullable(),
+      typeGraph,
+    );
+    buffer
+      ..writeln('        get() {')
+      ..writeln(
+        '            val raw = storage.get(key("${field.name}")) ?: return null',
+      )
+      ..writeln('            val decoded = jsonToKotlin($jsonWrapper(raw))')
+      ..writeln('            return $decodeExpr')
+      ..writeln('        }');
+  } else {
+    final decodeExpr = generateKotlinDecode('decoded', field.type, typeGraph);
+    final rawDefault = field.defaultValue ?? 'emptyList()';
+    final defaultVal = _dartToKotlinLiteral(rawDefault, field.type.baseName);
+    buffer
+      ..writeln('        get() {')
+      ..writeln(
+        '            val raw = storage.get(key("${field.name}")) ?: return $defaultVal',
+      )
+      ..writeln('            val decoded = jsonToKotlin($jsonWrapper(raw))')
+      ..writeln('            return $decodeExpr')
+      ..writeln('        }');
+  }
+
+  // Setter.
+  if (field.type.isNullable) {
+    final encodeExpr = generateKotlinEncode(
+      'value',
+      field.type.toNonNullable(),
+      typeGraph,
+    );
+    buffer
+      ..writeln('        set(value) {')
+      ..writeln('            if (value == null) {')
+      ..writeln('                storage.remove(key("${field.name}"))')
+      ..writeln('                return')
+      ..writeln('            }')
+      ..writeln(
+        '            storage.put(key("${field.name}"), $jsonWrapper($encodeExpr).toString())',
+      )
+      ..writeln('        }');
+  } else {
+    final encodeExpr = generateKotlinEncode('value', field.type, typeGraph);
+    buffer.writeln(
+      '        set(value) = storage.put(key("${field.name}"), $jsonWrapper($encodeExpr).toString())',
+    );
+  }
+}
+
 String _kotlinStoreType(String dartType, EnumType? enumType) {
   if (enumType != null) {
     return enumType.name;
@@ -203,15 +305,20 @@ String _defaultValueForType(String dartType, EnumType? enumType) {
 
 /// Converts a Dart literal to its Kotlin equivalent.
 ///
-/// Mainly handles string literals: Dart uses single quotes (`'hello'`),
-/// while Kotlin uses double quotes (`"hello"`).
+/// Handles string literals (single → double quotes) and
+/// collection literals (const [] → emptyList(), const {} → emptyMap()).
 String _dartToKotlinLiteral(String dartLiteral, String dartType) {
   if (dartType == 'String') {
-    // Convert Dart single-quoted strings to Kotlin double-quoted strings.
     if (dartLiteral.startsWith("'") && dartLiteral.endsWith("'")) {
       final content = dartLiteral.substring(1, dartLiteral.length - 1);
       return '"$content"';
     }
+  }
+  if (dartLiteral == 'const []' || dartLiteral == '[]') {
+    return 'emptyList()';
+  }
+  if (dartLiteral == 'const {}' || dartLiteral == '{}') {
+    return 'emptyMap()';
   }
   return dartLiteral;
 }
@@ -224,4 +331,87 @@ String _keySegmentExpression(
     return '\${${keyField.name}.name}';
   }
   return '\$${keyField.name}';
+}
+
+bool _storesRequireJson(Schema schema, Map<String, TypeDefinition> typeGraph) {
+  for (final store in schema.stores) {
+    for (final field in store.valueFields) {
+      if (!isSimpleStoreType(field.type, typeGraph)) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+/// Returns the JSONArray or JSONObject wrapper based on the underlying type.
+///
+/// Lists and data classes (which encode to lists) use JSONArray.
+/// Maps use JSONObject.
+String _jsonWrapperType(TypeInfo type, Map<String, TypeDefinition> typeGraph) {
+  if (type.baseName == 'Map') {
+    return 'JSONObject';
+  }
+  // Lists and data classes (which encode to List<Object?>) use JSONArray.
+  return 'JSONArray';
+}
+
+void _writeEnum(StringBuffer buffer, EnumDefinition enumDef) {
+  buffer.writeln('enum class ${enumDef.name} {');
+  for (var i = 0; i < enumDef.values.length; i++) {
+    final value = enumDef.values[i];
+    if (i < enumDef.values.length - 1) {
+      buffer.writeln('    $value,');
+    } else {
+      buffer.writeln('    $value');
+    }
+  }
+  buffer.writeln('}');
+}
+
+void _writeDataClass(
+  StringBuffer buffer,
+  DataClassDefinition dataClass,
+  Map<String, TypeDefinition> typeGraph,
+) {
+  final className = dataClass.className;
+  final fields = dataClass.fields;
+
+  buffer.writeln('data class $className(');
+  for (var i = 0; i < fields.length; i++) {
+    final field = fields[i];
+    final kotlinType = dartTypeToKotlin(field.type);
+    final comma = i < fields.length - 1 ? ',' : '';
+    buffer.writeln('    val ${field.name}: $kotlinType$comma');
+  }
+
+  buffer
+    ..writeln(') {')
+    ..writeln('    companion object {')
+    ..writeln(
+      '        ${generateKotlinFromListMethod(className, fields, typeGraph)}',
+    )
+    ..writeln('    }')
+    ..writeln()
+    ..writeln('    ${generateKotlinToListMethod(fields, typeGraph)}')
+    ..writeln('}');
+}
+
+void _writeJsonToKotlinHelper(StringBuffer buffer) {
+  buffer
+    ..writeln('private fun jsonToKotlin(json: Any?): Any? {')
+    ..writeln('    return when (json) {')
+    ..writeln(
+      '        is JSONArray -> (0 until json.length()).map { jsonToKotlin(json.opt(it)) }',
+    )
+    ..writeln(
+      '        is JSONObject -> json.keys().asSequence().associateWith { jsonToKotlin(json.opt(it)) }',
+    )
+    ..writeln('        JSONObject.NULL -> null')
+    ..writeln(
+      '        is Number -> json.toLong().let { l -> if (l in Int.MIN_VALUE..Int.MAX_VALUE) l.toInt() else l }',
+    )
+    ..writeln('        else -> json')
+    ..writeln('    }')
+    ..writeln('}');
 }

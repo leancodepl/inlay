@@ -3,6 +3,31 @@
 
 import Foundation
 
+enum AppTheme: Int {
+    case system = 0
+    case light = 1
+    case dark = 2
+}
+
+struct NotificationPreferences {
+    let sound: String
+    let vibration: Bool
+
+    static func fromList(_ list: [Any?]) -> NotificationPreferences {
+        NotificationPreferences(
+            sound: list[0] as! String,
+            vibration: list[1] as! Bool
+        )
+    }
+
+    func toList() -> [Any?] {
+        [
+            sound,
+            vibration,
+        ]
+    }
+}
+
 /// Generated store wrapper for CounterStore.
 struct CounterStore {
     private let storage: NativeStorageScope
@@ -72,6 +97,40 @@ struct UserPreferencesStore {
             return AppTheme(rawValue: intVal) ?? AppTheme.system
         }
         set { storage.put(key: key("theme"), value: String(newValue.rawValue)) }
+    }
+
+    var tags: [String] {
+        get {
+            guard let raw = storage.get(key: key("tags")),
+                  let data = raw.data(using: .utf8),
+                  let json = try? JSONSerialization.jsonObject(with: data) else { return [] }
+            return (json as! [Any?]).map { $0 as! String }
+        }
+        set {
+            if let data = try? JSONSerialization.data(withJSONObject: newValue as Any),
+               let str = String(data: data, encoding: .utf8) {
+                storage.put(key: key("tags"), value: str)
+            }
+        }
+    }
+
+    var notificationPreferences: NotificationPreferences? {
+        get {
+            guard let raw = storage.get(key: key("notificationPreferences")),
+                  let data = raw.data(using: .utf8),
+                  let json = try? JSONSerialization.jsonObject(with: data) else { return nil }
+            return NotificationPreferences.fromList(json as! [Any?])
+        }
+        set {
+            guard let newValue else {
+                storage.remove(key: key("notificationPreferences"))
+                return
+            }
+            if let data = try? JSONSerialization.data(withJSONObject: newValue.toList() as Any),
+               let str = String(data: data, encoding: .utf8) {
+                storage.put(key: key("notificationPreferences"), value: str)
+            }
+        }
     }
 
     func clear() { storage.removeByPrefix(prefix: key("")) }

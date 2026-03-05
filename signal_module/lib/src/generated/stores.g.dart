@@ -5,7 +5,13 @@ import 'dart:async';
 
 import 'package:leancode_add2app/leancode_add2app.dart';
 
-import 'routes.g.dart';
+enum NotificationBehavior { defaultBehavior, mentionsOnly, muted }
+
+enum AppTheme { system, light, dark }
+
+enum VibrationLevel { off, normal, intense }
+
+enum ConversationCategory { direct, group, archived }
 
 /// Generated store wrapper for SoundsNotificationsStore.
 class SoundsNotificationsStore

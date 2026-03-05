@@ -8,6 +8,7 @@ import co.leancode.add2app.Add2AppNavigator
 import co.leancode.add2app.KeyValueStorageImpl
 import co.leancode.add2app.NativeStorageScope
 import co.leancode.example_module.generated.AppTheme
+import co.leancode.example_module.generated.NotificationPreferences
 import co.leancode.example_module.generated.ProfilePage
 import co.leancode.example_module.generated.UserPreferencesStore
 
@@ -19,6 +20,8 @@ class NativeSettingsActivity : AppCompatActivity() {
   private lateinit var emailValue: TextView
   private lateinit var darkModeValue: TextView
   private lateinit var themeValue: TextView
+  private lateinit var tagsValue: TextView
+  private lateinit var notifPrefsValue: TextView
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -29,6 +32,8 @@ class NativeSettingsActivity : AppCompatActivity() {
     emailValue = findViewById(R.id.valueEmail)
     darkModeValue = findViewById(R.id.valueDarkMode)
     themeValue = findViewById(R.id.valueTheme)
+    tagsValue = findViewById(R.id.valueTags)
+    notifPrefsValue = findViewById(R.id.valueNotifPrefs)
 
     storage = KeyValueStorageImpl.createScope()
     store = UserPreferencesStore(storage, userId = "42")
@@ -55,6 +60,21 @@ class NativeSettingsActivity : AppCompatActivity() {
       store.theme = AppTheme.dark
       render()
     }
+    findViewById<Button>(R.id.btnAddTag).setOnClickListener {
+      val current = store.tags
+      if (!current.contains("android")) {
+        store.tags = current + listOf("android")
+      }
+      render()
+    }
+    findViewById<Button>(R.id.btnSetNotifPrefs).setOnClickListener {
+      store.notificationPreferences = NotificationPreferences("Bell", true)
+      render()
+    }
+    findViewById<Button>(R.id.btnClearNotifPrefs).setOnClickListener {
+      store.notificationPreferences = null
+      render()
+    }
     findViewById<Button>(R.id.btnOpenFlutterProfile).setOnClickListener {
       Add2AppNavigator.push(this, ProfilePage(userId = "42", badges = null))
     }
@@ -72,5 +92,8 @@ class NativeSettingsActivity : AppCompatActivity() {
     emailValue.text = store.email
     darkModeValue.text = if (store.darkMode) "on" else "off"
     themeValue.text = store.theme.name
+    tagsValue.text = store.tags.ifEmpty { listOf("(none)") }.joinToString(", ")
+    val prefs = store.notificationPreferences
+    notifPrefsValue.text = if (prefs != null) "sound=${prefs.sound}, vibration=${prefs.vibration}" else "(not set)"
   }
 }

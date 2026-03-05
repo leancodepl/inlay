@@ -15,12 +15,6 @@ enum BadgeLevel: Int {
     case gold = 2
 }
 
-enum AppTheme: Int {
-    case system = 0
-    case light = 1
-    case dark = 2
-}
-
 struct UserBadge {
     let label: String
     let level: BadgeLevel

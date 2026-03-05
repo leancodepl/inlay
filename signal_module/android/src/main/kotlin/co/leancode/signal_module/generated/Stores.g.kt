@@ -6,6 +6,30 @@ package co.leancode.signal_module.generated
 import co.leancode.add2app.NativeStorageScope
 import co.leancode.add2app.storage.StorageEntry
 
+enum class NotificationBehavior {
+    defaultBehavior,
+    mentionsOnly,
+    muted
+}
+
+enum class AppTheme {
+    system,
+    light,
+    dark
+}
+
+enum class VibrationLevel {
+    off,
+    normal,
+    intense
+}
+
+enum class ConversationCategory {
+    direct,
+    group,
+    archived
+}
+
 /**
  * Generated store wrapper for SoundsNotificationsStore.
  */

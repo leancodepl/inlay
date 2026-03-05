@@ -3,6 +3,30 @@
 
 import Foundation
 
+enum NotificationBehavior: Int {
+    case defaultBehavior = 0
+    case mentionsOnly = 1
+    case muted = 2
+}
+
+enum AppTheme: Int {
+    case system = 0
+    case light = 1
+    case dark = 2
+}
+
+enum VibrationLevel: Int {
+    case off = 0
+    case normal = 1
+    case intense = 2
+}
+
+enum ConversationCategory: Int {
+    case direct = 0
+    case group = 1
+    case archived = 2
+}
+
 /// Generated store wrapper for SoundsNotificationsStore.
 struct SoundsNotificationsStore {
     private let storage: NativeStorageScope

@@ -1,5 +1,4 @@
 import 'package:leancode_add2app/leancode_add2app.dart';
-import 'package:signal_module/src/generated/routes.g.dart';
 import 'package:signal_module/src/generated/stores.g.dart';
 
 class SoundsNotificationsCubit

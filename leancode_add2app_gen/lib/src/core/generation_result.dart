@@ -24,9 +24,8 @@ class GenerationResult {
 
   bool get hasRoutes =>
       schema.flutterRoutes.isNotEmpty ||
-      schema.nativeRoutes.isNotEmpty ||
-      schema.dataClasses.isNotEmpty ||
-      schema.enums.isNotEmpty;
+      schema.flutterDialogRoutes.isNotEmpty ||
+      schema.nativeRoutes.isNotEmpty;
 
   bool get hasStores => schema.stores.isNotEmpty;
   bool get hasContent => hasRoutes || hasStores;
