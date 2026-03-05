@@ -13,7 +13,13 @@ struct SoundsNotificationsStore {
         self.contactId = contactId
     }
 
+    var keyPrefix: String { "sounds_notifications/\(contactId)/" }
+
     private func key(_ field: String) -> String { "sounds_notifications/\(contactId)/\(field)" }
+
+    func containsChanges(in entries: [StorageEntry]) -> Bool {
+        entries.contains { $0.key.hasPrefix(keyPrefix) }
+    }
 
     var mute: Bool {
         get { storage.get(key: key("mute")) == "true" }
@@ -59,7 +65,13 @@ struct UserPreferencesStore {
         self.storage = storage
     }
 
+    var keyPrefix: String { "user_preferences/" }
+
     private func key(_ field: String) -> String { "user_preferences/\(field)" }
+
+    func containsChanges(in entries: [StorageEntry]) -> Bool {
+        entries.contains { $0.key.hasPrefix(keyPrefix) }
+    }
 
     var darkMode: Bool {
         get { storage.get(key: key("darkMode")) == "true" }
@@ -93,7 +105,13 @@ struct ThreadPreferencesStore {
         self.threadId = threadId
     }
 
+    var keyPrefix: String { "thread_preferences/\(threadId)/" }
+
     private func key(_ field: String) -> String { "thread_preferences/\(threadId)/\(field)" }
+
+    func containsChanges(in entries: [StorageEntry]) -> Bool {
+        entries.contains { $0.key.hasPrefix(keyPrefix) }
+    }
 
     var unreadCount: Int {
         get { Int(storage.get(key: key("unreadCount")) ?? "") ?? 0 }
@@ -127,7 +145,13 @@ struct CategoryPreferencesStore {
         self.category = category
     }
 
+    var keyPrefix: String { "category_preferences/\(category.name)/" }
+
     private func key(_ field: String) -> String { "category_preferences/\(category.name)/\(field)" }
+
+    func containsChanges(in entries: [StorageEntry]) -> Bool {
+        entries.contains { $0.key.hasPrefix(keyPrefix) }
+    }
 
     var pinned: Bool {
         get { storage.get(key: key("pinned")) == "true" }

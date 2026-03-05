@@ -49,7 +49,7 @@ data class GreetingPage(
     val style: GreetingStyle?
 ) : FlutterRoute {
     companion object {
-        const val ROUTE_NAME = "greeting"
+        const val ROUTE_NAME = "/greeting/:name"
         const val PATH_TEMPLATE = "/greeting/:name"
 
         fun fromList(list: List<Any?>): GreetingPage = GreetingPage(
@@ -83,7 +83,7 @@ data class CounterPage(
     val seed: Long?
 ) : FlutterRoute {
     companion object {
-        const val ROUTE_NAME = "counter"
+        const val ROUTE_NAME = "/counter"
         const val PATH_TEMPLATE = "/counter"
 
         fun fromList(list: List<Any?>): CounterPage = CounterPage(
@@ -115,7 +115,7 @@ data class ProfilePage(
     val badges: List<UserBadge>?
 ) : FlutterRoute {
     companion object {
-        const val ROUTE_NAME = "profile"
+        const val ROUTE_NAME = "/profile/:userId"
         const val PATH_TEMPLATE = "/profile/:userId"
 
         fun fromList(list: List<Any?>): ProfilePage = ProfilePage(

@@ -101,10 +101,14 @@ Read and write from native — **Swift**:
 
 ```swift
 let scope = KeyValueStorageImpl.shared.createScope()
-scope.put(key: "sounds_notifications/abc-123/mute", value: "true")
+let store = SoundsNotificationsStore(storage: scope, contactId: "abc-123")
+
+store.mute = true
 
 scope.startObserving { entries in
-    // called when Flutter or another native scope changes a value
+    if store.containsChanges(in: entries) {
+        // reload from store typed properties
+    }
 }
 ```
 
@@ -112,10 +116,14 @@ Read and write from native — **Kotlin**:
 
 ```kotlin
 val scope = KeyValueStorageImpl.createScope()
-scope.put("sounds_notifications/abc-123/mute", "true")
+val store = SoundsNotificationsStore(scope, contactId = "abc-123")
+
+store.mute = true
 
 scope.startObserving { entries ->
-    // called when Flutter or another native scope changes a value
+    if (store.containsChanges(entries)) {
+        // reload from store typed properties
+    }
 }
 ```
 

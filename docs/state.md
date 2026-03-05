@@ -197,21 +197,24 @@ class SoundsNotificationsScreen extends StatelessWidget {
 
 Native code accesses the same storage through a `NativeStorageScope`. You create a scope, read/write values, and optionally observe changes.
 
+The code generator produces typed store wrappers for both Swift and Kotlin. These wrappers provide typed properties and a `containsChanges` helper for observer filtering — no hardcoded key strings needed.
+
 ### iOS (Swift)
 
 ```swift
 let scope = KeyValueStorageImpl.shared.createScope()
+let store = SoundsNotificationsStore(storage: scope, contactId: "abc-123")
 
-// Read
-let isMuted = scope.get(key: "sounds_notifications/abc-123/mute")
+// Read (typed)
+let isMuted = store.mute
 
 // Write (automatically broadcast to Flutter engines and other scopes)
-scope.put(key: "sounds_notifications/abc-123/mute", value: "true")
+store.mute = true
 
 // Observe changes made by Flutter or other native scopes
 scope.startObserving { entries in
-    for entry in entries {
-        print("\(entry.key) = \(entry.value)")
+    if store.containsChanges(in: entries) {
+        print("mute = \(store.mute), sound = \(store.sound)")
     }
 }
 
@@ -220,33 +223,23 @@ scope.stopObserving()
 scope.dispose()
 ```
 
-For **SwiftUI**, use the `Add2AppStorageObserver` wrapper which manages the scope lifecycle:
-
-```swift
-struct SettingsView: View {
-    @StateObject private var storage = Add2AppStorageObserver()
-
-    var body: some View {
-        // Read: storage.get(key: "...")
-        // Write: storage.put(key: "...", value: "...")
-    }
-}
-```
-
 ### Android (Kotlin)
 
 ```kotlin
 val scope = KeyValueStorageImpl.createScope()
+val store = SoundsNotificationsStore(scope, contactId = "abc-123")
 
-// Read
-val isMuted = scope.get("sounds_notifications/abc-123/mute")
+// Read (typed)
+val isMuted = store.mute
 
 // Write (automatically broadcast to Flutter engines and other scopes)
-scope.put("sounds_notifications/abc-123/mute", "true")
+store.mute = true
 
 // Observe changes made by Flutter or other native scopes
 scope.startObserving { entries ->
-    entries.forEach { println("${it.key} = ${it.value}") }
+    if (store.containsChanges(entries)) {
+        println("mute = ${store.mute}, sound = ${store.sound}")
+    }
 }
 
 // Stop observing and clean up
@@ -320,4 +313,4 @@ Here's what happens when a value is changed:
 | `@Add2AppStore` + `Add2AppCubit` | Full (typed fields, snapshots) | Automatic | Flutter screens that need reactive state tied to storage |
 | `@Add2AppStore` (direct) | Full | Manual (listen to `stream`) | Flutter code that doesn't use bloc |
 | `KeyValueStorage` (raw) | Manual (string keys/values) | Manual (listen to `stream`) | Ad-hoc values, one-off reads/writes |
-| `NativeStorageScope` | Manual (string keys/values) | Via `startObserving` | Native code (iOS/Android) |
+| `NativeStorageScope` + generated store | Full (typed properties) | Via `startObserving` + `containsChanges` | Native code (iOS/Android) |

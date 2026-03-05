@@ -44,7 +44,7 @@ class GreetingPage extends FlutterRoute {
   final String name;
   final GreetingStyle? style;
 
-  static const String routeName = 'greeting';
+  static const String routeName = '/greeting/:name';
 
   static const String pathTemplate = '/greeting/:name';
 
@@ -97,7 +97,7 @@ class CounterPage extends FlutterRoute {
 
   final int? seed;
 
-  static const String routeName = 'counter';
+  static const String routeName = '/counter';
 
   static const String pathTemplate = '/counter';
 
@@ -141,7 +141,7 @@ class ProfilePage extends FlutterRoute {
   final String userId;
   final List<UserBadge>? badges;
 
-  static const String routeName = 'profile';
+  static const String routeName = '/profile/:userId';
 
   static const String pathTemplate = '/profile/:userId';
 

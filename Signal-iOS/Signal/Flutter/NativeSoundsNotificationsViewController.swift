@@ -85,8 +85,7 @@ final class NativeSoundsNotificationsViewController: UIViewController {
     // MARK: - Observer callback (only fires for changes from OTHER sources)
 
     private func onStorageChanged(entries: [StorageEntry]) {
-        let prefix = "sounds_notifications/\(recipientId)/"
-        if entries.contains(where: { $0.key.hasPrefix(prefix) }) {
+        if store.containsChanges(in: entries) {
             loadState()
         }
     }
