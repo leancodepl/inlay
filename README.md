@@ -29,6 +29,13 @@ class SoundsNotificationsPage {
   final String contactId;
 }
 
+// A Flutter dialog — rendered by Flutter over a native screen
+@Add2AppFlutterDialog('/confirm-delete/:itemId')
+class ConfirmDeleteDialog {
+  const ConfirmDeleteDialog({required this.itemId});
+  final String itemId;
+}
+
 // A native screen — navigable from Flutter
 @Add2AppNativeRoute()
 class NativeEditProfilePage {
@@ -116,7 +123,7 @@ On the Flutter side, the generated store can be used directly or combined with t
 
 ## Documentation
 
-- [Navigation](docs/navigation.md) — Route definitions, cross-boundary navigation, go_router & auto_route integration
+- [Navigation](docs/navigation.md) — Route definitions, dialogs & bottom sheets, cross-boundary navigation, go_router & auto_route integration
 - [State Management](docs/state.md) — Stores, native access, optional Cubit integration, cross-engine sync
 
 ## Signal App
@@ -124,5 +131,6 @@ On the Flutter side, the generated store can be used directly or combined with t
 This repository contains forks of Signal native iOS and Android apps used as a real-world benchmark for the framework.
 
 Checkouts (latest main from 07.01.2026):
+
 - iOS `36015e7`
 - Android `d88a862`

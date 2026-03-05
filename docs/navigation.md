@@ -15,6 +15,7 @@ A few Flutter concepts referenced in this guide:
 ## Concepts
 
 - **Flutter route** — A screen rendered by Flutter. Navigating to it from native code creates a new engine inside a native container (Activity / ViewController). Navigating to it from within Flutter uses the existing engine's navigation stack.
+- **Flutter dialog route** — A dialog, bottom sheet, or action sheet rendered by Flutter over a native screen. The native side opens a transparent container so the underlying screen stays visible. Flutter renders the overlay content (barrier, animation, positioning). Uses the same engine-per-container model as regular routes.
 - **Native route** — A screen rendered by the native platform. Flutter can request navigation to it, and the native side decides how to present it.
 - **`Add2AppNavigator`** — The singleton that orchestrates all cross-boundary navigation. Accessed as `Add2AppNavigator.instance` (Dart), `Add2AppNavigator.shared` (iOS), or the `Add2AppNavigator` object (Android).
 - **`PageSettings`** — A data class that carries a `routeId`, optional `params`, and optional `path` across the platform boundary. Generated route classes create this for you — you rarely touch it directly.
@@ -43,8 +44,30 @@ class ContactDetailsPage {
 ```
 
 The generator produces:
+
 - A Dart class extending the generated `sealed class FlutterRoute` (which itself extends `FlutterRouteBase`) with serialization built in, enabling exhaustive pattern matching
 - A Swift struct / Kotlin data class with the same fields, usable directly in native code
+
+### Flutter Dialog Routes
+
+Annotate with `@Add2AppFlutterDialog` for overlays (dialogs, bottom sheets, action sheets) that are rendered by Flutter but presented over a native screen. The native side opens a **transparent** container so the underlying screen stays visible, and Flutter renders the dialog content (barrier, animation, positioning).
+
+```dart
+@Add2AppFlutterDialog('/confirm-delete/:itemId')
+class ConfirmDeleteDialog {
+  const ConfirmDeleteDialog({required this.itemId, this.title});
+
+  final String itemId;
+  final String? title;
+}
+```
+
+The generator produces:
+
+- A Dart class extending the generated `sealed class FlutterDialogRoute` (which extends `FlutterDialogRouteBase`) — separate from `FlutterRoute` so you can distinguish pages from dialogs in pattern matching
+- A Swift struct conforming to `FlutterDialogRoute` / Kotlin data class implementing `FlutterDialogRoute`
+
+Dialog routes work identically to page routes in the schema — they have path templates, support path and query parameters, and get the same serialization. The only difference is in how the native side presents them (transparent container instead of opaque).
 
 ### Native Routes
 
@@ -59,6 +82,7 @@ class NativeEditProfilePage {
 ```
 
 The generator produces:
+
 - A Dart class with a `toNativeRoute()` method for use in `Add2AppNavigator.instance.push()`
 - A typed handler method in the generated `NativeRouteHandler` base class (Swift and Kotlin), so you implement native navigation with full type safety
 
@@ -132,6 +156,72 @@ For **Jetpack Compose**, use the provided composable:
 Add2AppFlutterScreen(route = ContactDetailsPage(contactId = "abc-123"))
 ```
 
+### Dialogs
+
+Dialog routes are presented in a transparent native container so the underlying screen remains visible. Flutter renders the dialog content, barrier, and animations.
+
+#### From Flutter (Dart)
+
+```dart
+// Present a dialog over the current native screen
+await Add2AppNavigator.instance.push(
+  ConfirmDeleteDialog(itemId: '42'),
+);
+```
+
+This works the same as a regular `push()` — the framework detects the `flutterDialog` route type and uses `presentDialog` instead of `push` on the native side.
+
+#### From iOS (Swift)
+
+**UIKit:**
+
+```swift
+Add2AppNavigator.shared.presentDialog(
+  from: viewController,
+  route: ConfirmDeleteDialog(itemId: "42")
+)
+```
+
+**SwiftUI:**
+
+```swift
+@State private var showDialog = false
+
+var body: some View {
+    Button("Delete") { showDialog = true }
+        .add2appDialog(
+            isPresented: $showDialog,
+            route: ConfirmDeleteDialog(itemId: "42")
+        )
+}
+```
+
+The `.add2appDialog` modifier uses UIKit's `.overFullScreen` presentation under the hood, so the background stays visible.
+
+#### From Android (Kotlin)
+
+**Activity / Fragment:**
+
+```kotlin
+Add2AppNavigator.presentDialog(activity, ConfirmDeleteDialog(itemId = "42"))
+```
+
+This shows an `Add2AppFlutterDialogFragment` — a `DialogFragment` with a transparent fullscreen window.
+
+**Jetpack Compose** — use a Compose Navigation `dialog()` destination:
+
+```kotlin
+NavHost(navController, startDestination = "home") {
+    composable("home") { HomeScreen() }
+    dialog("confirm-delete/{itemId}") { entry ->
+        Add2AppFlutterDialogScreen(
+            route = ConfirmDeleteDialog(itemId = entry.arguments!!.getString("itemId")!!),
+            modifier = Modifier.fillMaxSize(),
+        )
+    }
+}
+```
+
 ## Handling Native Routes (Flutter → Native)
 
 When Flutter pushes a native route, the framework dispatches it to a `NativeRouteHandler` you register on the native side. The generated handler has a typed method for each `@Add2AppNativeRoute`, so you don't parse strings.
@@ -172,8 +262,8 @@ Add2AppNavigator.setNativeRouteHandler(object : NativeRouteHandler() {
 
 When the native side opens a Flutter screen, the framework encodes the route and passes it to the new Flutter engine. The Dart side needs to resolve that into the correct widget. The framework supports two integration styles:
 
-1. **Declarative** — Works with `MaterialApp.router` and any Navigator 2.0 routing library (go_router, auto_route, etc.). The framework passes the initial route as a URL path and the router matches it to a screen.
-2. **Imperative** — Works with plain `MaterialApp` and no routing library. The generated `sealed class FlutterRoute` hierarchy lets you use Dart pattern matching for exhaustive, type-safe route resolution — no strings, no handler classes.
+1. **Declarative** — Works with `MaterialApp.router` and any Navigator 2.0 routing library (go_router, auto_route, etc.). The framework passes the initial route as a URL path and the router matches it to a screen. Dialog routes use `Add2AppDialogPage` / `Add2AppBottomSheetPage`.
+2. **Imperative** — Works with plain `MaterialApp` and no routing library. The generated `sealed class FlutterRoute` / `sealed class FlutterDialogRoute` hierarchies let you use Dart pattern matching for exhaustive, type-safe route resolution. Dialog routes use `runAdd2AppDialog`.
 
 ### Declarative (MaterialApp.router)
 
@@ -182,7 +272,7 @@ The framework encodes the route as a URL path (e.g. `/contact-details/abc-123`) 
 There are two integration points:
 
 - **`Add2AppNavigator.initialPath`** — reads the platform's `defaultRouteName` and returns the URL path. You pass this to your routing library as the initial location. This is synchronous and carries path parameters only.
-- **`Add2AppNavigator.fetchInitialRoute(decodeFlutterRouteData)`** — fetches the full route data (including non-path parameters like lists and complex objects) from the native host and decodes it into a typed route object. Pass this as extra data to your router so builders can access non-path parameters.
+- **`Add2AppNavigator.fetchInitialRoute(decoder)`** — fetches the full route data (including non-path parameters like lists and complex objects) from the native host and decodes it into a typed route object. Pass this as extra data to your router so builders can access non-path parameters. Use `decodeFlutterRouteData` if you only have page routes, or `decodeAdd2AppRouteData` if you have both pages and dialogs.
 
 If your routes only use path parameters, `initialPath` alone is sufficient. If any route has non-path parameters (e.g. `List<ContactBadge>? badges`), you need both.
 
@@ -195,7 +285,7 @@ If your routes only use path parameters, `initialPath` alone is sufficient. If a
 ```dart
 GoRouter createRouter({
   String initialLocation = '/',
-  FlutterRouteBase? initialExtra,
+  Add2AppRoute? initialExtra,
 }) {
   return GoRouter(
     initialLocation: initialLocation,
@@ -219,6 +309,31 @@ GoRouter createRouter({
           );
         },
       ),
+      // Dialog routes use pageBuilder with Add2AppDialogPage
+      GoRoute(
+        path: '/confirm-delete/:itemId',
+        pageBuilder: (_, state) {
+          final dialog = state.extra is ConfirmDeleteDialog
+              ? state.extra! as ConfirmDeleteDialog
+              : null;
+          return Add2AppDialogPage(
+            builder: (_) => ConfirmDeleteContent(
+              itemId: dialog?.itemId ?? state.pathParameters['itemId']!,
+            ),
+          );
+        },
+      ),
+      // Bottom sheet routes use Add2AppBottomSheetPage
+      GoRoute(
+        path: '/theme-picker/:userId',
+        pageBuilder: (_, state) => Add2AppBottomSheetPage(
+          isScrollControlled: true,
+          showDragHandle: true,
+          builder: (_) => ThemePickerContent(
+            userId: state.pathParameters['userId']!,
+          ),
+        ),
+      ),
     ],
   );
 }
@@ -229,16 +344,26 @@ void add2appMain() async {
   await KeyValueStorage.instance.init();
 
   final path = Add2AppNavigator.initialPath;
+  // Use decodeAdd2AppRouteData (combined decoder) when you have both
+  // page routes and dialog routes. It tries page routes first, then dialogs.
   final route = await Add2AppNavigator.fetchInitialRoute(
-    decodeFlutterRouteData,
+    decodeAdd2AppRouteData,
   );
   final router = createRouter(
     initialLocation: path,
     initialExtra: route,
   );
 
+  // Dialog routes need a transparent scaffold background
+  final isDialog = route is FlutterDialogRouteBase;
+
   runApp(
     MaterialApp.router(
+      theme: isDialog
+          ? ThemeData.light().copyWith(
+              scaffoldBackgroundColor: Colors.transparent,
+            )
+          : ThemeData.light(),
       routeInformationProvider: router.routeInformationProvider,
       routeInformationParser: router.routeInformationParser,
       routerDelegate: router.routerDelegate,
@@ -250,6 +375,14 @@ void add2appMain() async {
   );
 }
 ```
+
+**Key points for dialog routes in go_router:**
+
+- Use `pageBuilder` (not `builder`) so you can return `Add2AppDialogPage` or `Add2AppBottomSheetPage`
+- `Add2AppDialogPage` shows an `AlertDialog`-style overlay. Parameters like `barrierDismissible` and `barrierColor` are configurable.
+- `Add2AppBottomSheetPage` shows a modal bottom sheet. Parameters like `isScrollControlled`, `isDismissible`, `enableDrag`, and `showDragHandle` are configurable.
+- Both pages automatically call `Add2AppNavigator.instance.pop()` when the dialog/sheet is dismissed, closing the native transparent container
+- The `MaterialApp` theme must set `scaffoldBackgroundColor: Colors.transparent` for dialog engines so the native screen shows through
 
 #### auto_route example
 
@@ -323,9 +456,9 @@ If you don't use a declarative routing library, the framework supports a fully i
 
 #### How it works
 
-1. The code generator produces a `sealed class FlutterRoute` with a subclass for every `@Add2AppFlutterRoute`. All route classes extend this sealed type.
-2. The generated `decodeFlutterRouteData` function decodes `PageSettings` into the sealed `FlutterRoute?` type.
-3. You use `Add2AppNavigator.fetchInitialRoute(decodeFlutterRouteData)` to get the typed route, then pattern-match on it with a `switch` expression. The compiler enforces exhaustiveness — if you add a new route, you get a compile error until you handle it.
+1. The code generator produces a `sealed class FlutterRoute` (for pages) and optionally a `sealed class FlutterDialogRoute` (for dialogs). Each `@Add2AppFlutterRoute` / `@Add2AppFlutterDialog` becomes a subclass of the respective sealed type.
+2. The generated `decodeAdd2AppRouteData` function decodes `PageSettings` into either type (returning `Add2AppRoute?`).
+3. You use `Add2AppNavigator.fetchInitialRoute(decodeAdd2AppRouteData)` to get the typed route, then pattern-match with a `switch` expression. The compiler enforces exhaustiveness — if you add a new route, you get a compile error until you handle it.
 
 #### Wire up in the entrypoint
 
@@ -336,28 +469,51 @@ void add2appMain() async {
   await KeyValueStorage.instance.init();
 
   final route = await Add2AppNavigator.fetchInitialRoute(
-    decodeFlutterRouteData,
+    decodeAdd2AppRouteData,
   );
 
-  final widget = switch (route) {
-    ContactDetailsPage(:final contactId) =>
-      ContactDetailsScreen(contactId: contactId),
-    SoundsNotificationsPage(:final contactId) =>
-      SoundsNotificationsScreen(contactId: contactId),
-    SetWallpaperPage(:final recipientId) =>
-      SetWallpaperScreen(recipientId: recipientId),
-    null => const HomeScreen(),
-  };
+  switch (route) {
+    // Page routes — use a regular MaterialApp
+    case ContactDetailsPage(:final contactId):
+      runApp(MaterialApp(
+        home: ContactDetailsScreen(contactId: contactId),
+      ));
+    case SoundsNotificationsPage(:final contactId):
+      runApp(MaterialApp(
+        home: SoundsNotificationsScreen(contactId: contactId),
+      ));
 
-  runApp(MaterialApp(home: widget));
+    // Dialog routes — use runAdd2AppDialog with standard Flutter APIs
+    case ConfirmDeleteDialog(:final itemId, :final title):
+      runAdd2AppDialog(
+        onReady: (context) => showDialog(
+          context: context,
+          builder: (_) => ConfirmDeleteContent(itemId: itemId, title: title),
+        ),
+      );
+    case ThemePickerDialog(:final userId):
+      runAdd2AppDialog(
+        onReady: (context) => showModalBottomSheet(
+          context: context,
+          isScrollControlled: true,
+          builder: (_) => ThemePickerContent(userId: userId),
+        ),
+      );
+
+    case null:
+      runApp(const MaterialApp(home: HomeScreen()));
+  }
 }
 ```
 
-The sealed `FlutterRoute` hierarchy gives you:
-- **Exhaustive pattern matching** — the Dart compiler ensures every route is handled. Adding a new `@Add2AppFlutterRoute` makes the `switch` non-exhaustive, producing a compile error until you add a case.
-- **Field destructuring** — extract route fields directly in the pattern (e.g. `ContactDetailsPage(:final contactId)`) without manually accessing them from a page object.
+`runAdd2AppDialog` sets up a transparent `MaterialApp` and calls your `onReady` callback after the first frame. When the dialog/sheet is dismissed, the native transparent container is automatically closed. You use standard Flutter APIs (`showDialog`, `showModalBottomSheet`, etc.) inside the callback — the framework doesn't impose any special dialog widget.
+
+The sealed class hierarchies give you:
+
+- **Exhaustive pattern matching** — the Dart compiler ensures every route is handled. Adding a new `@Add2AppFlutterRoute` or `@Add2AppFlutterDialog` makes the `switch` non-exhaustive, producing a compile error until you add a case.
+- **Field destructuring** — extract route fields directly in the pattern (e.g. `ConfirmDeleteDialog(:final itemId)`) without manually accessing them from a page object.
 - **No boilerplate** — no handler class to extend, no interface to implement, no abstract methods. Just a `switch` expression.
-- **`null` handles unknowns** — `decodeFlutterRouteData` returns `null` for unrecognized route IDs (including the prewarm engine's placeholder), so you handle them naturally in the `null` branch.
+- **`null` handles unknowns** — `decodeAdd2AppRouteData` returns `null` for unrecognized route IDs (including the prewarm engine's placeholder), so you handle them naturally in the `null` branch.
 
 `fetchInitialRoute` retrieves the full route data (including non-path parameters like lists and complex objects) from the native host and returns the sealed type for exhaustive matching.
 
@@ -403,8 +559,9 @@ Add2AppNavigator.destroyPrewarmedEngine()
 
 1. **Native init** — `start()` / `init()` creates a `FlutterEngineGroup` and optionally prewarms one engine.
 2. **Push** — When a route is pushed, the framework encodes `PageSettings` into a URL string, creates a new engine from the group, and presents it in a native container (Activity / ViewController).
-3. **Dart entrypoint** — Every engine runs the same Dart entrypoint (`add2appMain`). A routing library reads the initial path to render the correct screen, or the imperative approach decodes `PageSettings` into a sealed `FlutterRoute` for pattern matching.
-4. **Pop** — Dismissing the native container destroys the engine and cleans up platform channel registrations.
+3. **Present dialog** — For dialog routes, the native side creates a transparent container (`DialogFragment` on Android, `.overFullScreen` modal on iOS) instead of an opaque one. The engine starts the same way, but Flutter renders over the visible native screen underneath.
+4. **Dart entrypoint** — Every engine runs the same Dart entrypoint (`add2appMain`). A routing library reads the initial path to render the correct screen, or the imperative approach decodes `PageSettings` into a sealed `FlutterRoute` / `FlutterDialogRoute` for pattern matching.
+5. **Pop** — Dismissing the native container destroys the engine and cleans up platform channel registrations. For dialogs, Flutter's `Add2AppNavigator.instance.pop()` is called automatically when the dialog/sheet is dismissed.
 
 Routes are serialized as:
 
