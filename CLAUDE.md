@@ -10,12 +10,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Dart workspace (SDK ^3.11.0) with four packages:
 
-| Package | Role |
-|---------|------|
-| `leancode_add2app/` | Core framework plugin (Dart + Swift + Kotlin). Navigation, storage, platform channels via Pigeon. |
-| `leancode_add2app_gen/` | Code generator — produces typed route/store classes for Dart, Kotlin, Swift from annotated schemas. |
-| `signal_module/` | Flutter module embedded in Signal app forks (real-world benchmark). |
-| `example/example_module/` | Standalone example Flutter module with go_router, auto_route, and sealed-class routing demos. |
+| Package                   | Role                                                                                                |
+| ------------------------- | --------------------------------------------------------------------------------------------------- |
+| `leancode_add2app/`       | Core framework plugin (Dart + Swift + Kotlin). Navigation, storage, platform channels via Pigeon.   |
+| `leancode_add2app_gen/`   | Code generator — produces typed route/store classes for Dart, Kotlin, Swift from annotated schemas. |
+| `signal_module/`          | Flutter module embedded in Signal app forks (real-world benchmark).                                 |
+| `example/example_module/` | Standalone example Flutter module with go_router, auto_route, and sealed-class routing demos.       |
 
 Non-workspace directories: `example/example_android/`, `example/example_ios/` (native host apps), `Signal-iOS/`, `Signal-Android/` (Signal app forks).
 
@@ -60,6 +60,7 @@ dart test test/annotation_parser_test.dart
 ### Platform Channels (Pigeon)
 
 Two pigeon definitions in `leancode_add2app/pigeons/`:
+
 - `add2app_navigator.dart` — navigation APIs (push/pop between native and Flutter)
 - `key_value_storage.dart` — cross-engine key-value storage sync
 
@@ -88,3 +89,4 @@ Generated outputs go to `lib/src/*/...g.dart`, `android/src/.../...Api.g.kt`, `i
 - **After changing Dart code:** run `dart analyze` then `dart format .`.
 - **Signal forks:** prefer modifying existing native screens over adding new ones — this better validates framework usability.
 - **Linting:** all packages use `leancode_lint` (analysis_options.yaml includes `package:leancode_lint/analysis_options_package.yaml`).
+- **Docs:** after introducing any changes inspect the `docs` folder and `README.md` and introduce any updates if necessary. `README.md` is supposed to be a general overview and shouldn't include too many details. Prefer directing the reader to detailed docs in the `docs` folder.
