@@ -91,8 +91,7 @@ class NativeSoundsNotificationsActivity : AppCompatActivity() {
     // ── Observer callback (only fires for changes from OTHER sources) ───
 
     private fun onStorageChanged(entries: List<StorageEntry>) {
-        val prefix = "sounds_notifications/$recipientId/"
-        if (entries.any { it.key.startsWith(prefix) }) {
+        if (store.containsChanges(entries)) {
             loadState()
         }
     }

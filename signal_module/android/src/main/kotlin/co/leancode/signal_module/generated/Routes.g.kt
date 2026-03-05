@@ -151,7 +151,7 @@ data class SoundsNotificationsPage(
     val fallbackChannel: DeliveryChannel?
 ) : FlutterRoute {
     companion object {
-        const val ROUTE_NAME = "soundsNotifications"
+        const val ROUTE_NAME = "/sounds-notifications/:contactId"
         const val PATH_TEMPLATE = "/sounds-notifications/:contactId"
 
         fun fromList(list: List<Any?>): SoundsNotificationsPage = SoundsNotificationsPage(
@@ -193,7 +193,7 @@ data class SetWallpaperPage(
     val preferredKind: WallpaperKind?
 ) : FlutterRoute {
     companion object {
-        const val ROUTE_NAME = "setWallpaper"
+        const val ROUTE_NAME = "/set-wallpaper/:recipientId"
         const val PATH_TEMPLATE = "/set-wallpaper/:recipientId"
 
         fun fromList(list: List<Any?>): SetWallpaperPage = SetWallpaperPage(
@@ -232,7 +232,7 @@ data class ContactDetailsPage(
     val preferredSound: NotificationSound?
 ) : FlutterRoute {
     companion object {
-        const val ROUTE_NAME = "contactDetails"
+        const val ROUTE_NAME = "/contact-details/:contactId"
         const val PATH_TEMPLATE = "/contact-details/:contactId"
 
         fun fromList(list: List<Any?>): ContactDetailsPage = ContactDetailsPage(

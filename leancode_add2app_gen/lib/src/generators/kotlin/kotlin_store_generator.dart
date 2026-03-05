@@ -21,6 +21,7 @@ String generateKotlinStores({
     ..writeln('package $packageName')
     ..writeln()
     ..writeln('import co.leancode.add2app.NativeStorageScope')
+    ..writeln('import co.leancode.add2app.storage.StorageEntry')
     ..writeln();
 
   // Generate store classes.
@@ -59,16 +60,28 @@ void _writeStoreClass(
     ..writeln(') {')
     ..writeln();
 
-  // Key helper.
+  // Key prefix and key helper.
   if (keyField == null) {
-    buffer.writeln('    private fun key(field: String) = "$storeKey/\$field"');
+    buffer
+      ..writeln('    val keyPrefix: String get() = "$storeKey/"')
+      ..writeln()
+      ..writeln('    private fun key(field: String) = "$storeKey/\$field"');
   } else {
     final keySegment = _keySegmentExpression(keyField, typeGraph);
-    buffer.writeln(
-      '    private fun key(field: String) = "$storeKey/$keySegment/\$field"',
-    );
+    buffer
+      ..writeln('    val keyPrefix: String get() = "$storeKey/$keySegment/"')
+      ..writeln()
+      ..writeln(
+        '    private fun key(field: String) = "$storeKey/$keySegment/\$field"',
+      );
   }
-  buffer.writeln();
+  buffer
+    ..writeln()
+    // containsChanges helper.
+    ..writeln(
+      '    fun containsChanges(entries: List<StorageEntry>) = entries.any { it.key.startsWith(keyPrefix) }',
+    )
+    ..writeln();
 
   // Properties for each value field.
   for (final field in valueFields) {

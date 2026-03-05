@@ -44,7 +44,7 @@ struct GreetingPage: FlutterRoute {
     let name: String
     let style: GreetingStyle?
 
-    static let routeName = "greeting"
+    static let routeName = "/greeting/:name"
     static let pathTemplate = "/greeting/:name"
 
     static func fromList(_ list: [Any?]) -> GreetingPage {
@@ -84,7 +84,7 @@ struct GreetingPage: FlutterRoute {
 struct CounterPage: FlutterRoute {
     let seed: Int64?
 
-    static let routeName = "counter"
+    static let routeName = "/counter"
     static let pathTemplate = "/counter"
 
     static func fromList(_ list: [Any?]) -> CounterPage {
@@ -122,7 +122,7 @@ struct ProfilePage: FlutterRoute {
     let userId: String
     let badges: [UserBadge]?
 
-    static let routeName = "profile"
+    static let routeName = "/profile/:userId"
     static let pathTemplate = "/profile/:userId"
 
     static func fromList(_ list: [Any?]) -> ProfilePage {

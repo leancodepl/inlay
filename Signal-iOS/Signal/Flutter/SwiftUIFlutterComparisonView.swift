@@ -367,10 +367,8 @@ private struct NativeSwiftUISoundsNotifications: View {
         .navigationTitle("Sounds & Notifications")
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
-            let prefix = "sounds_notifications/\(recipientId)/"
-
             storage.startObserving { entries in
-                guard entries.contains(where: { $0.key.hasPrefix(prefix) }) else { return }
+                guard store.containsChanges(in: entries) else { return }
                 reloadFromStorage()
             }
 

@@ -317,9 +317,8 @@ private fun NativeComposeSoundsNotifications(
 
     // ── Start observing after state is declared (runs after composition) ──
     DisposableEffect(recipientId) {
-        val prefix = "sounds_notifications/$recipientId/"
         storage.startObserving { entries ->
-            if (entries.any { it.key.startsWith(prefix) }) {
+            if (store.containsChanges(entries)) {
                 muteNotifications = store.mute
                 showPreviews = store.showPreviews
                 notificationSound = store.sound

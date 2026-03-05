@@ -155,7 +155,7 @@ struct SoundsNotificationsPage: FlutterRoute {
     let presets: [NotificationPreset]?
     let fallbackChannel: DeliveryChannel?
 
-    static let routeName = "soundsNotifications"
+    static let routeName = "/sounds-notifications/:contactId"
     static let pathTemplate = "/sounds-notifications/:contactId"
 
     static func fromList(_ list: [Any?]) -> SoundsNotificationsPage {
@@ -201,7 +201,7 @@ struct SetWallpaperPage: FlutterRoute {
     let options: [WallpaperOption]?
     let preferredKind: WallpaperKind?
 
-    static let routeName = "setWallpaper"
+    static let routeName = "/set-wallpaper/:recipientId"
     static let pathTemplate = "/set-wallpaper/:recipientId"
 
     static func fromList(_ list: [Any?]) -> SetWallpaperPage {
@@ -245,7 +245,7 @@ struct ContactDetailsPage: FlutterRoute {
     let badges: [ContactBadge]?
     let preferredSound: NotificationSound?
 
-    static let routeName = "contactDetails"
+    static let routeName = "/contact-details/:contactId"
     static let pathTemplate = "/contact-details/:contactId"
 
     static func fromList(_ list: [Any?]) -> ContactDetailsPage {

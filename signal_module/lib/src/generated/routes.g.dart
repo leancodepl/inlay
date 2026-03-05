@@ -139,7 +139,7 @@ class SoundsNotificationsPage extends FlutterRoute {
   final List<NotificationPreset>? presets;
   final DeliveryChannel? fallbackChannel;
 
-  static const String routeName = 'soundsNotifications';
+  static const String routeName = '/sounds-notifications/:contactId';
 
   static const String pathTemplate = '/sounds-notifications/:contactId';
 
@@ -213,7 +213,7 @@ class SetWallpaperPage extends FlutterRoute {
   final List<WallpaperOption>? options;
   final WallpaperKind? preferredKind;
 
-  static const String routeName = 'setWallpaper';
+  static const String routeName = '/set-wallpaper/:recipientId';
 
   static const String pathTemplate = '/set-wallpaper/:recipientId';
 
@@ -283,7 +283,7 @@ class ContactDetailsPage extends FlutterRoute {
   final List<ContactBadge>? badges;
   final NotificationSound? preferredSound;
 
-  static const String routeName = 'contactDetails';
+  static const String routeName = '/contact-details/:contactId';
 
   static const String pathTemplate = '/contact-details/:contactId';
 
@@ -403,4 +403,12 @@ FlutterRoute? decodeFlutterRouteData(PageSettings? settings) {
     ),
     _ => null,
   };
+}
+
+/// Combined decoder — tries page routes, then dialog routes.
+///
+/// Pass this to [Add2AppNavigator.fetchInitialRoute] as the decoder
+/// when you need a single entrypoint that handles both pages and dialogs.
+Add2AppRoute? decodeAdd2AppRouteData(PageSettings? settings) {
+  return decodeFlutterRouteData(settings);
 }

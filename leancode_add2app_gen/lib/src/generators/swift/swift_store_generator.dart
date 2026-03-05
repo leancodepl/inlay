@@ -65,18 +65,30 @@ void _writeStoreStruct(
   }
   buffer.writeln();
 
-  // Key helper.
+  // Key prefix and key helper.
   if (keyField == null) {
-    buffer.writeln(
-      '    private func key(_ field: String) -> String { "$storeKey/\\(field)" }',
-    );
+    buffer
+      ..writeln('    var keyPrefix: String { "$storeKey/" }')
+      ..writeln()
+      ..writeln(
+        '    private func key(_ field: String) -> String { "$storeKey/\\(field)" }',
+      );
   } else {
     final keySegment = _keySegmentExpression(keyField, typeGraph);
-    buffer.writeln(
-      '    private func key(_ field: String) -> String { "$storeKey/$keySegment/\\(field)" }',
-    );
+    buffer
+      ..writeln('    var keyPrefix: String { "$storeKey/$keySegment/" }')
+      ..writeln()
+      ..writeln(
+        '    private func key(_ field: String) -> String { "$storeKey/$keySegment/\\(field)" }',
+      );
   }
-  buffer.writeln();
+  buffer
+    ..writeln()
+    // containsChanges helper.
+    ..writeln('    func containsChanges(in entries: [StorageEntry]) -> Bool {')
+    ..writeln(r'        entries.contains { $0.key.hasPrefix(keyPrefix) }')
+    ..writeln('    }')
+    ..writeln();
 
   // Properties for each value field.
   for (final field in valueFields) {

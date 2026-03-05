@@ -4,6 +4,7 @@
 package co.leancode.example_module.generated
 
 import co.leancode.add2app.NativeStorageScope
+import co.leancode.add2app.storage.StorageEntry
 
 /**
  * Generated store wrapper for CounterStore.
@@ -12,7 +13,11 @@ class CounterStore(
     private val storage: NativeStorageScope,
 ) {
 
+    val keyPrefix: String get() = "counter/"
+
     private fun key(field: String) = "counter/$field"
+
+    fun containsChanges(entries: List<StorageEntry>) = entries.any { it.key.startsWith(keyPrefix) }
 
     var count: Long
         get() = storage.get(key("count"))?.toLongOrNull() ?: 0
@@ -33,7 +38,11 @@ class UserPreferencesStore(
     private val userId: String,
 ) {
 
+    val keyPrefix: String get() = "user_preferences/$userId/"
+
     private fun key(field: String) = "user_preferences/$userId/$field"
+
+    fun containsChanges(entries: List<StorageEntry>) = entries.any { it.key.startsWith(keyPrefix) }
 
     var displayName: String
         get() = storage.get(key("displayName")) ?: "User"

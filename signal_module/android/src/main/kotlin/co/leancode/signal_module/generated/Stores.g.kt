@@ -4,6 +4,7 @@
 package co.leancode.signal_module.generated
 
 import co.leancode.add2app.NativeStorageScope
+import co.leancode.add2app.storage.StorageEntry
 
 /**
  * Generated store wrapper for SoundsNotificationsStore.
@@ -13,7 +14,11 @@ class SoundsNotificationsStore(
     private val contactId: String,
 ) {
 
+    val keyPrefix: String get() = "sounds_notifications/$contactId/"
+
     private fun key(field: String) = "sounds_notifications/$contactId/$field"
+
+    fun containsChanges(entries: List<StorageEntry>) = entries.any { it.key.startsWith(keyPrefix) }
 
     var mute: Boolean
         get() = storage.get(key("mute")) == "true"
@@ -45,7 +50,11 @@ class UserPreferencesStore(
     private val storage: NativeStorageScope,
 ) {
 
+    val keyPrefix: String get() = "user_preferences/"
+
     private fun key(field: String) = "user_preferences/$field"
+
+    fun containsChanges(entries: List<StorageEntry>) = entries.any { it.key.startsWith(keyPrefix) }
 
     var darkMode: Boolean
         get() = storage.get(key("darkMode")) == "true"
@@ -70,7 +79,11 @@ class ThreadPreferencesStore(
     private val threadId: Long,
 ) {
 
+    val keyPrefix: String get() = "thread_preferences/$threadId/"
+
     private fun key(field: String) = "thread_preferences/$threadId/$field"
+
+    fun containsChanges(entries: List<StorageEntry>) = entries.any { it.key.startsWith(keyPrefix) }
 
     var unreadCount: Long
         get() = storage.get(key("unreadCount"))?.toLongOrNull() ?: 0
@@ -95,7 +108,11 @@ class CategoryPreferencesStore(
     private val category: ConversationCategory,
 ) {
 
+    val keyPrefix: String get() = "category_preferences/${category.name}/"
+
     private fun key(field: String) = "category_preferences/${category.name}/$field"
+
+    fun containsChanges(entries: List<StorageEntry>) = entries.any { it.key.startsWith(keyPrefix) }
 
     var pinned: Boolean
         get() = storage.get(key("pinned")) == "true"

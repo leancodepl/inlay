@@ -11,7 +11,13 @@ struct CounterStore {
         self.storage = storage
     }
 
+    var keyPrefix: String { "counter/" }
+
     private func key(_ field: String) -> String { "counter/\(field)" }
+
+    func containsChanges(in entries: [StorageEntry]) -> Bool {
+        entries.contains { $0.key.hasPrefix(keyPrefix) }
+    }
 
     var count: Int {
         get { Int(storage.get(key: key("count")) ?? "") ?? 0 }
@@ -36,7 +42,13 @@ struct UserPreferencesStore {
         self.userId = userId
     }
 
+    var keyPrefix: String { "user_preferences/\(userId)/" }
+
     private func key(_ field: String) -> String { "user_preferences/\(userId)/\(field)" }
+
+    func containsChanges(in entries: [StorageEntry]) -> Bool {
+        entries.contains { $0.key.hasPrefix(keyPrefix) }
+    }
 
     var displayName: String {
         get { storage.get(key: key("displayName")) ?? "User" }
