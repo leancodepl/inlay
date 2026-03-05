@@ -2,6 +2,14 @@ import 'package:leancode_add2app_gen/src/models/schema.dart';
 import 'package:leancode_add2app_gen/src/models/store_definition.dart';
 import 'package:leancode_add2app_gen/src/models/type_info.dart';
 
+/// Returns true if the type is a simple store type (primitive or enum)
+/// that can be stored as a plain string without JSON encoding.
+bool isSimpleStoreType(TypeInfo type, Map<String, TypeDefinition> typeGraph) {
+  final baseName = type.baseName;
+  return const {'bool', 'int', 'double', 'String'}.contains(baseName) ||
+      typeGraph[baseName] is EnumType;
+}
+
 const _primitiveTypes = {
   'bool',
   'int',
@@ -115,6 +123,11 @@ class TypeResolver {
     // Validate store types.
     for (final store in schema.stores) {
       _validateStoreFields(store, typeGraph, errors);
+    }
+
+    // Validate store value field types (using same validation as routes).
+    for (final store in schema.stores) {
+      _validateStoreValueFieldTypes(store, typeGraph, errors);
     }
 
     // Check for circular references.
@@ -247,30 +260,31 @@ class TypeResolver {
       }
     }
 
-    // Store values: primitives and enums only.
-    final supportedPrimitiveValues = {'bool', 'int', 'double', 'String'};
+    // Validate store value field types.
     for (final field in store.valueFields) {
-      final baseName = field.type.baseName;
-      final isEnum = typeGraph[baseName] is EnumType;
-      final isSupportedValueType =
-          supportedPrimitiveValues.contains(baseName) || isEnum;
+      _validateType(
+        field.type,
+        '${store.className}.${field.name}',
+        typeGraph,
+        errors,
+      );
+    }
+  }
 
-      if (!isSupportedValueType) {
+  void _validateStoreValueFieldTypes(
+    StoreDefinition store,
+    Map<String, TypeDefinition> typeGraph,
+    List<TypeResolutionError> errors,
+  ) {
+    for (final field in store.valueFields) {
+      if (!isSimpleStoreType(field.type, typeGraph) &&
+          !field.type.isNullable &&
+          !field.hasDefault) {
         errors.add(
           TypeResolutionError(
             message:
-                'Store value fields must be primitive types or enums (bool, int, double, String, enum). '
-                'Found: $baseName',
-            location: '${store.className}.${field.name}',
-          ),
-        );
-      }
-
-      if (field.type.typeArguments.isNotEmpty) {
-        errors.add(
-          TypeResolutionError(
-            message:
-                'Store value fields cannot be generic types (List/Map/etc).',
+                'Non-nullable complex store field must have a default value. '
+                'Make it nullable or provide a default.',
             location: '${store.className}.${field.name}',
           ),
         );

@@ -32,30 +32,6 @@ enum class WallpaperKind {
     live
 }
 
-enum class NotificationBehavior {
-    defaultBehavior,
-    mentionsOnly,
-    muted
-}
-
-enum class AppTheme {
-    system,
-    light,
-    dark
-}
-
-enum class VibrationLevel {
-    off,
-    normal,
-    intense
-}
-
-enum class ConversationCategory {
-    direct,
-    group,
-    archived
-}
-
 data class NotificationPreset(
     val name: String,
     val preferences: NotificationPreferences

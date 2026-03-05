@@ -11,14 +11,6 @@ enum DeliveryChannel { push, sms, email }
 
 enum WallpaperKind { staticImage, live }
 
-enum NotificationBehavior { defaultBehavior, mentionsOnly, muted }
-
-enum AppTheme { system, light, dark }
-
-enum VibrationLevel { off, normal, intense }
-
-enum ConversationCategory { direct, group, archived }
-
 class NotificationPreset {
   const NotificationPreset({required this.name, required this.preferences});
 

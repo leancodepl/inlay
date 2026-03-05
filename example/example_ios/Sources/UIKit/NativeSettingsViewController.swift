@@ -10,6 +10,8 @@ final class NativeSettingsViewController: UIViewController {
     private let emailValue = UILabel()
     private let darkModeValue = UILabel()
     private let themeValue = UILabel()
+    private let tagsValue = UILabel()
+    private let notifPrefsValue = UILabel()
 
     init(userId: String) {
         self.userId = userId
@@ -36,7 +38,14 @@ final class NativeSettingsViewController: UIViewController {
             darkModeValue,
             makeTitle("Theme"),
             themeValue,
+            makeTitle("Tags"),
+            tagsValue,
+            makeTitle("Notification preferences"),
+            notifPrefsValue,
             makeButton("Set demo values", action: setDemoValues),
+            makeButton("Add 'ios' tag", action: addTag),
+            makeButton("Set notification prefs", action: setNotifPrefs),
+            makeButton("Clear notification prefs", action: clearNotifPrefs),
             makeButton("Toggle dark mode", action: toggleDarkMode),
             makeButton("Theme: system", action: { [weak self] in self?.setTheme(.system) }),
             makeButton("Theme: light", action: { [weak self] in self?.setTheme(.light) }),
@@ -85,6 +94,26 @@ final class NativeSettingsViewController: UIViewController {
         render()
     }
 
+    private func addTag() {
+        var s = store
+        if !s.tags.contains("ios") {
+            s.tags = s.tags + ["ios"]
+        }
+        render()
+    }
+
+    private func setNotifPrefs() {
+        var s = store
+        s.notificationPreferences = NotificationPreferences(sound: "Bell", vibration: true)
+        render()
+    }
+
+    private func clearNotifPrefs() {
+        var s = store
+        s.notificationPreferences = nil
+        render()
+    }
+
     private func openFlutterProfile() {
         Add2AppNavigator.shared.push(
             from: self,
@@ -97,6 +126,13 @@ final class NativeSettingsViewController: UIViewController {
         emailValue.text = store.email
         darkModeValue.text = store.darkMode ? "on" : "off"
         themeValue.text = String(describing: store.theme)
+        let tags = store.tags
+        tagsValue.text = tags.isEmpty ? "(none)" : tags.joined(separator: ", ")
+        if let prefs = store.notificationPreferences {
+            notifPrefsValue.text = "sound=\(prefs.sound), vibration=\(prefs.vibration)"
+        } else {
+            notifPrefsValue.text = "(not set)"
+        }
     }
 
     private func makeTitle(_ text: String) -> UILabel {

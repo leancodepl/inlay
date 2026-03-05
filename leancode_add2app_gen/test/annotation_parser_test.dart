@@ -3,6 +3,7 @@ import 'package:leancode_add2app_gen/src/generators/dart/dart_store_generator.da
 import 'package:leancode_add2app_gen/src/generators/kotlin/kotlin_routes_generator.dart';
 import 'package:leancode_add2app_gen/src/generators/kotlin/kotlin_store_generator.dart';
 import 'package:leancode_add2app_gen/src/generators/swift/swift_routes_generator.dart';
+import 'package:leancode_add2app_gen/src/generators/swift/swift_store_generator.dart';
 import 'package:leancode_add2app_gen/src/parser/annotation_parser.dart';
 import 'package:leancode_add2app_gen/src/parser/type_resolver.dart';
 import 'package:leancode_add2app_gen/src/utils/naming.dart';
@@ -240,18 +241,40 @@ class InvalidStore {
 }
 ''';
 
-const _invalidStoreNestedValueSource = '''
+const _complexStoreSource = '''
+import 'package:leancode_add2app/leancode_add2app.dart';
+
+@Add2AppStore(key: 'complex_store')
+class ComplexStore {
+  const ComplexStore({
+    @Add2AppStoreKey() required this.contactId,
+    this.tags = const [],
+    this.preferences,
+  });
+
+  final String contactId;
+  final List<String> tags;
+  final NotificationPreferences? preferences;
+}
+
+class NotificationPreferences {
+  const NotificationPreferences({required this.sound, this.muted = false});
+
+  final String sound;
+  final bool muted;
+}
+''';
+
+const _invalidComplexStoreSource = '''
 import 'package:leancode_add2app/leancode_add2app.dart';
 
 @Add2AppStore(key: 'invalid_store')
 class InvalidStore {
   const InvalidStore({
-    @Add2AppStoreKey() required this.contactId,
-    this.tags = const [],
+    required this.items,
   });
 
-  final String contactId;
-  final List<String> tags;
+  final List<String> items;
 }
 ''';
 
@@ -536,15 +559,24 @@ class SecondPage {
       );
     });
 
-    test('rejects nested store value types', () {
-      final schema = parser.parse(_invalidStoreNestedValueSource);
+    test('accepts complex store value types', () {
+      final schema = parser.parse(_complexStoreSource);
+      final resolver = TypeResolver();
+      final result = resolver.resolve(schema);
+
+      expect(result.isValid, isTrue);
+      expect(result.errors, isEmpty);
+    });
+
+    test('rejects non-nullable complex store field without default', () {
+      final schema = parser.parse(_invalidComplexStoreSource);
       final resolver = TypeResolver();
       final result = resolver.resolve(schema);
 
       expect(result.isValid, isFalse);
       expect(
         result.errors.any(
-          (e) => e.message.contains('primitive types or enums'),
+          (e) => e.message.contains('Non-nullable complex store field'),
         ),
         isTrue,
       );
@@ -676,6 +708,34 @@ class SecondPage {
       );
     });
 
+    test('generates Dart stores with complex fields', () {
+      final schema = parser.parse(_complexStoreSource);
+      final resolver = TypeResolver();
+      final result = resolver.resolve(schema);
+
+      expect(result.isValid, isTrue);
+
+      final code = generateDartStores(
+        schema: schema,
+        typeGraph: result.typeGraph,
+      );
+
+      expect(code, contains("import 'dart:convert';"));
+      expect(code, contains('class NotificationPreferences {'));
+      expect(code, contains('Future<List<String>> getTags()'));
+      expect(code, contains('jsonDecode'));
+      expect(code, contains('jsonEncode'));
+      expect(code, contains('Future<void> setTags(List<String> value)'));
+      expect(
+        code,
+        contains('Future<NotificationPreferences?> getPreferences()'),
+      );
+      expect(
+        code,
+        contains('Future<void> setPreferences(NotificationPreferences? value)'),
+      );
+    });
+
     test('generates Dart key helpers for int and enum keys', () {
       final schema = parser.parse(_storeKeyTypesSource);
       final resolver = TypeResolver();
@@ -762,6 +822,27 @@ class SecondPage {
       expect(code, contains('override fun toPageSettings()'));
     });
 
+    test('generates Kotlin stores with complex fields', () {
+      final schema = parser.parse(_complexStoreSource);
+      final resolver = TypeResolver();
+      final result = resolver.resolve(schema);
+
+      expect(result.isValid, isTrue);
+
+      final code = generateKotlinStores(
+        schema: schema,
+        typeGraph: result.typeGraph,
+        packageName: 'com.example.generated',
+      );
+
+      expect(code, contains('import org.json.JSONArray'));
+      expect(code, contains('fun jsonToKotlin'));
+      expect(code, contains('data class NotificationPreferences('));
+      expect(code, contains('var tags: List<String>'));
+      expect(code, contains('var preferences: NotificationPreferences?'));
+      expect(code, contains('JSONArray'));
+    });
+
     test('generates Kotlin key helpers for int and enum keys', () {
       final schema = parser.parse(_storeKeyTypesSource);
       final resolver = TypeResolver();
@@ -822,6 +903,24 @@ class SecondPage {
         contains('struct ConfirmActionDialog: FlutterDialogRoute {'),
       );
       expect(code, contains('func toPageSettings() -> PageSettings'));
+    });
+
+    test('generates Swift stores with complex fields', () {
+      final schema = parser.parse(_complexStoreSource);
+      final resolver = TypeResolver();
+      final result = resolver.resolve(schema);
+
+      expect(result.isValid, isTrue);
+
+      final code = generateSwiftStores(
+        schema: schema,
+        typeGraph: result.typeGraph,
+      );
+
+      expect(code, contains('struct NotificationPreferences {'));
+      expect(code, contains('var tags: [String]'));
+      expect(code, contains('var preferences: NotificationPreferences?'));
+      expect(code, contains('JSONSerialization'));
     });
 
     test('generates enums with raw values', () {

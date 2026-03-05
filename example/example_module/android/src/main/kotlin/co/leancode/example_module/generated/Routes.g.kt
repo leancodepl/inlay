@@ -21,12 +21,6 @@ enum class BadgeLevel {
     gold
 }
 
-enum class AppTheme {
-    system,
-    light,
-    dark
-}
-
 data class UserBadge(
     val label: String,
     val level: BadgeLevel

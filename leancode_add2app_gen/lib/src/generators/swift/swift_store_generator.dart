@@ -1,3 +1,5 @@
+import 'package:leancode_add2app_gen/src/generators/swift/swift_serialization.dart';
+import 'package:leancode_add2app_gen/src/models/data_type_definition.dart';
 import 'package:leancode_add2app_gen/src/models/schema.dart';
 import 'package:leancode_add2app_gen/src/models/store_definition.dart';
 import 'package:leancode_add2app_gen/src/models/type_info.dart';
@@ -17,6 +19,18 @@ String generateSwiftStores({
     ..writeln()
     ..writeln('import Foundation')
     ..writeln();
+
+  // Generate store-only enums.
+  for (final enumDef in schema.enums) {
+    _writeEnum(buffer, enumDef);
+    buffer.writeln();
+  }
+
+  // Generate store-only data classes.
+  for (final dataClass in schema.dataClasses) {
+    _writeDataStruct(buffer, dataClass, typeGraph);
+    buffer.writeln();
+  }
 
   for (final store in schema.stores) {
     _writeStoreStruct(buffer, store, typeGraph);
@@ -107,6 +121,18 @@ void _writeProperty(
   FieldInfo field,
   Map<String, TypeDefinition> typeGraph,
 ) {
+  if (isSimpleStoreType(field.type, typeGraph)) {
+    _writeSimpleProperty(buffer, field, typeGraph);
+  } else {
+    _writeComplexProperty(buffer, field, typeGraph);
+  }
+}
+
+void _writeSimpleProperty(
+  StringBuffer buffer,
+  FieldInfo field,
+  Map<String, TypeDefinition> typeGraph,
+) {
   final baseName = field.type.baseName;
   final enumType = typeGraph[baseName] is EnumType
       ? typeGraph[baseName]! as EnumType
@@ -181,6 +207,94 @@ void _writeProperty(
   buffer.writeln('    }');
 }
 
+void _writeComplexProperty(
+  StringBuffer buffer,
+  FieldInfo field,
+  Map<String, TypeDefinition> typeGraph,
+) {
+  final swiftType = dartTypeToSwift(field.type);
+
+  buffer.writeln('    var ${field.name}: $swiftType {');
+
+  // Getter.
+  if (field.type.isNullable) {
+    final decodeExpr = generateSwiftDecode(
+      'json',
+      field.type.toNonNullable(),
+      typeGraph,
+    );
+    buffer
+      ..writeln('        get {')
+      ..writeln(
+        '            guard let raw = storage.get(key: key("${field.name}")),',
+      )
+      ..writeln('                  let data = raw.data(using: .utf8),')
+      ..writeln(
+        '                  let json = try? JSONSerialization.jsonObject(with: data) else { return nil }',
+      )
+      ..writeln('            return $decodeExpr')
+      ..writeln('        }');
+  } else {
+    final decodeExpr = generateSwiftDecode('json', field.type, typeGraph);
+    final rawDefault = field.defaultValue ?? '[]';
+    final defaultVal = _dartToSwiftLiteral(rawDefault, field.type.baseName);
+    buffer
+      ..writeln('        get {')
+      ..writeln(
+        '            guard let raw = storage.get(key: key("${field.name}")),',
+      )
+      ..writeln('                  let data = raw.data(using: .utf8),')
+      ..writeln(
+        '                  let json = try? JSONSerialization.jsonObject(with: data) else { return $defaultVal }',
+      )
+      ..writeln('            return $decodeExpr')
+      ..writeln('        }');
+  }
+
+  // Setter.
+  if (field.type.isNullable) {
+    final encodeExpr = generateSwiftEncode(
+      'newValue',
+      field.type.toNonNullable(),
+      typeGraph,
+    );
+    buffer
+      ..writeln('        set {')
+      ..writeln('            guard let newValue else {')
+      ..writeln('                storage.remove(key: key("${field.name}"))')
+      ..writeln('                return')
+      ..writeln('            }')
+      ..writeln(
+        '            if let data = try? JSONSerialization.data(withJSONObject: $encodeExpr as Any),',
+      )
+      ..writeln(
+        '               let str = String(data: data, encoding: .utf8) {',
+      )
+      ..writeln(
+        '                storage.put(key: key("${field.name}"), value: str)',
+      )
+      ..writeln('            }')
+      ..writeln('        }');
+  } else {
+    final encodeExpr = generateSwiftEncode('newValue', field.type, typeGraph);
+    buffer
+      ..writeln('        set {')
+      ..writeln(
+        '            if let data = try? JSONSerialization.data(withJSONObject: $encodeExpr as Any),',
+      )
+      ..writeln(
+        '               let str = String(data: data, encoding: .utf8) {',
+      )
+      ..writeln(
+        '                storage.put(key: key("${field.name}"), value: str)',
+      )
+      ..writeln('            }')
+      ..writeln('        }');
+  }
+
+  buffer.writeln('    }');
+}
+
 String _swiftStoreType(String dartType, Map<String, TypeDefinition> typeGraph) {
   if (typeGraph[dartType] is EnumType) {
     return dartType;
@@ -220,12 +334,21 @@ String _defaultValueForType(String dartType, EnumType? enumType) {
 }
 
 /// Converts a Dart literal to its Swift equivalent.
+///
+/// Handles string literals (single → double quotes) and
+/// collection literals (const [] → [], const {} → [:]).
 String _dartToSwiftLiteral(String dartLiteral, String dartType) {
   if (dartType == 'String') {
     if (dartLiteral.startsWith("'") && dartLiteral.endsWith("'")) {
       final content = dartLiteral.substring(1, dartLiteral.length - 1);
       return '"$content"';
     }
+  }
+  if (dartLiteral == 'const []') {
+    return '[]';
+  }
+  if (dartLiteral == 'const {}') {
+    return '[:]';
   }
   // Enum defaults already use .value syntax from _defaultValueForType.
   return dartLiteral;
@@ -239,4 +362,38 @@ String _keySegmentExpression(
     return '\\(${keyField.name}.name)';
   }
   return '\\(${keyField.name})';
+}
+
+void _writeEnum(StringBuffer buffer, EnumDefinition enumDef) {
+  buffer.writeln('enum ${enumDef.name}: Int {');
+  for (var i = 0; i < enumDef.values.length; i++) {
+    final value = enumDef.values[i];
+    buffer.writeln('    case $value = $i');
+  }
+  buffer.writeln('}');
+}
+
+void _writeDataStruct(
+  StringBuffer buffer,
+  DataClassDefinition dataClass,
+  Map<String, TypeDefinition> typeGraph,
+) {
+  final structName = dataClass.className;
+  final fields = dataClass.fields;
+
+  buffer.writeln('struct $structName {');
+
+  for (final field in fields) {
+    final swiftType = dartTypeToSwift(field.type);
+    buffer.writeln('    let ${field.name}: $swiftType');
+  }
+
+  buffer
+    ..writeln()
+    ..writeln(
+      '    ${generateSwiftFromListMethod(structName, fields, typeGraph)}',
+    )
+    ..writeln()
+    ..writeln('    ${generateSwiftToListMethod(fields, typeGraph)}')
+    ..writeln('}');
 }

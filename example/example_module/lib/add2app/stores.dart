@@ -16,6 +16,8 @@ class UserPreferencesStore {
     this.email = '',
     this.darkMode = false,
     this.theme = AppTheme.system,
+    this.tags = const [],
+    this.notificationPreferences,
   });
 
   final String userId;
@@ -23,6 +25,18 @@ class UserPreferencesStore {
   final String email;
   final bool darkMode;
   final AppTheme theme;
+  final List<String> tags;
+  final NotificationPreferences? notificationPreferences;
+}
+
+class NotificationPreferences {
+  const NotificationPreferences({
+    this.sound = 'Default',
+    this.vibration = true,
+  });
+
+  final String sound;
+  final bool vibration;
 }
 
 enum AppTheme { system, light, dark }

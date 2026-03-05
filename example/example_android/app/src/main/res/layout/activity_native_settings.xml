@@ -64,6 +64,30 @@
             android:layout_height="wrap_content"
             android:text="-" />
 
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Tags" />
+
+        <TextView
+            android:id="@+id/valueTags"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="-" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Notification preferences" />
+
+        <TextView
+            android:id="@+id/valueNotifPrefs"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="-" />
+
         <Button
             android:id="@+id/btnSetDemoValues"
             android:layout_width="match_parent"
@@ -94,6 +118,24 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Theme: dark" />
+
+        <Button
+            android:id="@+id/btnAddTag"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Add 'android' tag" />
+
+        <Button
+            android:id="@+id/btnSetNotifPrefs"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Set notification prefs" />
+
+        <Button
+            android:id="@+id/btnClearNotifPrefs"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Clear notification prefs" />
 
         <Button
             android:id="@+id/btnOpenFlutterProfile"

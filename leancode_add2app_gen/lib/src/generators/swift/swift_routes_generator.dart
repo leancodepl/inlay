@@ -246,7 +246,7 @@ String _swiftFieldToQueryValue(
   Map<String, TypeDefinition> typeGraph, {
   required String valueName,
 }) {
-  final nonNullType = _toNonNullable(type);
+  final nonNullType = type.toNonNullable();
 
   if (nonNullType.name == 'String') {
     return valueName;
@@ -265,7 +265,7 @@ String _swiftFieldToDictValue(
 ) {
   final name = field.name;
   final type = field.type;
-  final nonNullType = _toNonNullable(type);
+  final nonNullType = type.toNonNullable();
 
   if (!type.isNullable) {
     if (nonNullType.name == 'String') {
@@ -284,14 +284,6 @@ String _swiftFieldToDictValue(
     return '$name.map { String(\$0.rawValue) } ?? ""';
   }
   return '$name.map { String(describing: \$0) } ?? ""';
-}
-
-TypeInfo _toNonNullable(TypeInfo type) {
-  return TypeInfo(
-    name: type.name,
-    isNullable: false,
-    typeArguments: type.typeArguments,
-  );
 }
 
 void _writeStructWithFields(

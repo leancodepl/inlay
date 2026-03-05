@@ -66,6 +66,18 @@ class SoundsNotificationsStore {
 | `@Add2AppStore(key: 'prefix')` | Marks a class as a store definition. The `key` sets the prefix used in storage keys. |
 | `@Add2AppStoreKey()` | Marks a field as a **key segment** — it's used in the storage path to scope data, but is not stored as a value itself. |
 
+### Supported Field Types
+
+Store value fields support:
+
+- **Primitives:** `bool`, `int`, `double`, `String`
+- **Enums**
+- **Complex types:** `List<T>`, `Map<K,V>`, data classes, and nested combinations of these
+
+Primitives and enums are stored as plain strings. Complex types are JSON-encoded into a single key-value entry, reusing the same serialization pipeline as routes.
+
+Non-nullable complex fields **must** have a default value (e.g. `this.tags = const []`). Nullable complex fields default to `null` when unset.
+
 ### Storage Keys
 
 Values are stored under keys that follow the pattern `{prefix}/{keyField}/{fieldName}`:

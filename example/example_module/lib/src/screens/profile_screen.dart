@@ -19,96 +19,134 @@ class ProfileScreen extends StatelessWidget {
       create: (_) => ProfileCubit(
         UserPreferencesStore(KeyValueStorage.instance, userId: userId),
       )..init(),
-      child:
-          BlocBuilder<ProfileCubit, Add2AppState<UserPreferencesStoreSnapshot>>(
-            builder: (context, state) {
-              if (state.isLoading) {
-                return const Scaffold(
-                  body: Center(child: CircularProgressIndicator()),
-                );
-              }
+      child: BlocBuilder<ProfileCubit, Add2AppState<UserPreferencesStoreSnapshot>>(
+        builder: (context, state) {
+          if (state.isLoading) {
+            return const Scaffold(
+              body: Center(child: CircularProgressIndicator()),
+            );
+          }
 
-              final snapshot = state.requireData;
-              final cubit = context.read<ProfileCubit>();
-              return Scaffold(
-                appBar: AppBar(
-                  leading: BackButton(
-                    onPressed: () =>
-                        Add2AppNavigator.instance.maybePop(context),
-                  ),
-                  title: Text('Profile $userId'),
+          final snapshot = state.requireData;
+          final cubit = context.read<ProfileCubit>();
+          return Scaffold(
+            appBar: AppBar(
+              leading: BackButton(
+                onPressed: () => Add2AppNavigator.instance.maybePop(context),
+              ),
+              title: Text('Profile $userId'),
+            ),
+            body: ListView(
+              padding: const EdgeInsets.all(16),
+              children: [
+                Text(
+                  'Display name: ${snapshot.displayName}',
+                  style: Theme.of(context).textTheme.titleMedium,
                 ),
-                body: ListView(
-                  padding: const EdgeInsets.all(16),
+                const SizedBox(height: 8),
+                Text('Email: ${snapshot.email}'),
+                const SizedBox(height: 8),
+                Text('Dark mode: ${snapshot.darkMode ? 'on' : 'off'}'),
+                const SizedBox(height: 8),
+                Text('Theme: ${snapshot.theme.name}'),
+                const SizedBox(height: 16),
+                FilledButton(
+                  onPressed: () => cubit.updateName('User $userId'),
+                  child: const Text('Set default name'),
+                ),
+                const SizedBox(height: 8),
+                FilledButton(
+                  onPressed: () => cubit.updateEmail('user$userId@example.com'),
+                  child: const Text('Set demo email'),
+                ),
+                const SizedBox(height: 8),
+                OutlinedButton(
+                  onPressed: cubit.toggleDarkMode,
+                  child: const Text('Toggle dark mode'),
+                ),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  children: AppTheme.values
+                      .map(
+                        (theme) => ChoiceChip(
+                          label: Text(theme.name),
+                          selected: snapshot.theme == theme,
+                          onSelected: (_) => cubit.setTheme(theme),
+                        ),
+                      )
+                      .toList(),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Tags: ${snapshot.tags.isEmpty ? '(none)' : snapshot.tags.join(', ')}',
+                ),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
                   children: [
-                    Text(
-                      'Display name: ${snapshot.displayName}',
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
-                    const SizedBox(height: 8),
-                    Text('Email: ${snapshot.email}'),
-                    const SizedBox(height: 8),
-                    Text('Dark mode: ${snapshot.darkMode ? 'on' : 'off'}'),
-                    const SizedBox(height: 8),
-                    Text('Theme: ${snapshot.theme.name}'),
-                    const SizedBox(height: 16),
-                    FilledButton(
-                      onPressed: () => cubit.updateName('User $userId'),
-                      child: const Text('Set default name'),
-                    ),
-                    const SizedBox(height: 8),
-                    FilledButton(
-                      onPressed: () =>
-                          cubit.updateEmail('user$userId@example.com'),
-                      child: const Text('Set demo email'),
-                    ),
-                    const SizedBox(height: 8),
-                    OutlinedButton(
-                      onPressed: cubit.toggleDarkMode,
-                      child: const Text('Toggle dark mode'),
-                    ),
-                    const SizedBox(height: 8),
-                    Wrap(
-                      spacing: 8,
-                      children: AppTheme.values
-                          .map(
-                            (theme) => ChoiceChip(
-                              label: Text(theme.name),
-                              selected: snapshot.theme == theme,
-                              onSelected: (_) => cubit.setTheme(theme),
-                            ),
-                          )
-                          .toList(),
-                    ),
-                    const SizedBox(height: 20),
-                    OutlinedButton(
-                      onPressed: () {
-                        const page = GreetingPage(
-                          name: 'Nested Flutter',
-                          style: GreetingStyle.formal,
-                        );
-                        context.push(page.toPath(), extra: page);
-                      },
-                      child: const Text('Open Greeting (same Flutter stack)'),
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      'Badges from route params',
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
-                    ...badges.map(
-                      (badge) => ListTile(
-                        dense: true,
-                        contentPadding: EdgeInsets.zero,
-                        title: Text(badge.label),
-                        subtitle: Text('Level: ${badge.level.name}'),
-                      ),
-                    ),
+                    for (final tag in ['flutter', 'mobile', 'dart'])
+                      if (snapshot.tags.contains(tag))
+                        InputChip(
+                          label: Text(tag),
+                          onDeleted: () => cubit.removeTag(tag),
+                        )
+                      else
+                        ActionChip(
+                          label: Text(tag),
+                          onPressed: () => cubit.addTag(tag),
+                        ),
                   ],
                 ),
-              );
-            },
-          ),
+                const SizedBox(height: 16),
+                Text(
+                  'Notification preferences: '
+                  '${snapshot.notificationPreferences != null ? 'sound=${snapshot.notificationPreferences!.sound}, vibration=${snapshot.notificationPreferences!.vibration}' : '(not set)'}',
+                ),
+                const SizedBox(height: 8),
+                FilledButton(
+                  onPressed: () => cubit.setNotificationPreferences(
+                    const NotificationPreferences(
+                      sound: 'Chime',
+                      vibration: true,
+                    ),
+                  ),
+                  child: const Text('Set notification prefs'),
+                ),
+                const SizedBox(height: 4),
+                OutlinedButton(
+                  onPressed: () => cubit.setNotificationPreferences(null),
+                  child: const Text('Clear notification prefs'),
+                ),
+                const SizedBox(height: 20),
+                OutlinedButton(
+                  onPressed: () {
+                    const page = GreetingPage(
+                      name: 'Nested Flutter',
+                      style: GreetingStyle.formal,
+                    );
+                    context.push(page.toPath(), extra: page);
+                  },
+                  child: const Text('Open Greeting (same Flutter stack)'),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'Badges from route params',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                ...badges.map(
+                  (badge) => ListTile(
+                    dense: true,
+                    contentPadding: EdgeInsets.zero,
+                    title: Text(badge.label),
+                    subtitle: Text('Level: ${badge.level.name}'),
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
     );
   }
 }

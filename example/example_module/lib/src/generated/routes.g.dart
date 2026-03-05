@@ -7,8 +7,6 @@ enum GreetingStyle { casual, formal }
 
 enum BadgeLevel { bronze, silver, gold }
 
-enum AppTheme { system, light, dark }
-
 class UserBadge {
   const UserBadge({required this.label, required this.level});
 
