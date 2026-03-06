@@ -1,0 +1,42 @@
+{
+  "name": "leancode-add2app-docs",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "postinstall": "fumadocs-mdx",
+    "lint": "eslint .",
+    "format": "prettier --check .",
+    "lint:fix": "eslint --fix .",
+    "format:fix": "prettier --write ."
+  },
+  "dependencies": {
+    "fumadocs-core": "16.6.10",
+    "fumadocs-mdx": "14.2.9",
+    "fumadocs-ui": "16.6.10",
+    "lucide-react": "^0.511.0",
+    "next": "16.1.6",
+    "react": "19.2.1",
+    "react-dom": "19.2.1"
+  },
+  "devDependencies": {
+    "@leancodepl/eslint-config": "^10.1.2",
+    "@leancodepl/prettier-config": "^10.1.2",
+    "@types/eslint-plugin-jsx-a11y": "^6.10.0",
+    "@tailwindcss/postcss": "^4.1.16",
+    "@types/node": "^22.15.0",
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.0",
+    "eslint": "^9.26.0",
+    "eslint-config-next": "^16.1.6",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-react": "^7.34.1",
+    "postcss": "^8.5.3",
+    "prettier": "^3.5.3",
+    "tailwindcss": "^4.1.16",
+    "typescript": "^5.8.3",
+    "typescript-eslint": "^8.30.0"
+  }
+}
