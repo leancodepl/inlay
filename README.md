@@ -127,12 +127,12 @@ scope.startObserving { entries ->
 }
 ```
 
-On the Flutter side, the generated store can be used directly or combined with the optional `Add2AppCubit` helper (see the [State Management](docs/state.md) guide).
+On the Flutter side, the generated store can be used directly or combined with the optional `Add2AppCubit` helper (see the [State Management](docs_internal/state.md) guide).
 
 ## Documentation
 
-- [Navigation](docs/navigation.md) — Route definitions, dialogs & bottom sheets, cross-boundary navigation, go_router & auto_route integration
-- [State Management](docs/state.md) — Stores, native access, optional Cubit integration, cross-engine sync
+- [Navigation](docs_internal/navigation.md) — Route definitions, dialogs & bottom sheets, cross-boundary navigation, go_router & auto_route integration
+- [State Management](docs_internal/state.md) — Stores, native access, optional Cubit integration, cross-engine sync
 
 ## Signal App
 
