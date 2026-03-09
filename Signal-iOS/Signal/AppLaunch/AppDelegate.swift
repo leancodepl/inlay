@@ -11,6 +11,7 @@ import SignalServiceKit
 import SignalUI
 import UIKit
 import WebRTC
+import leancode_add2app
 
 enum LaunchPreflightError {
     case unknownDatabaseVersion

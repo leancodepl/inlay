@@ -36,7 +36,7 @@ import Flutter
 /// storage.stopObserving()                // stop receiving callbacks
 /// storage.dispose()                      // clean up
 /// ```
-final class NativeStorageScope {
+public final class NativeStorageScope {
 
     private var onChange: (([StorageEntry]) -> Void)?
 
@@ -48,7 +48,7 @@ final class NativeStorageScope {
     /// or other native scopes). Replaces any previous observer.
     ///
     /// The `onChange` callback is invoked on the **main queue**.
-    func startObserving(_ onChange: @escaping ([StorageEntry]) -> Void) {
+    public func startObserving(_ onChange: @escaping ([StorageEntry]) -> Void) {
         stopObserving()
         self.onChange = onChange
         KeyValueStorageImpl.shared.registerScope(self)
@@ -56,7 +56,7 @@ final class NativeStorageScope {
 
     /// Stop observing. The scope remains usable for read/write; only the
     /// observer callback is removed.
-    func stopObserving() {
+    public func stopObserving() {
         if onChange != nil {
             KeyValueStorageImpl.shared.unregisterScope(self)
             onChange = nil
@@ -65,41 +65,41 @@ final class NativeStorageScope {
 
     // MARK: - Write (auto-suppressed)
 
-    func put(key: String, value: String) {
+    public func put(key: String, value: String) {
         KeyValueStorageImpl.shared.putInternal(
             entry: StorageEntry(key: key, value: value),
             excludeScope: self
         )
     }
 
-    func putAll(entries: [StorageEntry]) {
+    public func putAll(entries: [StorageEntry]) {
         KeyValueStorageImpl.shared.putAllInternal(entries: entries, excludeScope: self)
     }
 
     @discardableResult
-    func remove(key: String) -> Bool {
+    public func remove(key: String) -> Bool {
         return KeyValueStorageImpl.shared.removeInternal(key: key, excludeScope: self)
     }
 
-    func removeByPrefix(prefix: String) {
+    public func removeByPrefix(prefix: String) {
         KeyValueStorageImpl.shared.removeByPrefixInternal(prefix: prefix, excludeScope: self)
     }
 
-    func clear() {
+    public func clear() {
         KeyValueStorageImpl.shared.clearInternal(excludeScope: self)
     }
 
     // MARK: - Read
 
-    func get(key: String) -> String? {
+    public func get(key: String) -> String? {
         return KeyValueStorageImpl.shared.getInternal(key: key)?.value
     }
 
-    func getAll() -> [StorageEntry] {
+    public func getAll() -> [StorageEntry] {
         return KeyValueStorageImpl.shared.getAllInternal()
     }
 
-    func getByPrefix(prefix: String) -> [StorageEntry] {
+    public func getByPrefix(prefix: String) -> [StorageEntry] {
         return KeyValueStorageImpl.shared.getByPrefixInternal(prefix: prefix)
     }
 
@@ -113,7 +113,7 @@ final class NativeStorageScope {
 
     /// Stop observing (if active) and release the scope.
     /// After this call the scope should not be used.
-    func dispose() {
+    public func dispose() {
         stopObserving()
     }
 }
@@ -150,11 +150,11 @@ final class NativeStorageScope {
 ///   dispatched on the main queue so consumers never need `DispatchQueue.main`.
 /// - **Thread-safe store**: reads/writes are serialised on a private queue;
 ///   observer registries are protected by `NSLock`.
-final class KeyValueStorageImpl: NSObject {
+public final class KeyValueStorageImpl: NSObject {
 
     // MARK: - Singleton
 
-    static let shared = KeyValueStorageImpl()
+    public static let shared = KeyValueStorageImpl()
 
     private override init() {
         super.init()
@@ -211,7 +211,7 @@ final class KeyValueStorageImpl: NSObject {
     ///
     /// Call ``NativeStorageScope/dispose()`` when you no longer need the
     /// scope (e.g. in `deinit`, `onDisappear`).
-    func createScope() -> NativeStorageScope {
+    public func createScope() -> NativeStorageScope {
         return NativeStorageScope()
     }
 

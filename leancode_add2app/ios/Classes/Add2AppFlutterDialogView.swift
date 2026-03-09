@@ -21,7 +21,7 @@ import Flutter
 /// ```
 @available(iOS 16.0, *)
 extension View {
-    func add2appDialog(
+    public func add2appDialog(
         isPresented: Binding<Bool>,
         route: FlutterDialogRoute
     ) -> some View {

@@ -1,4 +1,5 @@
 import UIKit
+import leancode_add2app
 
 /// ADD2APP: Native iOS duplicate of the Sounds & Notifications screen.
 ///

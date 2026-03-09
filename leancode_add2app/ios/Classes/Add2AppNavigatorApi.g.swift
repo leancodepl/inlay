@@ -12,18 +12,18 @@ import Foundation
 #endif
 
 /// Error class for passing custom error details to Dart side.
-final class Add2AppNavigatorError: Error {
-  let code: String
-  let message: String?
-  let details: Sendable?
+public final class Add2AppNavigatorError: Error {
+  public let code: String
+  public let message: String?
+  public let details: Sendable?
 
-  init(code: String, message: String?, details: Sendable?) {
+  public init(code: String, message: String?, details: Sendable?) {
     self.code = code
     self.message = message
     self.details = details
   }
 
-  var localizedDescription: String {
+  public var localizedDescription: String {
     return
       "Add2AppNavigatorError(code: \(code), message: \(message ?? "<nil>"), details: \(details ?? "<nil>")"
   }
@@ -138,15 +138,21 @@ func deepHashAdd2AppNavigatorApi(value: Any?, hasher: inout Hasher) {
 /// (produced by URL-decoding the `initialRoute` string).
 ///
 /// Generated class from Pigeon that represents data sent in messages.
-struct PageSettings: Hashable {
+public struct PageSettings: Hashable {
   /// Identifies which screen to show (e.g. "soundsNotifications").
-  var routeId: String
+  public var routeId: String
   /// Page parameters. For native pages this is the pigeon-encoded object
   /// (via `encode()`). For Flutter pages this is a `Map<String, String>`.
-  var params: Any? = nil
+  public var params: Any? = nil
   /// URL path derived from the typed route object (e.g. "/products/42").
   /// When set, used as the `initialRoute` for router-based navigation.
-  var path: String? = nil
+  public var path: String? = nil
+
+  public init(routeId: String, params: Any? = nil, path: String? = nil) {
+    self.routeId = routeId
+    self.params = params
+    self.path = path
+  }
 
 
   // swift-format-ignore: AlwaysUseLowerCamelCase
@@ -168,9 +174,9 @@ struct PageSettings: Hashable {
       path,
     ]
   }
-  static func == (lhs: PageSettings, rhs: PageSettings) -> Bool {
+  public static func == (lhs: PageSettings, rhs: PageSettings) -> Bool {
     return deepEqualsAdd2AppNavigatorApi(lhs.toList(), rhs.toList())  }
-  func hash(into hasher: inout Hasher) {
+  public func hash(into hasher: inout Hasher) {
     deepHashAdd2AppNavigatorApi(value: toList(), hasher: &hasher)
   }
 }

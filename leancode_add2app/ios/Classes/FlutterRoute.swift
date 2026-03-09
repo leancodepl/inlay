@@ -1,9 +1,9 @@
 import Foundation
 
-protocol FlutterRoute {
+public protocol FlutterRoute {
     func toPageSettings() -> PageSettings
 }
 
-protocol FlutterDialogRoute {
+public protocol FlutterDialogRoute {
     func toPageSettings() -> PageSettings
 }

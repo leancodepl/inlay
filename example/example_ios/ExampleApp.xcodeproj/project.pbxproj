@@ -32,8 +32,6 @@
 
 /* Begin PBXFileReference section */
 		020F08461BF310E1985E0F98 /* Add2AppStorageObserver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Add2AppStorageObserver.swift; sourceTree = "<group>"; };
-		A1B2C3D4E5F6A7B8C9D0E1F2 /* Add2AppFlutterDialogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Add2AppFlutterDialogView.swift; sourceTree = "<group>"; };
-		B2C3D4E5F6A7B8C9D0E1F2A3 /* Add2AppFlutterDialogViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Add2AppFlutterDialogViewController.swift; sourceTree = "<group>"; };
 		0D6A9FF972A2000DD4D20926 /* KeyValueStorageImpl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyValueStorageImpl.swift; sourceTree = "<group>"; };
 		193D3DC718F5D4090A264AFD /* Pods_ExampleApp.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ExampleApp.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		1A9D1B1B491BA30E00E520D1 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -46,6 +44,8 @@
 		89F3D2DF79F4748CE0F2E57E /* Pods-ExampleApp.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ExampleApp.debug.xcconfig"; path = "Target Support Files/Pods-ExampleApp/Pods-ExampleApp.debug.xcconfig"; sourceTree = "<group>"; };
 		926C3D981D8F7AB7B3F2E007 /* ExampleApp.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = ExampleApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		935E0210B7C77AD7CF48FBBD /* NativeAboutViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeAboutViewController.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F6A7B8C9D0E1F2 /* Add2AppFlutterDialogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Add2AppFlutterDialogView.swift; sourceTree = "<group>"; };
+		B2C3D4E5F6A7B8C9D0E1F2A3 /* Add2AppFlutterDialogViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Add2AppFlutterDialogViewController.swift; sourceTree = "<group>"; };
 		BBF7EC6401DF6F2FF708E4F9 /* Add2AppFlutterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Add2AppFlutterView.swift; sourceTree = "<group>"; };
 		BFD61BA35D476C5218C64FE1 /* FlutterRoute.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlutterRoute.swift; sourceTree = "<group>"; };
 		C37A2C05623FCC3A64BE68F5 /* Add2AppFlutterViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Add2AppFlutterViewController.swift; sourceTree = "<group>"; };
@@ -235,6 +235,7 @@
 				5380FB61401EE22569D3345E /* Sources */,
 				DC21020E1D2D8BF1982A8805 /* Frameworks */,
 				6A060DBD924DAD0CEA202196 /* [CP-User] Embed Flutter Build example_module Script */,
+				5083242FABB239A89841249A /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -295,6 +296,23 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		5083242FABB239A89841249A /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-ExampleApp/Pods-ExampleApp-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-ExampleApp/Pods-ExampleApp-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-ExampleApp/Pods-ExampleApp-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		6A060DBD924DAD0CEA202196 /* [CP-User] Embed Flutter Build example_module Script */ = {

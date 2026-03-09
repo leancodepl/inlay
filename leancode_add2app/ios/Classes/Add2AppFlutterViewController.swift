@@ -8,15 +8,15 @@ import UIKit
 /// automatically.
 ///
 /// Equivalent of Android's `Add2AppFlutterActivity`.
-final class Add2AppFlutterViewController: FlutterViewController {
+public final class Add2AppFlutterViewController: FlutterViewController {
 
     /// The page this VC is displaying (set by `Add2AppNavigator`).
-    var page: PageSettings?
+    public var page: PageSettings?
 
     /// Optional custom pop handler. When set (e.g. by `Add2AppFlutterView`),
     /// Flutter's `pop()` invokes this closure instead of the default
     /// navigation-controller pop / modal dismiss.
-    var onPop: (() -> Void)?
+    public var onPop: (() -> Void)?
 
     /// When `true`, the native UIKit navigation bar is left visible so the
     /// native back button and interactive pop gesture work out-of-the-box.
@@ -24,13 +24,13 @@ final class Add2AppFlutterViewController: FlutterViewController {
     /// When `false` (default), the bar is hidden and Flutter is expected to
     /// provide its own app bar / back button. The interactive pop gesture is
     /// still re-enabled manually so swipe-to-go-back works.
-    var enableNativeNavigationBar = false
+    public var enableNativeNavigationBar = false
 
     /// When `true` (default), opt into iOS 26's full-width back gesture via
     /// `interactiveContentPopGestureRecognizer`.
     ///
     /// Set to `false` to force edge-only back gesture behavior.
-    var enableInteractiveContentPopGestureRecognizer = true
+    public var enableInteractiveContentPopGestureRecognizer = true
 
     /// Keep the previous nav-bar visibility so we can restore it when leaving.
     private var previousNavigationBarHiddenState = false
@@ -60,7 +60,7 @@ final class Add2AppFlutterViewController: FlutterViewController {
 
     // MARK: - Lifecycle
 
-    override func viewDidLoad() {
+    override public func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
         Add2AppNavigator.shared.configureEngine(
@@ -71,7 +71,7 @@ final class Add2AppFlutterViewController: FlutterViewController {
         )
     }
 
-    override func viewWillAppear(_ animated: Bool) {
+    override public func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         guard let navigationController else { return }
         previousNavigationBarHiddenState = navigationController.isNavigationBarHidden
@@ -83,7 +83,7 @@ final class Add2AppFlutterViewController: FlutterViewController {
         }
     }
 
-    override func viewDidAppear(_ animated: Bool) {
+    override public func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
 
         guard let navigationController else { return }
@@ -122,7 +122,7 @@ final class Add2AppFlutterViewController: FlutterViewController {
 #endif
     }
 
-    override func viewWillDisappear(_ animated: Bool) {
+    override public func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         guard let navigationController else { return }
 
@@ -158,7 +158,7 @@ final class Add2AppFlutterViewController: FlutterViewController {
 // MARK: - UIGestureRecognizerDelegate
 
 extension Add2AppFlutterViewController {
-    override func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
+    override public func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
         guard nativePopGestureEnabled, let navigationController else { return false }
 #if compiler(>=6.2)
         if #available(iOS 26.0, *) {

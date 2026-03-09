@@ -6,19 +6,19 @@ import UIKit
 /// Unlike `Add2AppFlutterViewController`, this VC has a clear background
 /// and no navigation bar management — it is always presented modally.
 /// Flutter renders the dialog content (barrier, animation, positioning).
-final class Add2AppFlutterDialogViewController: FlutterViewController {
+public final class Add2AppFlutterDialogViewController: FlutterViewController {
 
     /// The page this VC is displaying (set by `Add2AppNavigator`).
-    var page: PageSettings?
+    public var page: PageSettings?
 
     /// Optional custom pop handler. When set (e.g. by the SwiftUI
     /// `.add2appDialog` modifier), Flutter's `pop()` invokes this closure
     /// instead of the default modal dismiss.
-    var onPop: (() -> Void)?
+    public var onPop: (() -> Void)?
 
     // MARK: - Lifecycle
 
-    override func viewDidLoad() {
+    override public func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .clear
         view.isOpaque = false

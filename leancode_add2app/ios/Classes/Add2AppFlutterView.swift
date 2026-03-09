@@ -53,21 +53,21 @@ import Flutter
 ///
 /// Equivalent of Android's `Add2AppFlutterScreen` Composable.
 @available(iOS 16.0, *)
-struct Add2AppFlutterView: UIViewControllerRepresentable {
+public struct Add2AppFlutterView: UIViewControllerRepresentable {
 
     /// The Flutter page to display, described as a `PageSettings`.
-    let route: PageSettings
+    public let route: PageSettings
 
     /// When `true`, the native UIKit navigation bar is left visible.
     /// See ``Add2AppFlutterViewController/enableNativeNavigationBar``.
-    let enableNativeNavigationBar: Bool
+    public let enableNativeNavigationBar: Bool
 
     /// When `true` (default), enables iOS 26 full-width back gesture
     /// (`interactiveContentPopGestureRecognizer`).
-    let enableInteractiveContentPopGestureRecognizer: Bool
+    public let enableInteractiveContentPopGestureRecognizer: Bool
 
     /// Convenience initializer that accepts a type-safe `FlutterRoute`.
-    init(
+    public init(
         route: FlutterRoute,
         enableNativeNavigationBar: Bool = false,
         enableInteractiveContentPopGestureRecognizer: Bool = true
@@ -81,11 +81,11 @@ struct Add2AppFlutterView: UIViewControllerRepresentable {
 
     // MARK: - UIViewControllerRepresentable
 
-    func makeCoordinator() -> Coordinator {
+    public func makeCoordinator() -> Coordinator {
         Coordinator()
     }
 
-    func makeUIViewController(context: Context) -> Add2AppFlutterViewController {
+    public func makeUIViewController(context: Context) -> Add2AppFlutterViewController {
         let vc = Add2AppNavigator.shared.createFlutterViewController(
             page: route,
             enableNativeNavigationBar: enableNativeNavigationBar,
@@ -106,7 +106,7 @@ struct Add2AppFlutterView: UIViewControllerRepresentable {
         return vc
     }
 
-    func updateUIViewController(
+    public func updateUIViewController(
         _ uiViewController: Add2AppFlutterViewController,
         context: Context
     ) {
@@ -120,7 +120,8 @@ struct Add2AppFlutterView: UIViewControllerRepresentable {
 
     /// Bridges the SwiftUI `DismissAction` into an escaping closure that the
     /// `FlutterViewController` can call from any thread.
-    class Coordinator {
-        var dismiss: (() -> Void)?
+    public class Coordinator {
+        public var dismiss: (() -> Void)?
+        public init() {}
     }
 }

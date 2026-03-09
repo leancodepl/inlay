@@ -2,20 +2,27 @@ PODS:
   - Flutter (1.0.0)
   - FlutterPluginRegistrant (0.0.1):
     - Flutter
+    - leancode_add2app
+  - leancode_add2app (0.1.0):
+    - Flutter
 
 DEPENDENCIES:
   - Flutter (from `../example_module/.ios/Flutter`)
   - FlutterPluginRegistrant (from `../example_module/.ios/Flutter/FlutterPluginRegistrant`)
+  - leancode_add2app (from `../example_module/.ios/.symlinks/plugins/leancode_add2app/ios`)
 
 EXTERNAL SOURCES:
   Flutter:
     :path: "../example_module/.ios/Flutter"
   FlutterPluginRegistrant:
     :path: "../example_module/.ios/Flutter/FlutterPluginRegistrant"
+  leancode_add2app:
+    :path: "../example_module/.ios/.symlinks/plugins/leancode_add2app/ios"
 
 SPEC CHECKSUMS:
   Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
-  FlutterPluginRegistrant: 33eb8033675f887eba735b6409cd8503f377aa87
+  FlutterPluginRegistrant: 7cd56c50ea206d0f86a92555f4c505af941e5f8d
+  leancode_add2app: 4a0148a6c70423c5a6b3e40e13f966a22974fcca
 
 PODFILE CHECKSUM: 8df05b4110b504a9fbd0f28fdb3cafb419c22ad9
 

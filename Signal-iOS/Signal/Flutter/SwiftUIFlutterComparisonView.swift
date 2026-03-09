@@ -1,5 +1,6 @@
 import SwiftUI
 import UIKit
+import leancode_add2app
 
 // MARK: - Hosting controller (UIKit → SwiftUI bridge)
 
