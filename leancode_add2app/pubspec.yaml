@@ -24,3 +24,10 @@ dev_dependencies:
   pigeon: ^26.1.0
 
 flutter:
+  plugin:
+    platforms:
+      android:
+        package: co.leancode.add2app
+        pluginClass: LeanCodeAdd2AppPlugin
+      ios:
+        pluginClass: LeanCodeAdd2AppPlugin

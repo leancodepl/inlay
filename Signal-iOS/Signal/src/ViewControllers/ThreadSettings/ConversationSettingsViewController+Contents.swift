@@ -7,6 +7,7 @@ import Foundation
 import SignalServiceKit
 import SignalUI
 import UIKit
+import leancode_add2app
 
 extension ConversationSettingsViewController {
 

@@ -8,6 +8,7 @@ import LibSignalClient
 import SignalServiceKit
 import SignalUI
 import Flutter
+import leancode_add2app
 
 public enum ConversationSettingsPresentationMode: UInt {
     case `default`

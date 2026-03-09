@@ -1,4 +1,5 @@
 import SwiftUI
+import leancode_add2app
 
 @available(iOS 16.0, *)
 struct SwiftUIHomeView: View {

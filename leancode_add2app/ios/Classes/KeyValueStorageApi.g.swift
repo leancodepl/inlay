@@ -135,12 +135,17 @@ func deepHashKeyValueStorageApi(value: Any?, hasher: inout Hasher) {
 /// A generic key-value entry stored on the platform side.
 ///
 /// Generated class from Pigeon that represents data sent in messages.
-struct StorageEntry: Hashable {
+public struct StorageEntry: Hashable {
   /// The key for this entry.
-  var key: String
+  public var key: String
   /// The JSON-encoded value for this entry.
   /// We use String (JSON) so Pigeon can transport any structured data.
-  var value: String
+  public var value: String
+
+  public init(key: String, value: String) {
+    self.key = key
+    self.value = value
+  }
 
 
   // swift-format-ignore: AlwaysUseLowerCamelCase
@@ -159,9 +164,9 @@ struct StorageEntry: Hashable {
       value,
     ]
   }
-  static func == (lhs: StorageEntry, rhs: StorageEntry) -> Bool {
+  public static func == (lhs: StorageEntry, rhs: StorageEntry) -> Bool {
     return deepEqualsKeyValueStorageApi(lhs.toList(), rhs.toList())  }
-  func hash(into hasher: inout Hasher) {
+  public func hash(into hasher: inout Hasher) {
     deepHashKeyValueStorageApi(value: toList(), hasher: &hasher)
   }
 }

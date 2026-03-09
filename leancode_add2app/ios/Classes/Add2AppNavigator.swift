@@ -6,7 +6,7 @@ import Flutter
 /// The generated `NativeRouteHandler` class conforms to this protocol,
 /// dispatching `PageSettings` to typed `on*` methods. Developers subclass
 /// the generated class rather than implementing this protocol directly.
-protocol NativeRouteHandling: AnyObject {
+public protocol NativeRouteHandling: AnyObject {
     func handle(viewController: UIViewController, route: PageSettings)
 }
 
@@ -49,11 +49,11 @@ protocol NativeRouteHandling: AnyObject {
 /// - Creates a generic `Add2AppFlutterViewController` for every push.
 /// - Registers the Pigeon HostApi on each engine so Flutter can push/pop too.
 /// - Attaches `KeyValueStorageImpl` to each engine.
-final class Add2AppNavigator {
+public final class Add2AppNavigator {
 
     // MARK: - Singleton
 
-    static let shared = Add2AppNavigator()
+    public static let shared = Add2AppNavigator()
 
     private init() {}
 
@@ -78,7 +78,7 @@ final class Add2AppNavigator {
 
     /// Call once at app startup (e.g. `application(_:didFinishLaunchingWithOptions:)`).
     /// Idempotent — safe to call multiple times.
-    func start(prewarm: Bool = true) {
+    public func start(prewarm: Bool = true) {
         isPrewarmEnabled = prewarm
         if engineGroup == nil {
             engineGroup = FlutterEngineGroup(name: "add2app_engine_group", project: nil)
@@ -91,7 +91,7 @@ final class Add2AppNavigator {
     /// Enable/disable automatic prewarming performed by `start()`.
     ///
     /// Enabled by default.
-    func setPrewarmEnabled(_ enabled: Bool) {
+    public func setPrewarmEnabled(_ enabled: Bool) {
         isPrewarmEnabled = enabled
         if enabled {
             prewarm()
@@ -101,13 +101,13 @@ final class Add2AppNavigator {
     }
 
     /// Imperatively prewarm the hidden engine (independent from `setPrewarmEnabled`).
-    func prewarm() {
+    public func prewarm() {
         start(prewarm: false)
         prewarmEngineIfNeeded()
     }
 
     /// Destroy the hidden prewarmed engine and release its resources.
-    func destroyPrewarmedEngine() {
+    public func destroyPrewarmedEngine() {
         guard let engine = prewarmedEngine else { return }
         Add2AppNavigatorHostApiSetup.setUp(
             binaryMessenger: engine.binaryMessenger,
@@ -160,7 +160,7 @@ final class Add2AppNavigator {
     ///     route: SoundsNotificationsPage(contactId: "42")
     /// )
     /// ```
-    func push(
+    public func push(
         from viewController: UIViewController,
         route: FlutterRoute,
         enableNativeNavigationBar: Bool = false,
@@ -177,7 +177,7 @@ final class Add2AppNavigator {
     }
 
     /// Present a Flutter page modally.
-    func present(
+    public func present(
         from viewController: UIViewController,
         route: FlutterRoute,
         animated: Bool = true,
@@ -196,7 +196,7 @@ final class Add2AppNavigator {
     /// - Parameter enableNativeNavigationBar: When `true`, the native UIKit
     ///   navigation bar is left visible. See ``push(from:route:enableNativeNavigationBar:animated:)``
     ///   for details.
-    func createFlutterViewController(
+    public func createFlutterViewController(
         route: FlutterRoute,
         enableNativeNavigationBar: Bool = false,
         enableInteractiveContentPopGestureRecognizer: Bool = true
@@ -215,7 +215,7 @@ final class Add2AppNavigator {
     /// The dialog VC is presented modally with `.overCurrentContext` style,
     /// so the underlying screen remains visible. Flutter renders the dialog
     /// content (barrier, animation, positioning).
-    func presentDialog(
+    public func presentDialog(
         from viewController: UIViewController,
         route: FlutterDialogRoute,
         animated: Bool = true
@@ -223,7 +223,7 @@ final class Add2AppNavigator {
         presentDialog(from: viewController, page: route.toPageSettings(), animated: animated)
     }
 
-    func presentDialog(
+    public func presentDialog(
         from viewController: UIViewController,
         page: PageSettings,
         animated: Bool = true
@@ -236,7 +236,7 @@ final class Add2AppNavigator {
     }
 
     /// Create a transparent `FlutterViewController` configured for a dialog overlay.
-    func createFlutterDialogViewController(
+    public func createFlutterDialogViewController(
         page: PageSettings
     ) -> Add2AppFlutterDialogViewController {
         start(prewarm: isPrewarmEnabled)
@@ -261,7 +261,7 @@ final class Add2AppNavigator {
 
     // MARK: - Internal PageSettings-based navigation (used by Pigeon HostApi)
 
-    func push(
+    public func push(
         from viewController: UIViewController,
         page: PageSettings,
         enableNativeNavigationBar: Bool = false,
@@ -278,7 +278,7 @@ final class Add2AppNavigator {
             ?? viewController.present(flutterVC, animated: animated)
     }
 
-    func present(
+    public func present(
         from viewController: UIViewController,
         page: PageSettings,
         animated: Bool = true,
@@ -304,7 +304,7 @@ final class Add2AppNavigator {
     /// // In AppDelegate.didFinishLaunching:
     /// Add2AppNavigator.shared.setNativeRouteHandler(SignalNativeRouteHandler())
     /// ```
-    func setNativeRouteHandler(_ handler: NativeRouteHandling) {
+    public func setNativeRouteHandler(_ handler: NativeRouteHandling) {
         nativeRouteHandler = handler
     }
 
@@ -325,7 +325,7 @@ final class Add2AppNavigator {
     // MARK: - ViewController factory
 
     /// Create a `FlutterViewController` configured for the given page.
-    func createFlutterViewController(
+    public func createFlutterViewController(
         page: PageSettings,
         enableNativeNavigationBar: Bool = false,
         enableInteractiveContentPopGestureRecognizer: Bool = true

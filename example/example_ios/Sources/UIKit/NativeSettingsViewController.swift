@@ -1,4 +1,5 @@
 import UIKit
+import leancode_add2app
 
 final class NativeSettingsViewController: UIViewController {
     private let userId: String

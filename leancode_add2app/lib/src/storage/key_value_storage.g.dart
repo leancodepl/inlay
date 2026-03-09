@@ -15,11 +15,7 @@ PlatformException _createConnectionError(String channelName) {
   );
 }
 
-List<Object?> wrapResponse({
-  Object? result,
-  PlatformException? error,
-  bool empty = false,
-}) {
+List<Object?> wrapResponse({Object? result, PlatformException? error, bool empty = false}) {
   if (empty) {
     return <Object?>[];
   }
@@ -28,28 +24,27 @@ List<Object?> wrapResponse({
   }
   return <Object?>[error.code, error.message, error.details];
 }
-
 bool _deepEquals(Object? a, Object? b) {
   if (a is List && b is List) {
     return a.length == b.length &&
-        a.indexed.every(
-          ((int, dynamic) item) => _deepEquals(item.$2, b[item.$1]),
-        );
+        a.indexed
+        .every(((int, dynamic) item) => _deepEquals(item.$2, b[item.$1]));
   }
   if (a is Map && b is Map) {
-    return a.length == b.length &&
-        a.entries.every(
-          (MapEntry<Object?, Object?> entry) =>
-              (b as Map<Object?, Object?>).containsKey(entry.key) &&
-              _deepEquals(entry.value, b[entry.key]),
-        );
+    return a.length == b.length && a.entries.every((MapEntry<Object?, Object?> entry) =>
+        (b as Map<Object?, Object?>).containsKey(entry.key) &&
+        _deepEquals(entry.value, b[entry.key]));
   }
   return a == b;
 }
 
+
 /// A generic key-value entry stored on the platform side.
 class StorageEntry {
-  StorageEntry({required this.key, required this.value});
+  StorageEntry({
+    required this.key,
+    required this.value,
+  });
 
   /// The key for this entry.
   String key;
@@ -59,16 +54,21 @@ class StorageEntry {
   String value;
 
   List<Object?> _toList() {
-    return <Object?>[key, value];
+    return <Object?>[
+      key,
+      value,
+    ];
   }
 
   Object encode() {
-    return _toList();
-  }
+    return _toList();  }
 
   static StorageEntry decode(Object result) {
     result as List<Object?>;
-    return StorageEntry(key: result[0]! as String, value: result[1]! as String);
+    return StorageEntry(
+      key: result[0]! as String,
+      value: result[1]! as String,
+    );
   }
 
   @override
@@ -85,23 +85,27 @@ class StorageEntry {
 
   @override
   // ignore: avoid_equals_and_hash_code_on_mutable_classes
-  int get hashCode => Object.hashAll(_toList());
+  int get hashCode => Object.hashAll(_toList())
+;
 }
 
 /// Batch of changed entries, used for change notifications.
 class StorageChangeEvent {
-  StorageChangeEvent({required this.entries});
+  StorageChangeEvent({
+    required this.entries,
+  });
 
   /// The entries that changed (new values).
   List<StorageEntry> entries;
 
   List<Object?> _toList() {
-    return <Object?>[entries];
+    return <Object?>[
+      entries,
+    ];
   }
 
   Object encode() {
-    return _toList();
-  }
+    return _toList();  }
 
   static StorageChangeEvent decode(Object result) {
     result as List<Object?>;
@@ -124,8 +128,10 @@ class StorageChangeEvent {
 
   @override
   // ignore: avoid_equals_and_hash_code_on_mutable_classes
-  int get hashCode => Object.hashAll(_toList());
+  int get hashCode => Object.hashAll(_toList())
+;
 }
+
 
 class _PigeonCodec extends StandardMessageCodec {
   const _PigeonCodec();
@@ -134,10 +140,10 @@ class _PigeonCodec extends StandardMessageCodec {
     if (value is int) {
       buffer.putUint8(4);
       buffer.putInt64(value);
-    } else if (value is StorageEntry) {
+    }    else if (value is StorageEntry) {
       buffer.putUint8(129);
       writeValue(buffer, value.encode());
-    } else if (value is StorageChangeEvent) {
+    }    else if (value is StorageChangeEvent) {
       buffer.putUint8(130);
       writeValue(buffer, value.encode());
     } else {
@@ -148,9 +154,9 @@ class _PigeonCodec extends StandardMessageCodec {
   @override
   Object? readValueOfType(int type, ReadBuffer buffer) {
     switch (type) {
-      case 129:
+      case 129: 
         return StorageEntry.decode(readValue(buffer)!);
-      case 130:
+      case 130: 
         return StorageChangeEvent.decode(readValue(buffer)!);
       default:
         return super.readValueOfType(type, buffer);
@@ -165,13 +171,9 @@ class KeyValueStorageHostApi {
   /// Constructor for [KeyValueStorageHostApi].  The [binaryMessenger] named argument is
   /// available for dependency injection.  If it is left null, the default
   /// BinaryMessenger will be used which routes to the host platform.
-  KeyValueStorageHostApi({
-    BinaryMessenger? binaryMessenger,
-    String messageChannelSuffix = '',
-  }) : pigeonVar_binaryMessenger = binaryMessenger,
-       pigeonVar_messageChannelSuffix = messageChannelSuffix.isNotEmpty
-           ? '.$messageChannelSuffix'
-           : '';
+  KeyValueStorageHostApi({BinaryMessenger? binaryMessenger, String messageChannelSuffix = ''})
+      : pigeonVar_binaryMessenger = binaryMessenger,
+        pigeonVar_messageChannelSuffix = messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
   final BinaryMessenger? pigeonVar_binaryMessenger;
 
   static const MessageCodec<Object?> pigeonChannelCodec = _PigeonCodec();
@@ -180,16 +182,13 @@ class KeyValueStorageHostApi {
 
   /// Put a value into the storage. Overwrites if key already exists.
   Future<void> put(StorageEntry entry) async {
-    final pigeonVar_channelName =
-        'dev.flutter.pigeon.leancode_add2app.KeyValueStorageHostApi.put$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName = 'dev.flutter.pigeon.leancode_add2app.KeyValueStorageHostApi.put$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(
-      <Object?>[entry],
-    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[entry]);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
       throw _createConnectionError(pigeonVar_channelName);
@@ -206,16 +205,13 @@ class KeyValueStorageHostApi {
 
   /// Put multiple values at once (atomic batch).
   Future<void> putAll(List<StorageEntry> entries) async {
-    final pigeonVar_channelName =
-        'dev.flutter.pigeon.leancode_add2app.KeyValueStorageHostApi.putAll$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName = 'dev.flutter.pigeon.leancode_add2app.KeyValueStorageHostApi.putAll$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(
-      <Object?>[entries],
-    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[entries]);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
       throw _createConnectionError(pigeonVar_channelName);
@@ -232,16 +228,13 @@ class KeyValueStorageHostApi {
 
   /// Get a value by key. Returns null if not found.
   Future<StorageEntry?> get(String key) async {
-    final pigeonVar_channelName =
-        'dev.flutter.pigeon.leancode_add2app.KeyValueStorageHostApi.get$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName = 'dev.flutter.pigeon.leancode_add2app.KeyValueStorageHostApi.get$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(
-      <Object?>[key],
-    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[key]);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
       throw _createConnectionError(pigeonVar_channelName);
@@ -258,16 +251,13 @@ class KeyValueStorageHostApi {
 
   /// Get all values whose keys start with the given prefix.
   Future<List<StorageEntry>> getByPrefix(String prefix) async {
-    final pigeonVar_channelName =
-        'dev.flutter.pigeon.leancode_add2app.KeyValueStorageHostApi.getByPrefix$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName = 'dev.flutter.pigeon.leancode_add2app.KeyValueStorageHostApi.getByPrefix$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(
-      <Object?>[prefix],
-    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[prefix]);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
       throw _createConnectionError(pigeonVar_channelName);
@@ -289,16 +279,13 @@ class KeyValueStorageHostApi {
 
   /// Remove a value by key. Returns true if the key existed.
   Future<bool> remove(String key) async {
-    final pigeonVar_channelName =
-        'dev.flutter.pigeon.leancode_add2app.KeyValueStorageHostApi.remove$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName = 'dev.flutter.pigeon.leancode_add2app.KeyValueStorageHostApi.remove$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(
-      <Object?>[key],
-    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[key]);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
       throw _createConnectionError(pigeonVar_channelName);
@@ -320,16 +307,13 @@ class KeyValueStorageHostApi {
 
   /// Remove all values whose keys start with the given prefix.
   Future<void> removeByPrefix(String prefix) async {
-    final pigeonVar_channelName =
-        'dev.flutter.pigeon.leancode_add2app.KeyValueStorageHostApi.removeByPrefix$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName = 'dev.flutter.pigeon.leancode_add2app.KeyValueStorageHostApi.removeByPrefix$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(
-      <Object?>[prefix],
-    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[prefix]);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
       throw _createConnectionError(pigeonVar_channelName);
@@ -346,8 +330,7 @@ class KeyValueStorageHostApi {
 
   /// Get all stored entries (full dump).
   Future<List<StorageEntry>> getAll() async {
-    final pigeonVar_channelName =
-        'dev.flutter.pigeon.leancode_add2app.KeyValueStorageHostApi.getAll$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName = 'dev.flutter.pigeon.leancode_add2app.KeyValueStorageHostApi.getAll$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
@@ -375,8 +358,7 @@ class KeyValueStorageHostApi {
 
   /// Clear all storage.
   Future<void> clear() async {
-    final pigeonVar_channelName =
-        'dev.flutter.pigeon.leancode_add2app.KeyValueStorageHostApi.clear$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName = 'dev.flutter.pigeon.leancode_add2app.KeyValueStorageHostApi.clear$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
@@ -407,44 +389,29 @@ abstract class KeyValueStorageFlutterApi {
   /// Called when entries in the storage have changed.
   void onStorageChanged(StorageChangeEvent event);
 
-  static void setUp(
-    KeyValueStorageFlutterApi? api, {
-    BinaryMessenger? binaryMessenger,
-    String messageChannelSuffix = '',
-  }) {
-    messageChannelSuffix = messageChannelSuffix.isNotEmpty
-        ? '.$messageChannelSuffix'
-        : '';
+  static void setUp(KeyValueStorageFlutterApi? api, {BinaryMessenger? binaryMessenger, String messageChannelSuffix = '',}) {
+    messageChannelSuffix = messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
     {
       final pigeonVar_channel = BasicMessageChannel<Object?>(
-        'dev.flutter.pigeon.leancode_add2app.KeyValueStorageFlutterApi.onStorageChanged$messageChannelSuffix',
-        pigeonChannelCodec,
-        binaryMessenger: binaryMessenger,
-      );
+          'dev.flutter.pigeon.leancode_add2app.KeyValueStorageFlutterApi.onStorageChanged$messageChannelSuffix', pigeonChannelCodec,
+          binaryMessenger: binaryMessenger);
       if (api == null) {
         pigeonVar_channel.setMessageHandler(null);
       } else {
         pigeonVar_channel.setMessageHandler((Object? message) async {
-          assert(
-            message != null,
-            'Argument for dev.flutter.pigeon.leancode_add2app.KeyValueStorageFlutterApi.onStorageChanged was null.',
-          );
+          assert(message != null,
+          'Argument for dev.flutter.pigeon.leancode_add2app.KeyValueStorageFlutterApi.onStorageChanged was null.');
           final List<Object?> args = (message as List<Object?>?)!;
-          final StorageChangeEvent? arg_event =
-              (args[0] as StorageChangeEvent?);
-          assert(
-            arg_event != null,
-            'Argument for dev.flutter.pigeon.leancode_add2app.KeyValueStorageFlutterApi.onStorageChanged was null, expected non-null StorageChangeEvent.',
-          );
+          final StorageChangeEvent? arg_event = (args[0] as StorageChangeEvent?);
+          assert(arg_event != null,
+              'Argument for dev.flutter.pigeon.leancode_add2app.KeyValueStorageFlutterApi.onStorageChanged was null, expected non-null StorageChangeEvent.');
           try {
             api.onStorageChanged(arg_event!);
             return wrapResponse(empty: true);
           } on PlatformException catch (e) {
             return wrapResponse(error: e);
-          } catch (e) {
-            return wrapResponse(
-              error: PlatformException(code: 'error', message: e.toString()),
-            );
+          }          catch (e) {
+            return wrapResponse(error: PlatformException(code: 'error', message: e.toString()));
           }
         });
       }

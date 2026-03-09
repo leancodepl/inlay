@@ -38,13 +38,13 @@ import Combine
 /// The scope is automatically disposed in `deinit`, but calling
 /// `stopObserving()` in `onDisappear` is recommended for deterministic
 /// cleanup (especially when the view may reappear).
-final class Add2AppStorageObserver: ObservableObject {
+public final class Add2AppStorageObserver: ObservableObject {
 
     /// The underlying storage scope. Use this to create generated store
     /// structs for type-safe access while retaining observer lifecycle.
-    let scope: NativeStorageScope
+    public let scope: NativeStorageScope
 
-    init() {
+    public init() {
         scope = KeyValueStorageImpl.shared.createScope()
     }
 
@@ -57,12 +57,12 @@ final class Add2AppStorageObserver: ObservableObject {
     ///
     /// - Parameter handler: Called on the **main queue** whenever storage
     ///   entries change (from Flutter engines or other native scopes).
-    func startObserving(handler: @escaping ([StorageEntry]) -> Void) {
+    public func startObserving(handler: @escaping ([StorageEntry]) -> Void) {
         scope.startObserving(handler)
     }
 
     /// Stop observing. Read/write methods still work.
-    func stopObserving() {
+    public func stopObserving() {
         scope.stopObserving()
     }
 
@@ -73,45 +73,45 @@ final class Add2AppStorageObserver: ObservableObject {
     // MARK: - Write (auto-suppressed)
 
     /// Write a value. The observer callback is **not** triggered for this write.
-    func put(key: String, value: String) {
+    public func put(key: String, value: String) {
         scope.put(key: key, value: value)
     }
 
     /// Write multiple values at once. The observer callback is **not** triggered.
-    func putAll(entries: [StorageEntry]) {
+    public func putAll(entries: [StorageEntry]) {
         scope.putAll(entries: entries)
     }
 
     /// Remove a key. The observer callback is **not** triggered for this removal.
     @discardableResult
-    func remove(key: String) -> Bool {
+    public func remove(key: String) -> Bool {
         return scope.remove(key: key)
     }
 
     /// Remove all keys with the given prefix. The observer callback is **not** triggered.
-    func removeByPrefix(prefix: String) {
+    public func removeByPrefix(prefix: String) {
         scope.removeByPrefix(prefix: prefix)
     }
 
     /// Clear all storage. The observer callback is **not** triggered.
-    func clear() {
+    public func clear() {
         scope.clear()
     }
 
     // MARK: - Read
 
     /// Read a value by key.
-    func get(key: String) -> String? {
+    public func get(key: String) -> String? {
         return scope.get(key: key)
     }
 
     /// Get all stored entries.
-    func getAll() -> [StorageEntry] {
+    public func getAll() -> [StorageEntry] {
         return scope.getAll()
     }
 
     /// Get all entries whose keys start with the given prefix.
-    func getByPrefix(prefix: String) -> [StorageEntry] {
+    public func getByPrefix(prefix: String) -> [StorageEntry] {
         return scope.getByPrefix(prefix: prefix)
     }
 }

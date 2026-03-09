@@ -1,5 +1,6 @@
 import SwiftUI
 import UIKit
+import leancode_add2app
 
 @main
 final class AppDelegate: UIResponder, UIApplicationDelegate {

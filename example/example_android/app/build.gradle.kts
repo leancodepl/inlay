@@ -24,7 +24,6 @@ android {
 
   sourceSets {
     getByName("main") {
-      java.srcDir("${rootProject.projectDir}/../../leancode_add2app/android/src/main/kotlin")
       java.srcDir("${rootProject.projectDir}/../example_module/android/src/main/kotlin")
     }
   }
@@ -46,6 +45,7 @@ android {
 
 dependencies {
   implementation(project(":flutter"))
+  implementation(project(":leancode_add2app"))
 
   implementation("androidx.core:core-ktx:1.13.1")
   implementation("androidx.appcompat:appcompat:1.7.0")

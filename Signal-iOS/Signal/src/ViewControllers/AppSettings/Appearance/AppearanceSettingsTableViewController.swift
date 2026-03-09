@@ -6,6 +6,7 @@
 import SignalServiceKit
 import SignalUI
 import Flutter
+import leancode_add2app
 
 final class AppearanceSettingsTableViewController: OWSTableViewController2 {
     override func viewDidLoad() {

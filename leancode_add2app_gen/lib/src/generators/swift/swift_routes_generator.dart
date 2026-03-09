@@ -26,6 +26,7 @@ String generateSwiftRoutes({
     ..writeln()
     ..writeln('import Foundation')
     ..writeln('import UIKit')
+    ..writeln('import leancode_add2app')
     ..writeln();
 
   // Generate enums.
