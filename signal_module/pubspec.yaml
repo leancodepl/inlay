@@ -17,6 +17,8 @@ dependencies:
   go_router: ^15.1.2
   leancode_add2app:
     path: ../leancode_add2app
+  signal_module_native:
+    path: signal_module_native/
 
 dev_dependencies:
   build_runner: ^2.11.0

@@ -128,11 +128,6 @@ android {
   }
 
   sourceSets {
-    getByName("main") {
-      // ADD2APP: Include signal_module generated Kotlin sources (Pigeon + gen tool).
-      java.srcDir("${rootProject.projectDir}/../signal_module/android/src/main/kotlin")
-    }
-
     getByName("test") {
       java.srcDir("$projectDir/src/testShared")
     }

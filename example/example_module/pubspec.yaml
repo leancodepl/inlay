@@ -11,6 +11,8 @@ environment:
 dependencies:
   auto_route: ^11.1.0
   cupertino_icons: ^1.0.8
+  example_module_native:
+    path: example_module_native/
   flutter:
     sdk: flutter
   flutter_bloc: ^9.1.0
