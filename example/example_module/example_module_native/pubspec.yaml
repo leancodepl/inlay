@@ -1,0 +1,26 @@
+name: example_module_native
+description: >
+  Companion plugin for example_module. Holds generated native code
+  (Routes, Stores) so that flutter build aar bundles them into a binary artifact.
+publish_to: none
+resolution: workspace
+
+version: 0.1.0
+
+environment:
+  sdk: ^3.11.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  leancode_add2app:
+    path: ../../../leancode_add2app
+
+flutter:
+  plugin:
+    platforms:
+      android:
+        package: co.leancode.example_module_native
+        pluginClass: ExampleModuleNativePlugin
+      ios:
+        pluginClass: ExampleModuleNativePlugin

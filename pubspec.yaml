@@ -8,7 +8,9 @@ workspace:
   - leancode_add2app
   - leancode_add2app_gen
   - signal_module
+  - signal_module/signal_module_native
   - example/example_module
+  - example/example_module/example_module_native
 
 dependency_overrides:
   meta: ^1.18.0

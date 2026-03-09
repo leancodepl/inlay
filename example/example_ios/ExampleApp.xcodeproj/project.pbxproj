@@ -94,9 +94,17 @@
 		405D47B6F0DA0B04F7DB7421 /* example_module */ = {
 			isa = PBXGroup;
 			children = (
-				B7CD61E03D4523B8678BA291 /* ios */,
+				405D47B6F0DA0B04F7DB7422 /* example_module_native */,
 			);
 			path = example_module;
+			sourceTree = "<group>";
+		};
+		405D47B6F0DA0B04F7DB7422 /* example_module_native */ = {
+			isa = PBXGroup;
+			children = (
+				B7CD61E03D4523B8678BA291 /* ios */,
+			);
+			path = example_module_native;
 			sourceTree = "<group>";
 		};
 		53150DD025831AFBDE299019 /* example */ = {

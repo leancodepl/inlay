@@ -16,9 +16,9 @@ dart:
 
 # Kotlin output
 kotlin:
-  output: android/src/main/kotlin/co/leancode/signal_module/generated/
+  output: signal_module_native/android/src/main/kotlin/co/leancode/signal_module/generated/
   package: co.leancode.signal_module.generated
 
 # Swift output
 swift:
-  output: ios/Classes/Generated/
+  output: signal_module_native/ios/Classes/Generated/

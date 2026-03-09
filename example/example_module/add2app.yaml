@@ -6,8 +6,8 @@ dart:
   output: lib/src/generated/
 
 kotlin:
-  output: android/src/main/kotlin/co/leancode/example_module/generated/
+  output: example_module_native/android/src/main/kotlin/co/leancode/example_module/generated/
   package: co.leancode.example_module.generated
 
 swift:
-  output: ios/Classes/Generated/
+  output: example_module_native/ios/Classes/Generated/
