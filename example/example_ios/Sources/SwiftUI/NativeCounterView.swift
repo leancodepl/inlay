@@ -1,9 +1,9 @@
 import SwiftUI
-import leancode_add2app
+import inlay
 
 @available(iOS 16.0, *)
 struct NativeCounterView: View {
-    @StateObject private var storage = Add2AppStorageObserver()
+    @StateObject private var storage = InlayStorageObserver()
     @State private var count = 0
     @State private var updatedBy = "flutter"
 

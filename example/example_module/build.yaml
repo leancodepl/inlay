@@ -1,5 +1,5 @@
 targets:
   $default:
     builders:
-      leancode_add2app_gen|builder:
+      inlay_gen|inlay:
         enabled: true

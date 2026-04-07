@@ -10,11 +10,11 @@ targets:
     platform: iOS
     sources:
       - path: Sources
-      - path: ../example_module/ios/Classes/Generated
+      - path: ../example_module/example_module_native/ios/Classes/Generated
     resources:
       - path: Resources
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: co.leancode.add2app.example.ios
+        PRODUCT_BUNDLE_IDENTIFIER: co.leancode.inlay.example.ios
         INFOPLIST_FILE: Resources/Info.plist
         SWIFT_VERSION: 5.9

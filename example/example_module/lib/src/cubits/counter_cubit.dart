@@ -1,14 +1,14 @@
-import 'package:leancode_add2app/leancode_add2app.dart';
+import 'package:inlay/inlay.dart';
 
 import '../generated/stores.g.dart';
 
-class CounterCubit extends Add2AppCubit<CounterStoreSnapshot> {
+class CounterCubit extends InlayCubit<CounterStoreSnapshot> {
   CounterCubit(super.store);
 
   void increment() {
-    if (state case Add2AppStateReady(data: final current)) {
+    if (state case InlayStateReady(data: final current)) {
       emit(
-        Add2AppStateReady(
+        InlayStateReady(
           current.copyWith(count: current.count + 1, lastUpdatedBy: 'flutter'),
         ),
       );
@@ -16,9 +16,9 @@ class CounterCubit extends Add2AppCubit<CounterStoreSnapshot> {
   }
 
   void decrement() {
-    if (state case Add2AppStateReady(data: final current)) {
+    if (state case InlayStateReady(data: final current)) {
       emit(
-        Add2AppStateReady(
+        InlayStateReady(
           current.copyWith(count: current.count - 1, lastUpdatedBy: 'flutter'),
         ),
       );
@@ -26,9 +26,9 @@ class CounterCubit extends Add2AppCubit<CounterStoreSnapshot> {
   }
 
   void reset() {
-    if (state case Add2AppStateReady(data: final current)) {
+    if (state case InlayStateReady(data: final current)) {
       emit(
-        Add2AppStateReady(current.copyWith(count: 0, lastUpdatedBy: 'flutter')),
+        InlayStateReady(current.copyWith(count: 0, lastUpdatedBy: 'flutter')),
       );
     }
   }

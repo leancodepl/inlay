@@ -5,3 +5,4 @@ docs_app/node_modules/
 docs_app/.next/
 docs_app/.source/
 docs_app/out/
+.DS_Store

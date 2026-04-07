@@ -1,6 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
-import 'package:leancode_add2app/leancode_add2app.dart';
+import 'package:inlay/inlay.dart';
 
 import 'generated/routes.g.dart';
 import 'screens/counter_screen.dart';
@@ -8,7 +8,7 @@ import 'screens/greeting_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/profile_screen.dart';
 
-RootStackRouter createExampleAutoRouter({Add2AppRoute? routeData}) {
+RootStackRouter createExampleAutoRouter({InlayRoute? routeData}) {
   return RootStackRouter.build(
     routes: [
       NamedRouteDef(

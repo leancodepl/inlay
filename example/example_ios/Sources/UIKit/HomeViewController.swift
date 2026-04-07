@@ -1,6 +1,6 @@
 import SwiftUI
 import UIKit
-import leancode_add2app
+import inlay
 
 final class HomeViewController: UIViewController {
     override func viewDidLoad() {
@@ -23,7 +23,7 @@ final class HomeViewController: UIViewController {
 
         stack.addArrangedSubview(makeButton("Open Flutter Greeting") { [weak self] in
             guard let self else { return }
-            Add2AppNavigator.shared.push(
+            InlayNavigator.shared.push(
                 from: self,
                 route: GreetingPage(name: "iOS", style: .casual)
             )
@@ -31,12 +31,12 @@ final class HomeViewController: UIViewController {
 
         stack.addArrangedSubview(makeButton("Open Flutter Counter") { [weak self] in
             guard let self else { return }
-            Add2AppNavigator.shared.push(from: self, route: CounterPage(seed: nil))
+            InlayNavigator.shared.push(from: self, route: CounterPage(seed: nil))
         })
 
         stack.addArrangedSubview(makeButton("Open Flutter Profile") { [weak self] in
             guard let self else { return }
-            Add2AppNavigator.shared.push(
+            InlayNavigator.shared.push(
                 from: self,
                 route: ProfilePage(
                     userId: "42",
@@ -55,7 +55,7 @@ final class HomeViewController: UIViewController {
 
         stack.addArrangedSubview(makeButton("Open Confirm Dialog") { [weak self] in
             guard let self else { return }
-            Add2AppNavigator.shared.presentDialog(
+            InlayNavigator.shared.presentDialog(
                 from: self,
                 route: ConfirmActionDialog(action: "delete", message: "Are you sure?")
             )
@@ -63,7 +63,7 @@ final class HomeViewController: UIViewController {
 
         stack.addArrangedSubview(makeButton("Open Theme Picker Dialog") { [weak self] in
             guard let self else { return }
-            Add2AppNavigator.shared.presentDialog(
+            InlayNavigator.shared.presentDialog(
                 from: self,
                 route: ThemePickerDialog(userId: "42")
             )

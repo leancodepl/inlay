@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:leancode_add2app/leancode_add2app.dart';
+import 'package:inlay/inlay.dart';
 
 import '../cubits/counter_cubit.dart';
 import '../generated/routes.g.dart';
@@ -15,7 +15,7 @@ class CounterScreen extends StatelessWidget {
     return BlocProvider(
       create: (_) =>
           CounterCubit(CounterStore(KeyValueStorage.instance))..init(),
-      child: BlocBuilder<CounterCubit, Add2AppState<CounterStoreSnapshot>>(
+      child: BlocBuilder<CounterCubit, InlayState<CounterStoreSnapshot>>(
         builder: (context, state) {
           if (state.isLoading) {
             return const Scaffold(
@@ -28,7 +28,7 @@ class CounterScreen extends StatelessWidget {
           return Scaffold(
             appBar: AppBar(
               leading: BackButton(
-                onPressed: () => Add2AppNavigator.instance.maybePop(context),
+                onPressed: () => InlayNavigator.instance.maybePop(context),
               ),
               title: const Text('Counter'),
             ),
@@ -80,7 +80,7 @@ class CounterScreen extends StatelessWidget {
                   const SizedBox(height: 8),
                   OutlinedButton(
                     onPressed: () {
-                      Add2AppNavigator.instance.push(
+                      InlayNavigator.instance.push(
                         const NativeSettingsPage().toNativeRoute(),
                       );
                     },

@@ -8,61 +8,41 @@
 
 /* Begin PBXBuildFile section */
 		18B6B1E21F2DA5517731DCEC /* HomeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB0BD1B0014D93C98B093623 /* HomeViewController.swift */; };
-		1A790EAE8815B67E52FDD460 /* Routes.g.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFB15B551D8FEC4EA989CF40 /* Routes.g.swift */; };
+		196CF5E7AE7C6162AD5ED031 /* Stores.g.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74534979212446D57B0816C3 /* Stores.g.swift */; };
 		1FDF57DA5078164E93BDD91F /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A9D1B1B491BA30E00E520D1 /* AppDelegate.swift */; };
-		24A1B2C3D4E5F6A7B8C9D0E1 /* Add2AppFlutterDialogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6A7B8C9D0E1F2 /* Add2AppFlutterDialogView.swift */; };
-		25B2C3D4E5F6A7B8C9D0E1F2 /* Add2AppFlutterDialogViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2C3D4E5F6A7B8C9D0E1F2A3 /* Add2AppFlutterDialogViewController.swift */; };
-		28D00B760A8477DBD2DC8988 /* Add2AppFlutterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBF7EC6401DF6F2FF708E4F9 /* Add2AppFlutterView.swift */; };
 		2B71B02921C0EA9602E0CCFB /* SwiftUIHomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0B96BB7FC90627C426842BB /* SwiftUIHomeView.swift */; };
-		4BF304EC320241425BC75DEF /* Pods_ExampleApp.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 193D3DC718F5D4090A264AFD /* Pods_ExampleApp.framework */; };
+		2ED8EC8B358C9AD5AAD9314C /* Routes.g.swift in Sources */ = {isa = PBXBuildFile; fileRef = 343A070BFA213E7E09B1C231 /* Routes.g.swift */; };
 		4F8C5D0ADCB992F5382A5D22 /* ExampleNativeRouteHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5C2CCE67E236EC20EF842E5 /* ExampleNativeRouteHandler.swift */; };
-		5E10463449EF5C26550E6ABA /* Add2AppFlutterViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C37A2C05623FCC3A64BE68F5 /* Add2AppFlutterViewController.swift */; };
-		60776B67B8331A42D601422B /* Add2AppNavigatorApi.g.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74462B60638DDF85517B5CFD /* Add2AppNavigatorApi.g.swift */; };
-		6B5772D997D8A242C71C776A /* Stores.g.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D698DE6F60D60B82F75C807 /* Stores.g.swift */; };
 		70517C00F3A560C557046291 /* NativeSettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40E81C6D4CC0877C3A6AFBF4 /* NativeSettingsViewController.swift */; };
 		7079354AD3006EA79AC9C86A /* RootTabBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 721A6F6538C3175D2E37501A /* RootTabBarController.swift */; };
-		A7ECB7DC6156F8DEF2C0FB81 /* Add2AppNavigator.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF2917A124BCE4054ABAB660 /* Add2AppNavigator.swift */; };
-		AF0CE5A64CCCFC86741D81C3 /* Add2AppStorageObserver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 020F08461BF310E1985E0F98 /* Add2AppStorageObserver.swift */; };
+		A1B6C862EFB2BED78687FC5C /* Pods_ExampleApp.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 64C2124C02B393C23C7DE12F /* Pods_ExampleApp.framework */; };
 		BF319AF9D86CEA35236232C5 /* NativeAboutViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 935E0210B7C77AD7CF48FBBD /* NativeAboutViewController.swift */; };
-		E163A8BB96475FCCE9703A9D /* FlutterRoute.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFD61BA35D476C5218C64FE1 /* FlutterRoute.swift */; };
-		E27C2611F6FD95B696419E2E /* KeyValueStorageApi.g.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6A558DC0A0675FB5CB90977 /* KeyValueStorageApi.g.swift */; };
 		ECB11625199FEAF30B4D081E /* NativeCounterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 665753E5DADF8B4D93CEB9FE /* NativeCounterView.swift */; };
-		F4B0234711559047D063F518 /* KeyValueStorageImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D6A9FF972A2000DD4D20926 /* KeyValueStorageImpl.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		020F08461BF310E1985E0F98 /* Add2AppStorageObserver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Add2AppStorageObserver.swift; sourceTree = "<group>"; };
-		0D6A9FF972A2000DD4D20926 /* KeyValueStorageImpl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyValueStorageImpl.swift; sourceTree = "<group>"; };
-		193D3DC718F5D4090A264AFD /* Pods_ExampleApp.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ExampleApp.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		1A9D1B1B491BA30E00E520D1 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		343A070BFA213E7E09B1C231 /* Routes.g.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Routes.g.swift; sourceTree = "<group>"; };
 		40E81C6D4CC0877C3A6AFBF4 /* NativeSettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeSettingsViewController.swift; sourceTree = "<group>"; };
-		5D698DE6F60D60B82F75C807 /* Stores.g.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Stores.g.swift; sourceTree = "<group>"; };
-		655FE8EDADED547F0D1BE4FD /* Pods-ExampleApp.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ExampleApp.release.xcconfig"; path = "Target Support Files/Pods-ExampleApp/Pods-ExampleApp.release.xcconfig"; sourceTree = "<group>"; };
+		532FD95F8C7F7ABAC041A58D /* Pods-ExampleApp.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ExampleApp.release.xcconfig"; path = "Target Support Files/Pods-ExampleApp/Pods-ExampleApp.release.xcconfig"; sourceTree = "<group>"; };
+		64C2124C02B393C23C7DE12F /* Pods_ExampleApp.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ExampleApp.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		665753E5DADF8B4D93CEB9FE /* NativeCounterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeCounterView.swift; sourceTree = "<group>"; };
 		721A6F6538C3175D2E37501A /* RootTabBarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootTabBarController.swift; sourceTree = "<group>"; };
-		74462B60638DDF85517B5CFD /* Add2AppNavigatorApi.g.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Add2AppNavigatorApi.g.swift; sourceTree = "<group>"; };
-		89F3D2DF79F4748CE0F2E57E /* Pods-ExampleApp.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ExampleApp.debug.xcconfig"; path = "Target Support Files/Pods-ExampleApp/Pods-ExampleApp.debug.xcconfig"; sourceTree = "<group>"; };
+		74534979212446D57B0816C3 /* Stores.g.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Stores.g.swift; sourceTree = "<group>"; };
 		926C3D981D8F7AB7B3F2E007 /* ExampleApp.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = ExampleApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		935E0210B7C77AD7CF48FBBD /* NativeAboutViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeAboutViewController.swift; sourceTree = "<group>"; };
-		A1B2C3D4E5F6A7B8C9D0E1F2 /* Add2AppFlutterDialogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Add2AppFlutterDialogView.swift; sourceTree = "<group>"; };
-		B2C3D4E5F6A7B8C9D0E1F2A3 /* Add2AppFlutterDialogViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Add2AppFlutterDialogViewController.swift; sourceTree = "<group>"; };
-		BBF7EC6401DF6F2FF708E4F9 /* Add2AppFlutterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Add2AppFlutterView.swift; sourceTree = "<group>"; };
-		BFD61BA35D476C5218C64FE1 /* FlutterRoute.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlutterRoute.swift; sourceTree = "<group>"; };
-		C37A2C05623FCC3A64BE68F5 /* Add2AppFlutterViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Add2AppFlutterViewController.swift; sourceTree = "<group>"; };
+		B6891C41933075DEBC40A32A /* Pods-ExampleApp.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ExampleApp.debug.xcconfig"; path = "Target Support Files/Pods-ExampleApp/Pods-ExampleApp.debug.xcconfig"; sourceTree = "<group>"; };
 		D0B96BB7FC90627C426842BB /* SwiftUIHomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftUIHomeView.swift; sourceTree = "<group>"; };
-		DFB15B551D8FEC4EA989CF40 /* Routes.g.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Routes.g.swift; sourceTree = "<group>"; };
-		E6A558DC0A0675FB5CB90977 /* KeyValueStorageApi.g.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyValueStorageApi.g.swift; sourceTree = "<group>"; };
 		F5C2CCE67E236EC20EF842E5 /* ExampleNativeRouteHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExampleNativeRouteHandler.swift; sourceTree = "<group>"; };
 		FB0BD1B0014D93C98B093623 /* HomeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewController.swift; sourceTree = "<group>"; };
-		FF2917A124BCE4054ABAB660 /* Add2AppNavigator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Add2AppNavigator.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		DC21020E1D2D8BF1982A8805 /* Frameworks */ = {
+		1D47784F20CD801612B88B29 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				4BF304EC320241425BC75DEF /* Pods_ExampleApp.framework in Frameworks */,
+				A1B6C862EFB2BED78687FC5C /* Pods_ExampleApp.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -79,6 +59,31 @@
 			path = UIKit;
 			sourceTree = "<group>";
 		};
+		17E81F3B1BE3726F271B0731 /* ios */ = {
+			isa = PBXGroup;
+			children = (
+				777FFC4E2882BEE145FD6801 /* Classes */,
+			);
+			path = ios;
+			sourceTree = "<group>";
+		};
+		275CF57EB833A2220EBAC24B /* example */ = {
+			isa = PBXGroup;
+			children = (
+				C48EAE28ED171471F459E906 /* example_module */,
+			);
+			name = example;
+			path = ..;
+			sourceTree = "<group>";
+		};
+		2F0ED80FC3983F64A194B1E4 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				64C2124C02B393C23C7DE12F /* Pods_ExampleApp.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		3674403AE888ED3C87A7C1FA /* Sources */ = {
 			isa = PBXGroup;
 			children = (
@@ -91,44 +96,10 @@
 			path = Sources;
 			sourceTree = "<group>";
 		};
-		405D47B6F0DA0B04F7DB7421 /* example_module */ = {
+		777FFC4E2882BEE145FD6801 /* Classes */ = {
 			isa = PBXGroup;
 			children = (
-				405D47B6F0DA0B04F7DB7422 /* example_module_native */,
-			);
-			path = example_module;
-			sourceTree = "<group>";
-		};
-		405D47B6F0DA0B04F7DB7422 /* example_module_native */ = {
-			isa = PBXGroup;
-			children = (
-				B7CD61E03D4523B8678BA291 /* ios */,
-			);
-			path = example_module_native;
-			sourceTree = "<group>";
-		};
-		53150DD025831AFBDE299019 /* example */ = {
-			isa = PBXGroup;
-			children = (
-				405D47B6F0DA0B04F7DB7421 /* example_module */,
-			);
-			name = example;
-			path = ..;
-			sourceTree = "<group>";
-		};
-		59BB72B94CBDA2B899095DE6 /* Generated */ = {
-			isa = PBXGroup;
-			children = (
-				DFB15B551D8FEC4EA989CF40 /* Routes.g.swift */,
-				5D698DE6F60D60B82F75C807 /* Stores.g.swift */,
-			);
-			path = Generated;
-			sourceTree = "<group>";
-		};
-		70CDBA35B45B6B4EC0622AD8 /* Classes */ = {
-			isa = PBXGroup;
-			children = (
-				59BB72B94CBDA2B899095DE6 /* Generated */,
+				E088CE19CDE3C5447AF62087 /* Generated */,
 			);
 			path = Classes;
 			sourceTree = "<group>";
@@ -142,14 +113,6 @@
 			path = SwiftUI;
 			sourceTree = "<group>";
 		};
-		96E93138DF4F84CE9E24318D /* Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-				193D3DC718F5D4090A264AFD /* Pods_ExampleApp.framework */,
-			);
-			name = Frameworks;
-			sourceTree = "<group>";
-		};
 		AF4E1C376012F79EC7DF8379 /* Products */ = {
 			isa = PBXGroup;
 			children = (
@@ -158,62 +121,36 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		B4F841D81D33A9B807EEBEB0 /* ios */ = {
+		C2B928180E389A5E67EA2A09 /* example_module_native */ = {
 			isa = PBXGroup;
 			children = (
-				DE3781E1565862ED615C38F2 /* Classes */,
+				17E81F3B1BE3726F271B0731 /* ios */,
 			);
-			path = ios;
+			path = example_module_native;
 			sourceTree = "<group>";
 		};
-		B7CD61E03D4523B8678BA291 /* ios */ = {
+		C48EAE28ED171471F459E906 /* example_module */ = {
 			isa = PBXGroup;
 			children = (
-				70CDBA35B45B6B4EC0622AD8 /* Classes */,
+				C2B928180E389A5E67EA2A09 /* example_module_native */,
 			);
-			path = ios;
+			path = example_module;
 			sourceTree = "<group>";
 		};
-		C62CC5B7D4E9D647F953DE53 /* leancode_add2app */ = {
+		E088CE19CDE3C5447AF62087 /* Generated */ = {
 			isa = PBXGroup;
 			children = (
-				B4F841D81D33A9B807EEBEB0 /* ios */,
+				343A070BFA213E7E09B1C231 /* Routes.g.swift */,
+				74534979212446D57B0816C3 /* Stores.g.swift */,
 			);
-			path = leancode_add2app;
+			path = Generated;
 			sourceTree = "<group>";
 		};
-		D92D1A89B512AAAAA9732D85 /* add2app-framework-poc */ = {
+		E50DB7102378E8EF04EB7935 /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				53150DD025831AFBDE299019 /* example */,
-				C62CC5B7D4E9D647F953DE53 /* leancode_add2app */,
-			);
-			name = "add2app-framework-poc";
-			path = ../..;
-			sourceTree = "<group>";
-		};
-		DE3781E1565862ED615C38F2 /* Classes */ = {
-			isa = PBXGroup;
-			children = (
-				A1B2C3D4E5F6A7B8C9D0E1F2 /* Add2AppFlutterDialogView.swift */,
-				B2C3D4E5F6A7B8C9D0E1F2A3 /* Add2AppFlutterDialogViewController.swift */,
-				BBF7EC6401DF6F2FF708E4F9 /* Add2AppFlutterView.swift */,
-				C37A2C05623FCC3A64BE68F5 /* Add2AppFlutterViewController.swift */,
-				FF2917A124BCE4054ABAB660 /* Add2AppNavigator.swift */,
-				74462B60638DDF85517B5CFD /* Add2AppNavigatorApi.g.swift */,
-				020F08461BF310E1985E0F98 /* Add2AppStorageObserver.swift */,
-				BFD61BA35D476C5218C64FE1 /* FlutterRoute.swift */,
-				E6A558DC0A0675FB5CB90977 /* KeyValueStorageApi.g.swift */,
-				0D6A9FF972A2000DD4D20926 /* KeyValueStorageImpl.swift */,
-			);
-			path = Classes;
-			sourceTree = "<group>";
-		};
-		EAD7A18572FB7DED57F7816B /* Pods */ = {
-			isa = PBXGroup;
-			children = (
-				89F3D2DF79F4748CE0F2E57E /* Pods-ExampleApp.debug.xcconfig */,
-				655FE8EDADED547F0D1BE4FD /* Pods-ExampleApp.release.xcconfig */,
+				B6891C41933075DEBC40A32A /* Pods-ExampleApp.debug.xcconfig */,
+				532FD95F8C7F7ABAC041A58D /* Pods-ExampleApp.release.xcconfig */,
 			);
 			name = Pods;
 			path = Pods;
@@ -222,12 +159,11 @@
 		ECA11DCDB4BE2265B358A0E2 = {
 			isa = PBXGroup;
 			children = (
-				D92D1A89B512AAAAA9732D85 /* add2app-framework-poc */,
-				53150DD025831AFBDE299019 /* example */,
+				275CF57EB833A2220EBAC24B /* example */,
 				3674403AE888ED3C87A7C1FA /* Sources */,
 				AF4E1C376012F79EC7DF8379 /* Products */,
-				EAD7A18572FB7DED57F7816B /* Pods */,
-				96E93138DF4F84CE9E24318D /* Frameworks */,
+				E50DB7102378E8EF04EB7935 /* Pods */,
+				2F0ED80FC3983F64A194B1E4 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -238,12 +174,12 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = AE928657B46C08C76BD8F85B /* Build configuration list for PBXNativeTarget "ExampleApp" */;
 			buildPhases = (
-				3FE8077595957109DA2F35CD /* [CP] Check Pods Manifest.lock */,
-				CE3C3C905A89794ABA450EC9 /* [CP-User] Run Flutter Build example_module Script */,
+				ED5B3CDC9C47648A8D7EE0F1 /* [CP] Check Pods Manifest.lock */,
+				9974FBA0FC6EEC4031A4B0FD /* [CP-User] Run Flutter Build example_module Script */,
 				5380FB61401EE22569D3345E /* Sources */,
-				DC21020E1D2D8BF1982A8805 /* Frameworks */,
-				6A060DBD924DAD0CEA202196 /* [CP-User] Embed Flutter Build example_module Script */,
-				5083242FABB239A89841249A /* [CP] Embed Pods Frameworks */,
+				1D47784F20CD801612B88B29 /* Frameworks */,
+				0A74E3B4909D7FBA9EBFEFD7 /* [CP] Embed Pods Frameworks */,
+				63D28AD5843E50DFF8A261B2 /* [CP-User] Embed Flutter Build example_module Script */,
 			);
 			buildRules = (
 			);
@@ -284,7 +220,44 @@
 /* End PBXProject section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		3FE8077595957109DA2F35CD /* [CP] Check Pods Manifest.lock */ = {
+		0A74E3B4909D7FBA9EBFEFD7 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-ExampleApp/Pods-ExampleApp-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-ExampleApp/Pods-ExampleApp-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-ExampleApp/Pods-ExampleApp-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		63D28AD5843E50DFF8A261B2 /* [CP-User] Embed Flutter Build example_module Script */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			name = "[CP-User] Embed Flutter Build example_module Script";
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "set -e\nset -u\nsource \"${SRCROOT}/../example_module/.ios/Flutter/flutter_export_environment.sh\"\nexport VERBOSE_SCRIPT_LOGGING=1 && \"$FLUTTER_ROOT\"/packages/flutter_tools/bin/xcode_backend.sh embed_and_thin";
+		};
+		9974FBA0FC6EEC4031A4B0FD /* [CP-User] Run Flutter Build example_module Script */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			name = "[CP-User] Run Flutter Build example_module Script";
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "set -e\nset -u\nsource \"${SRCROOT}/../example_module/.ios/Flutter/flutter_export_environment.sh\"\nexport VERBOSE_SCRIPT_LOGGING=1 && \"$FLUTTER_ROOT\"/packages/flutter_tools/bin/xcode_backend.sh build";
+		};
+		ED5B3CDC9C47648A8D7EE0F1 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -306,43 +279,6 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
-		5083242FABB239A89841249A /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-ExampleApp/Pods-ExampleApp-frameworks-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-ExampleApp/Pods-ExampleApp-frameworks-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-ExampleApp/Pods-ExampleApp-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		6A060DBD924DAD0CEA202196 /* [CP-User] Embed Flutter Build example_module Script */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			name = "[CP-User] Embed Flutter Build example_module Script";
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "set -e\nset -u\nsource \"${SRCROOT}/../example_module/.ios/Flutter/flutter_export_environment.sh\"\nexport VERBOSE_SCRIPT_LOGGING=1 && \"$FLUTTER_ROOT\"/packages/flutter_tools/bin/xcode_backend.sh embed_and_thin";
-		};
-		CE3C3C905A89794ABA450EC9 /* [CP-User] Run Flutter Build example_module Script */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			name = "[CP-User] Run Flutter Build example_module Script";
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "set -e\nset -u\nsource \"${SRCROOT}/../example_module/.ios/Flutter/flutter_export_environment.sh\"\nexport VERBOSE_SCRIPT_LOGGING=1 && \"$FLUTTER_ROOT\"/packages/flutter_tools/bin/xcode_backend.sh build";
-		};
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -350,25 +286,15 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				24A1B2C3D4E5F6A7B8C9D0E1 /* Add2AppFlutterDialogView.swift in Sources */,
-				25B2C3D4E5F6A7B8C9D0E1F2 /* Add2AppFlutterDialogViewController.swift in Sources */,
-				28D00B760A8477DBD2DC8988 /* Add2AppFlutterView.swift in Sources */,
-				5E10463449EF5C26550E6ABA /* Add2AppFlutterViewController.swift in Sources */,
-				A7ECB7DC6156F8DEF2C0FB81 /* Add2AppNavigator.swift in Sources */,
-				60776B67B8331A42D601422B /* Add2AppNavigatorApi.g.swift in Sources */,
-				AF0CE5A64CCCFC86741D81C3 /* Add2AppStorageObserver.swift in Sources */,
 				1FDF57DA5078164E93BDD91F /* AppDelegate.swift in Sources */,
 				4F8C5D0ADCB992F5382A5D22 /* ExampleNativeRouteHandler.swift in Sources */,
-				E163A8BB96475FCCE9703A9D /* FlutterRoute.swift in Sources */,
 				18B6B1E21F2DA5517731DCEC /* HomeViewController.swift in Sources */,
-				E27C2611F6FD95B696419E2E /* KeyValueStorageApi.g.swift in Sources */,
-				F4B0234711559047D063F518 /* KeyValueStorageImpl.swift in Sources */,
 				BF319AF9D86CEA35236232C5 /* NativeAboutViewController.swift in Sources */,
 				ECB11625199FEAF30B4D081E /* NativeCounterView.swift in Sources */,
 				70517C00F3A560C557046291 /* NativeSettingsViewController.swift in Sources */,
 				7079354AD3006EA79AC9C86A /* RootTabBarController.swift in Sources */,
-				1A790EAE8815B67E52FDD460 /* Routes.g.swift in Sources */,
-				6B5772D997D8A242C71C776A /* Stores.g.swift in Sources */,
+				2ED8EC8B358C9AD5AAD9314C /* Routes.g.swift in Sources */,
+				196CF5E7AE7C6162AD5ED031 /* Stores.g.swift in Sources */,
 				2B71B02921C0EA9602E0CCFB /* SwiftUIHomeView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -434,7 +360,7 @@
 		};
 		A0434A35A655F4DA293ECD44 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 89F3D2DF79F4748CE0F2E57E /* Pods-ExampleApp.debug.xcconfig */;
+			baseConfigurationReference = B6891C41933075DEBC40A32A /* Pods-ExampleApp.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
@@ -443,7 +369,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = co.leancode.add2app.example.ios;
+				PRODUCT_BUNDLE_IDENTIFIER = co.leancode.inlay.example.ios;
 				SDKROOT = iphoneos;
 				SWIFT_VERSION = 5.9;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -452,7 +378,7 @@
 		};
 		A416E8F402F2F67FB0EA5F35 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 655FE8EDADED547F0D1BE4FD /* Pods-ExampleApp.release.xcconfig */;
+			baseConfigurationReference = 532FD95F8C7F7ABAC041A58D /* Pods-ExampleApp.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
@@ -461,7 +387,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = co.leancode.add2app.example.ios;
+				PRODUCT_BUNDLE_IDENTIFIER = co.leancode.inlay.example.ios;
 				SDKROOT = iphoneos;
 				SWIFT_VERSION = 5.9;
 				TARGETED_DEVICE_FAMILY = "1,2";

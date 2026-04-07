@@ -1,6 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
-import 'package:leancode_add2app/leancode_add2app.dart';
+import 'package:inlay/inlay.dart';
 
 import 'src/generated/routes.g.dart';
 import 'src/router_auto.dart';
@@ -17,32 +17,32 @@ void main() {
 }
 
 @pragma('vm:entry-point')
-void add2appMain() {
-  _runAdd2AppWithGoRouter();
+void inlayMain() {
+  _runInlayWithGoRouter();
 }
 
 @pragma('vm:entry-point')
-void add2appGoRouterMain() {
-  _runAdd2AppWithGoRouter();
+void inlayGoRouterMain() {
+  _runInlayWithGoRouter();
 }
 
 @pragma('vm:entry-point')
-void add2appAutoRouteMain() {
-  _runAdd2AppWithAutoRoute();
+void inlayAutoRouteMain() {
+  _runInlayWithAutoRoute();
 }
 
 @pragma('vm:entry-point')
-void add2appImperativeMain() {
-  _runAdd2AppImperative();
+void inlayImperativeMain() {
+  _runInlayImperative();
 }
 
-Future<void> _runAdd2AppWithGoRouter() async {
+Future<void> _runInlayWithGoRouter() async {
   WidgetsFlutterBinding.ensureInitialized();
   await KeyValueStorage.instance.init();
 
-  final path = Add2AppNavigator.initialPath;
-  final route = await Add2AppNavigator.fetchInitialRoute(
-    decodeAdd2AppRouteData,
+  final path = InlayNavigator.initialPath;
+  final route = await InlayNavigator.fetchInitialRoute(
+    decodeInlayRouteData,
   );
   final router = createExampleGoRouter(
     initialLocation: path,
@@ -61,21 +61,21 @@ Future<void> _runAdd2AppWithGoRouter() async {
       routeInformationProvider: router.routeInformationProvider,
       routeInformationParser: router.routeInformationParser,
       routerDelegate: router.routerDelegate,
-      backButtonDispatcher: Add2AppBackButtonDispatcher(),
-      builder: (_, child) => Add2AppNativePopGestureObserver(
+      backButtonDispatcher: InlayBackButtonDispatcher(),
+      builder: (_, child) => InlayNativePopGestureObserver(
         child: child ?? const SizedBox.shrink(),
       ),
     ),
   );
 }
 
-Future<void> _runAdd2AppWithAutoRoute() async {
+Future<void> _runInlayWithAutoRoute() async {
   WidgetsFlutterBinding.ensureInitialized();
   await KeyValueStorage.instance.init();
 
-  final path = Add2AppNavigator.initialPath;
-  final route = await Add2AppNavigator.fetchInitialRoute(
-    decodeAdd2AppRouteData,
+  final path = InlayNavigator.initialPath;
+  final route = await InlayNavigator.fetchInitialRoute(
+    decodeInlayRouteData,
   );
   final router = createExampleAutoRouter(routeData: route);
 
@@ -88,20 +88,20 @@ Future<void> _runAdd2AppWithAutoRoute() async {
         deepLinkBuilder: (_) => DeepLink.path(path),
         rebuildStackOnDeepLink: true,
       ),
-      backButtonDispatcher: Add2AppBackButtonDispatcher(),
-      builder: (_, child) => Add2AppNativePopGestureObserver(
+      backButtonDispatcher: InlayBackButtonDispatcher(),
+      builder: (_, child) => InlayNativePopGestureObserver(
         child: child ?? const SizedBox.shrink(),
       ),
     ),
   );
 }
 
-Future<void> _runAdd2AppImperative() async {
+Future<void> _runInlayImperative() async {
   WidgetsFlutterBinding.ensureInitialized();
   await KeyValueStorage.instance.init();
 
-  final route = await Add2AppNavigator.fetchInitialRoute(
-    decodeAdd2AppRouteData,
+  final route = await InlayNavigator.fetchInitialRoute(
+    decodeInlayRouteData,
   );
 
   switch (route) {
@@ -120,7 +120,7 @@ Future<void> _runAdd2AppImperative() async {
         ),
       );
     case ConfirmActionDialog(:final action, :final message):
-      runAdd2AppDialog(
+      runInlayDialog(
         onReady: (context) => showDialog(
           context: context,
           builder: (_) =>
@@ -128,7 +128,7 @@ Future<void> _runAdd2AppImperative() async {
         ),
       );
     case ThemePickerDialog(:final userId):
-      runAdd2AppDialog(
+      runInlayDialog(
         onReady: (context) => showModalBottomSheet(
           context: context,
           isScrollControlled: true,

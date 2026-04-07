@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:leancode_add2app/leancode_add2app.dart';
+import 'package:inlay/inlay.dart';
 
 import 'generated/routes.g.dart';
 import 'screens/confirm_action_content.dart';
@@ -12,7 +12,7 @@ import 'screens/theme_picker_content.dart';
 
 GoRouter createExampleGoRouter({
   String initialLocation = '/',
-  Add2AppRoute? initialExtra,
+  InlayRoute? initialExtra,
 }) {
   return GoRouter(
     initialLocation: initialLocation,
@@ -53,7 +53,7 @@ GoRouter createExampleGoRouter({
               ? state.extra! as ConfirmActionDialog
               : null;
           final action = dialog?.action ?? state.pathParameters['action'] ?? '';
-          return Add2AppDialogPage(
+          return InlayDialogPage(
             builder: (_) =>
                 ConfirmActionContent(action: action, message: dialog?.message),
           );
@@ -66,7 +66,7 @@ GoRouter createExampleGoRouter({
               ? state.extra! as ThemePickerDialog
               : null;
           final userId = dialog?.userId ?? state.pathParameters['userId'] ?? '';
-          return Add2AppBottomSheetPage(
+          return InlayBottomSheetPage(
             isScrollControlled: true,
             showDragHandle: true,
             builder: (_) => ThemePickerContent(userId: userId),

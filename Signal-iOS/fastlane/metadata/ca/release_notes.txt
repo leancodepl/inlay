@@ -1,1 +1,0 @@
-• Millores addicionals a la interfície, que inclouen un disseny actualitzat i controls de reproducció de Liquid Glass al visor d'arxius multimèdia.

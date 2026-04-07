@@ -5,8 +5,8 @@ import type { ReactNode } from "react";
 
 export const metadata: Metadata = {
   title: {
-    template: "%s | leancode_add2app",
-    default: "leancode_add2app",
+    template: "%s | inlay",
+    default: "inlay",
   },
   description:
     "An opinionated Flutter add-to-app framework providing type-safe navigation and cross-platform state sharing.",

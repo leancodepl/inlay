@@ -1,5 +1,5 @@
 import UIKit
-import leancode_add2app
+import inlay
 
 final class NativeSettingsViewController: UIViewController {
     private let userId: String
@@ -116,7 +116,7 @@ final class NativeSettingsViewController: UIViewController {
     }
 
     private func openFlutterProfile() {
-        Add2AppNavigator.shared.push(
+        InlayNavigator.shared.push(
             from: self,
             route: ProfilePage(userId: userId, badges: nil)
         )

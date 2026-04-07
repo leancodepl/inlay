@@ -5,11 +5,11 @@ plugins {
 }
 
 android {
-  namespace = "co.leancode.add2app.example.android"
+  namespace = "co.leancode.inlay.example.android"
   compileSdk = 36
 
   defaultConfig {
-    applicationId = "co.leancode.add2app.example.android"
+    applicationId = "co.leancode.inlay.example.android"
     minSdk = 24
     targetSdk = 36
     versionCode = 1
@@ -39,7 +39,7 @@ android {
 
 dependencies {
   implementation(project(":flutter"))
-  implementation(project(":leancode_add2app"))
+  implementation(project(":inlay"))
 
   implementation("androidx.core:core-ktx:1.13.1")
   implementation("androidx.appcompat:appcompat:1.7.0")

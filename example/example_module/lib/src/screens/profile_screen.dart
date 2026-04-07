@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:leancode_add2app/leancode_add2app.dart';
+import 'package:inlay/inlay.dart';
 
 import '../cubits/profile_cubit.dart';
 import '../generated/routes.g.dart';
@@ -19,7 +19,7 @@ class ProfileScreen extends StatelessWidget {
       create: (_) => ProfileCubit(
         UserPreferencesStore(KeyValueStorage.instance, userId: userId),
       )..init(),
-      child: BlocBuilder<ProfileCubit, Add2AppState<UserPreferencesStoreSnapshot>>(
+      child: BlocBuilder<ProfileCubit, InlayState<UserPreferencesStoreSnapshot>>(
         builder: (context, state) {
           if (state.isLoading) {
             return const Scaffold(
@@ -32,7 +32,7 @@ class ProfileScreen extends StatelessWidget {
           return Scaffold(
             appBar: AppBar(
               leading: BackButton(
-                onPressed: () => Add2AppNavigator.instance.maybePop(context),
+                onPressed: () => InlayNavigator.instance.maybePop(context),
               ),
               title: Text('Profile $userId'),
             ),

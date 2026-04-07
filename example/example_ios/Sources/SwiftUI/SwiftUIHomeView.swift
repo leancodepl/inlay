@@ -1,5 +1,5 @@
 import SwiftUI
-import leancode_add2app
+import inlay
 
 @available(iOS 16.0, *)
 struct SwiftUIHomeView: View {
@@ -9,19 +9,19 @@ struct SwiftUIHomeView: View {
     var body: some View {
         List {
             NavigationLink("Open Flutter Greeting") {
-                Add2AppFlutterView(
+                InlayFlutterView(
                     route: GreetingPage(name: "SwiftUI", style: .formal)
                 )
                 .ignoresSafeArea()
             }
 
             NavigationLink("Open Flutter Counter") {
-                Add2AppFlutterView(route: CounterPage(seed: nil))
+                InlayFlutterView(route: CounterPage(seed: nil))
                     .ignoresSafeArea()
             }
 
             NavigationLink("Open Flutter Profile") {
-                Add2AppFlutterView(
+                InlayFlutterView(
                     route: ProfilePage(
                         userId: "42",
                         badges: [UserBadge(label: "SwiftUI badge", level: .silver)]
@@ -43,11 +43,11 @@ struct SwiftUIHomeView: View {
             }
         }
         .navigationTitle("SwiftUI Home")
-        .add2appDialog(
+        .inlayDialog(
             isPresented: $showConfirmDialog,
             route: ConfirmActionDialog(action: "delete", message: "Are you sure?")
         )
-        .add2appDialog(
+        .inlayDialog(
             isPresented: $showThemePickerDialog,
             route: ThemePickerDialog(userId: "42")
         )

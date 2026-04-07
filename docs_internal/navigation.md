@@ -17,7 +17,7 @@ A few Flutter concepts referenced in this guide:
 - **Flutter route** — A screen rendered by Flutter. Navigating to it from native code creates a new engine inside a native container (Activity / ViewController). Navigating to it from within Flutter uses the existing engine's navigation stack.
 - **Flutter dialog route** — A dialog, bottom sheet, or action sheet rendered by Flutter over a native screen. The native side opens a transparent container so the underlying screen stays visible. Flutter renders the overlay content (barrier, animation, positioning). Uses the same engine-per-container model as regular routes.
 - **Native route** — A screen rendered by the native platform. Flutter can request navigation to it, and the native side decides how to present it.
-- **`Add2AppNavigator`** — The singleton that orchestrates all cross-boundary navigation. Accessed as `Add2AppNavigator.instance` (Dart), `Add2AppNavigator.shared` (iOS), or the `Add2AppNavigator` object (Android).
+- **`InlayNavigator`** — The singleton that orchestrates all cross-boundary navigation. Accessed as `InlayNavigator.instance` (Dart), `InlayNavigator.shared` (iOS), or the `InlayNavigator` object (Android).
 - **`PageSettings`** — A data class that carries a `routeId`, optional `params`, and optional `path` across the platform boundary. Generated route classes create this for you — you rarely touch it directly.
 
 ## Defining Routes
@@ -26,12 +26,12 @@ Routes are defined as plain Dart classes with annotations. Running the code gene
 
 ### Flutter Routes
 
-Annotate with `@Add2AppFlutterRoute` and provide a **path template**. The path determines the URL passed to the Flutter routing library (go_router, auto_route, etc.) when a new engine starts — it's how the framework tells the router which screen to display.
+Annotate with `@InlayFlutterRoute` and provide a **path template**. The path determines the URL passed to the Flutter routing library (go_router, auto_route, etc.) when a new engine starts — it's how the framework tells the router which screen to display.
 
 Path parameters (`:param`) map to required fields on the class.
 
 ```dart
-@Add2AppFlutterRoute('/contact-details/:contactId')
+@InlayFlutterRoute('/contact-details/:contactId')
 class ContactDetailsPage {
   const ContactDetailsPage({
     required this.contactId,
@@ -50,10 +50,10 @@ The generator produces:
 
 ### Flutter Dialog Routes
 
-Annotate with `@Add2AppFlutterDialog` for overlays (dialogs, bottom sheets, action sheets) that are rendered by Flutter but presented over a native screen. The native side opens a **transparent** container so the underlying screen stays visible, and Flutter renders the dialog content (barrier, animation, positioning).
+Annotate with `@InlayFlutterDialog` for overlays (dialogs, bottom sheets, action sheets) that are rendered by Flutter but presented over a native screen. The native side opens a **transparent** container so the underlying screen stays visible, and Flutter renders the dialog content (barrier, animation, positioning).
 
 ```dart
-@Add2AppFlutterDialog('/confirm-delete/:itemId')
+@InlayFlutterDialog('/confirm-delete/:itemId')
 class ConfirmDeleteDialog {
   const ConfirmDeleteDialog({required this.itemId, this.title});
 
@@ -71,10 +71,10 @@ Dialog routes work identically to page routes in the schema — they have path t
 
 ### Native Routes
 
-Annotate with `@Add2AppNativeRoute` for screens that live on the native side.
+Annotate with `@InlayNativeRoute` for screens that live on the native side.
 
 ```dart
-@Add2AppNativeRoute()
+@InlayNativeRoute()
 class NativeEditProfilePage {
   const NativeEditProfilePage({required this.contactId});
   final String contactId;
@@ -83,49 +83,49 @@ class NativeEditProfilePage {
 
 The generator produces:
 
-- A Dart class with a `toNativeRoute()` method for use in `Add2AppNavigator.instance.push()`
+- A Dart class with a `toNativeRoute()` method for use in `InlayNavigator.instance.push()`
 - A typed handler method in the generated `NativeRouteHandler` base class (Swift and Kotlin), so you implement native navigation with full type safety
 
 ## Navigating
 
 ### From Flutter (Dart)
 
-All navigation goes through `Add2AppNavigator.instance.push()`:
+All navigation goes through `InlayNavigator.instance.push()`:
 
 ```dart
 // Open a Flutter screen (creates a new native container + engine)
-await Add2AppNavigator.instance.push(
+await InlayNavigator.instance.push(
   ContactDetailsPage(contactId: 'abc-123'),
 );
 
 // Open a native screen
-await Add2AppNavigator.instance.push(
+await InlayNavigator.instance.push(
   NativeEditProfilePage(contactId: 'abc-123').toNativeRoute(),
 );
 
 // Close the current screen (dismisses the native container)
-await Add2AppNavigator.instance.pop();
+await InlayNavigator.instance.pop();
 ```
 
 ### From iOS (Swift)
 
 ```swift
 // Push onto the UIKit navigation stack
-Add2AppNavigator.shared.push(
+InlayNavigator.shared.push(
   from: viewController,
   route: ContactDetailsPage(contactId: "abc-123"),
   animated: true
 )
 
 // Present modally
-Add2AppNavigator.shared.present(
+InlayNavigator.shared.present(
   from: viewController,
   route: ContactDetailsPage(contactId: "abc-123"),
   animated: true
 )
 
 // Or create a ViewController manually for custom presentation
-let vc = Add2AppNavigator.shared.createFlutterViewController(
+let vc = InlayNavigator.shared.createFlutterViewController(
   route: ContactDetailsPage(contactId: "abc-123")
 )
 ```
@@ -134,7 +134,7 @@ For **SwiftUI**, use the provided wrapper:
 
 ```swift
 NavigationStack {
-  Add2AppFlutterView(route: ContactDetailsPage(contactId: "abc-123"))
+  InlayFlutterView(route: ContactDetailsPage(contactId: "abc-123"))
 }
 ```
 
@@ -142,10 +142,10 @@ NavigationStack {
 
 ```kotlin
 // Start a new Activity
-Add2AppNavigator.push(context, ContactDetailsPage(contactId = "abc-123"))
+InlayNavigator.push(context, ContactDetailsPage(contactId = "abc-123"))
 
 // Or create a Fragment for embedding in an existing Activity
-val fragment = Add2AppNavigator.createFragment(
+val fragment = InlayNavigator.createFragment(
   context, ContactDetailsPage(contactId = "abc-123")
 )
 ```
@@ -153,7 +153,7 @@ val fragment = Add2AppNavigator.createFragment(
 For **Jetpack Compose**, use the provided composable:
 
 ```kotlin
-Add2AppFlutterScreen(route = ContactDetailsPage(contactId = "abc-123"))
+InlayFlutterScreen(route = ContactDetailsPage(contactId = "abc-123"))
 ```
 
 ### Dialogs
@@ -164,7 +164,7 @@ Dialog routes are presented in a transparent native container so the underlying 
 
 ```dart
 // Present a dialog over the current native screen
-await Add2AppNavigator.instance.push(
+await InlayNavigator.instance.push(
   ConfirmDeleteDialog(itemId: '42'),
 );
 ```
@@ -176,7 +176,7 @@ This works the same as a regular `push()` — the framework detects the `flutter
 **UIKit:**
 
 ```swift
-Add2AppNavigator.shared.presentDialog(
+InlayNavigator.shared.presentDialog(
   from: viewController,
   route: ConfirmDeleteDialog(itemId: "42")
 )
@@ -189,24 +189,24 @@ Add2AppNavigator.shared.presentDialog(
 
 var body: some View {
     Button("Delete") { showDialog = true }
-        .add2appDialog(
+        .inlayDialog(
             isPresented: $showDialog,
             route: ConfirmDeleteDialog(itemId: "42")
         )
 }
 ```
 
-The `.add2appDialog` modifier uses UIKit's `.overFullScreen` presentation under the hood, so the background stays visible.
+The `.inlayDialog` modifier uses UIKit's `.overFullScreen` presentation under the hood, so the background stays visible.
 
 #### From Android (Kotlin)
 
 **Activity / Fragment:**
 
 ```kotlin
-Add2AppNavigator.presentDialog(activity, ConfirmDeleteDialog(itemId = "42"))
+InlayNavigator.presentDialog(activity, ConfirmDeleteDialog(itemId = "42"))
 ```
 
-This shows an `Add2AppFlutterDialogFragment` — a `DialogFragment` with a transparent fullscreen window.
+This shows an `InlayFlutterDialogFragment` — a `DialogFragment` with a transparent fullscreen window.
 
 **Jetpack Compose** — use a Compose Navigation `dialog()` destination:
 
@@ -214,7 +214,7 @@ This shows an `Add2AppFlutterDialogFragment` — a `DialogFragment` with a trans
 NavHost(navController, startDestination = "home") {
     composable("home") { HomeScreen() }
     dialog("confirm-delete/{itemId}") { entry ->
-        Add2AppFlutterDialogScreen(
+        InlayFlutterDialogScreen(
             route = ConfirmDeleteDialog(itemId = entry.arguments!!.getString("itemId")!!),
             modifier = Modifier.fillMaxSize(),
         )
@@ -224,13 +224,13 @@ NavHost(navController, startDestination = "home") {
 
 ## Handling Native Routes (Flutter → Native)
 
-When Flutter pushes a native route, the framework dispatches it to a `NativeRouteHandler` you register on the native side. The generated handler has a typed method for each `@Add2AppNativeRoute`, so you don't parse strings.
+When Flutter pushes a native route, the framework dispatches it to a `NativeRouteHandler` you register on the native side. The generated handler has a typed method for each `@InlayNativeRoute`, so you don't parse strings.
 
 ### iOS
 
 ```swift
 // Register once (e.g. in AppDelegate)
-Add2AppNavigator.shared.setNativeRouteHandler(MyNativeRouteHandler())
+InlayNavigator.shared.setNativeRouteHandler(MyNativeRouteHandler())
 
 // Implement the generated handler
 class MyNativeRouteHandler: NativeRouteHandler {
@@ -248,7 +248,7 @@ class MyNativeRouteHandler: NativeRouteHandler {
 
 ```kotlin
 // Register once (e.g. in Application.onCreate)
-Add2AppNavigator.setNativeRouteHandler(object : NativeRouteHandler() {
+InlayNavigator.setNativeRouteHandler(object : NativeRouteHandler() {
   override fun onNativeEditProfile(context: Context, contactId: String) {
     context.startActivity(
       Intent(context, EditProfileActivity::class.java)
@@ -262,8 +262,8 @@ Add2AppNavigator.setNativeRouteHandler(object : NativeRouteHandler() {
 
 When the native side opens a Flutter screen, the framework encodes the route and passes it to the new Flutter engine. The Dart side needs to resolve that into the correct widget. The framework supports two integration styles:
 
-1. **Declarative** — Works with `MaterialApp.router` and any Navigator 2.0 routing library (go_router, auto_route, etc.). The framework passes the initial route as a URL path and the router matches it to a screen. Dialog routes use `Add2AppDialogPage` / `Add2AppBottomSheetPage`.
-2. **Imperative** — Works with plain `MaterialApp` and no routing library. The generated `sealed class FlutterRoute` / `sealed class FlutterDialogRoute` hierarchies let you use Dart pattern matching for exhaustive, type-safe route resolution. Dialog routes use `runAdd2AppDialog`.
+1. **Declarative** — Works with `MaterialApp.router` and any Navigator 2.0 routing library (go_router, auto_route, etc.). The framework passes the initial route as a URL path and the router matches it to a screen. Dialog routes use `InlayDialogPage` / `InlayBottomSheetPage`.
+2. **Imperative** — Works with plain `MaterialApp` and no routing library. The generated `sealed class FlutterRoute` / `sealed class FlutterDialogRoute` hierarchies let you use Dart pattern matching for exhaustive, type-safe route resolution. Dialog routes use `runInlayDialog`.
 
 ### Declarative (MaterialApp.router)
 
@@ -271,21 +271,21 @@ The framework encodes the route as a URL path (e.g. `/contact-details/abc-123`) 
 
 There are two integration points:
 
-- **`Add2AppNavigator.initialPath`** — reads the platform's `defaultRouteName` and returns the URL path. You pass this to your routing library as the initial location. This is synchronous and carries path parameters only.
-- **`Add2AppNavigator.fetchInitialRoute(decoder)`** — fetches the full route data (including non-path parameters like lists and complex objects) from the native host and decodes it into a typed route object. Pass this as extra data to your router so builders can access non-path parameters. Use `decodeFlutterRouteData` if you only have page routes, or `decodeAdd2AppRouteData` if you have both pages and dialogs.
+- **`InlayNavigator.initialPath`** — reads the platform's `defaultRouteName` and returns the URL path. You pass this to your routing library as the initial location. This is synchronous and carries path parameters only.
+- **`InlayNavigator.fetchInitialRoute(decoder)`** — fetches the full route data (including non-path parameters like lists and complex objects) from the native host and decodes it into a typed route object. Pass this as extra data to your router so builders can access non-path parameters. Use `decodeFlutterRouteData` if you only have page routes, or `decodeInlayRouteData` if you have both pages and dialogs.
 
 If your routes only use path parameters, `initialPath` alone is sufficient. If any route has non-path parameters (e.g. `List<ContactBadge>? badges`), you need both.
 
-`Add2AppBackButtonDispatcher` ensures that when the user presses back and the router stack is empty, the native container (Activity/ViewController) is dismissed instead of doing nothing.
+`InlayBackButtonDispatcher` ensures that when the user presses back and the router stack is empty, the native container (Activity/ViewController) is dismissed instead of doing nothing.
 
-`Add2AppNativePopGestureObserver` syncs the iOS interactive back-swipe gesture with the Flutter navigation stack. Without it, the native swipe-back gesture may dismiss the entire Flutter container even when there are in-Flutter routes to pop. Wrap it around the router's child via `MaterialApp.router`'s `builder`.
+`InlayNativePopGestureObserver` syncs the iOS interactive back-swipe gesture with the Flutter navigation stack. Without it, the native swipe-back gesture may dismiss the entire Flutter container even when there are in-Flutter routes to pop. Wrap it around the router's child via `MaterialApp.router`'s `builder`.
 
 #### go_router example
 
 ```dart
 GoRouter createRouter({
   String initialLocation = '/',
-  Add2AppRoute? initialExtra,
+  InlayRoute? initialExtra,
 }) {
   return GoRouter(
     initialLocation: initialLocation,
@@ -309,24 +309,24 @@ GoRouter createRouter({
           );
         },
       ),
-      // Dialog routes use pageBuilder with Add2AppDialogPage
+      // Dialog routes use pageBuilder with InlayDialogPage
       GoRoute(
         path: '/confirm-delete/:itemId',
         pageBuilder: (_, state) {
           final dialog = state.extra is ConfirmDeleteDialog
               ? state.extra! as ConfirmDeleteDialog
               : null;
-          return Add2AppDialogPage(
+          return InlayDialogPage(
             builder: (_) => ConfirmDeleteContent(
               itemId: dialog?.itemId ?? state.pathParameters['itemId']!,
             ),
           );
         },
       ),
-      // Bottom sheet routes use Add2AppBottomSheetPage
+      // Bottom sheet routes use InlayBottomSheetPage
       GoRoute(
         path: '/theme-picker/:userId',
-        pageBuilder: (_, state) => Add2AppBottomSheetPage(
+        pageBuilder: (_, state) => InlayBottomSheetPage(
           isScrollControlled: true,
           showDragHandle: true,
           builder: (_) => ThemePickerContent(
@@ -339,15 +339,15 @@ GoRouter createRouter({
 }
 
 @pragma('vm:entry-point')
-void add2appMain() async {
+void inlayMain() async {
   WidgetsFlutterBinding.ensureInitialized();
   await KeyValueStorage.instance.init();
 
-  final path = Add2AppNavigator.initialPath;
-  // Use decodeAdd2AppRouteData (combined decoder) when you have both
+  final path = InlayNavigator.initialPath;
+  // Use decodeInlayRouteData (combined decoder) when you have both
   // page routes and dialog routes. It tries page routes first, then dialogs.
-  final route = await Add2AppNavigator.fetchInitialRoute(
-    decodeAdd2AppRouteData,
+  final route = await InlayNavigator.fetchInitialRoute(
+    decodeInlayRouteData,
   );
   final router = createRouter(
     initialLocation: path,
@@ -367,8 +367,8 @@ void add2appMain() async {
       routeInformationProvider: router.routeInformationProvider,
       routeInformationParser: router.routeInformationParser,
       routerDelegate: router.routerDelegate,
-      backButtonDispatcher: Add2AppBackButtonDispatcher(),
-      builder: (_, child) => Add2AppNativePopGestureObserver(
+      backButtonDispatcher: InlayBackButtonDispatcher(),
+      builder: (_, child) => InlayNativePopGestureObserver(
         child: child ?? const SizedBox.shrink(),
       ),
     ),
@@ -378,10 +378,10 @@ void add2appMain() async {
 
 **Key points for dialog routes in go_router:**
 
-- Use `pageBuilder` (not `builder`) so you can return `Add2AppDialogPage` or `Add2AppBottomSheetPage`
-- `Add2AppDialogPage` shows an `AlertDialog`-style overlay. Parameters like `barrierDismissible` and `barrierColor` are configurable.
-- `Add2AppBottomSheetPage` shows a modal bottom sheet. Parameters like `isScrollControlled`, `isDismissible`, `enableDrag`, and `showDragHandle` are configurable.
-- Both pages automatically call `Add2AppNavigator.instance.pop()` when the dialog/sheet is dismissed, closing the native transparent container
+- Use `pageBuilder` (not `builder`) so you can return `InlayDialogPage` or `InlayBottomSheetPage`
+- `InlayDialogPage` shows an `AlertDialog`-style overlay. Parameters like `barrierDismissible` and `barrierColor` are configurable.
+- `InlayBottomSheetPage` shows a modal bottom sheet. Parameters like `isScrollControlled`, `isDismissible`, `enableDrag`, and `showDragHandle` are configurable.
+- Both pages automatically call `InlayNavigator.instance.pop()` when the dialog/sheet is dismissed, closing the native transparent container
 - The `MaterialApp` theme must set `scaffoldBackgroundColor: Colors.transparent` for dialog engines so the native screen shows through
 
 #### auto_route example
@@ -409,11 +409,11 @@ RootStackRouter createRouter() {
 }
 
 @pragma('vm:entry-point')
-void add2appMain() async {
+void inlayMain() async {
   WidgetsFlutterBinding.ensureInitialized();
   await KeyValueStorage.instance.init();
 
-  final initialLocation = Add2AppNavigator.initialPath;
+  final initialLocation = InlayNavigator.initialPath;
   final router = createRouter();
 
   runApp(
@@ -425,8 +425,8 @@ void add2appMain() async {
         deepLinkBuilder: (_) => DeepLink.path(initialLocation),
         rebuildStackOnDeepLink: true,
       ),
-      backButtonDispatcher: Add2AppBackButtonDispatcher(),
-      builder: (_, child) => Add2AppNativePopGestureObserver(
+      backButtonDispatcher: InlayBackButtonDispatcher(),
+      builder: (_, child) => InlayNativePopGestureObserver(
         child: child ?? const SizedBox.shrink(),
       ),
     ),
@@ -436,15 +436,15 @@ void add2appMain() async {
 
 #### Other routing libraries
 
-For any routing library that works with `MaterialApp.router`, the framework provides `Add2AppRouteInformationProvider` — a drop-in replacement for `PlatformRouteInformationProvider` that seeds the router with the correct initial path:
+For any routing library that works with `MaterialApp.router`, the framework provides `InlayRouteInformationProvider` — a drop-in replacement for `PlatformRouteInformationProvider` that seeds the router with the correct initial path:
 
 ```dart
 MaterialApp.router(
-  routeInformationProvider: Add2AppRouteInformationProvider(),
+  routeInformationProvider: InlayRouteInformationProvider(),
   routeInformationParser: myCustomParser,
   routerDelegate: myCustomDelegate,
-  backButtonDispatcher: Add2AppBackButtonDispatcher(),
-  builder: (_, child) => Add2AppNativePopGestureObserver(
+  backButtonDispatcher: InlayBackButtonDispatcher(),
+  builder: (_, child) => InlayNativePopGestureObserver(
     child: child ?? const SizedBox.shrink(),
   ),
 )
@@ -456,20 +456,20 @@ If you don't use a declarative routing library, the framework supports a fully i
 
 #### How it works
 
-1. The code generator produces a `sealed class FlutterRoute` (for pages) and optionally a `sealed class FlutterDialogRoute` (for dialogs). Each `@Add2AppFlutterRoute` / `@Add2AppFlutterDialog` becomes a subclass of the respective sealed type.
-2. The generated `decodeAdd2AppRouteData` function decodes `PageSettings` into either type (returning `Add2AppRoute?`).
-3. You use `Add2AppNavigator.fetchInitialRoute(decodeAdd2AppRouteData)` to get the typed route, then pattern-match with a `switch` expression. The compiler enforces exhaustiveness — if you add a new route, you get a compile error until you handle it.
+1. The code generator produces a `sealed class FlutterRoute` (for pages) and optionally a `sealed class FlutterDialogRoute` (for dialogs). Each `@InlayFlutterRoute` / `@InlayFlutterDialog` becomes a subclass of the respective sealed type.
+2. The generated `decodeInlayRouteData` function decodes `PageSettings` into either type (returning `InlayRoute?`).
+3. You use `InlayNavigator.fetchInitialRoute(decodeInlayRouteData)` to get the typed route, then pattern-match with a `switch` expression. The compiler enforces exhaustiveness — if you add a new route, you get a compile error until you handle it.
 
 #### Wire up in the entrypoint
 
 ```dart
 @pragma('vm:entry-point')
-void add2appMain() async {
+void inlayMain() async {
   WidgetsFlutterBinding.ensureInitialized();
   await KeyValueStorage.instance.init();
 
-  final route = await Add2AppNavigator.fetchInitialRoute(
-    decodeAdd2AppRouteData,
+  final route = await InlayNavigator.fetchInitialRoute(
+    decodeInlayRouteData,
   );
 
   switch (route) {
@@ -483,16 +483,16 @@ void add2appMain() async {
         home: SoundsNotificationsScreen(contactId: contactId),
       ));
 
-    // Dialog routes — use runAdd2AppDialog with standard Flutter APIs
+    // Dialog routes — use runInlayDialog with standard Flutter APIs
     case ConfirmDeleteDialog(:final itemId, :final title):
-      runAdd2AppDialog(
+      runInlayDialog(
         onReady: (context) => showDialog(
           context: context,
           builder: (_) => ConfirmDeleteContent(itemId: itemId, title: title),
         ),
       );
     case ThemePickerDialog(:final userId):
-      runAdd2AppDialog(
+      runInlayDialog(
         onReady: (context) => showModalBottomSheet(
           context: context,
           isScrollControlled: true,
@@ -506,14 +506,14 @@ void add2appMain() async {
 }
 ```
 
-`runAdd2AppDialog` sets up a transparent `MaterialApp` and calls your `onReady` callback after the first frame. When the dialog/sheet is dismissed, the native transparent container is automatically closed. You use standard Flutter APIs (`showDialog`, `showModalBottomSheet`, etc.) inside the callback — the framework doesn't impose any special dialog widget.
+`runInlayDialog` sets up a transparent `MaterialApp` and calls your `onReady` callback after the first frame. When the dialog/sheet is dismissed, the native transparent container is automatically closed. You use standard Flutter APIs (`showDialog`, `showModalBottomSheet`, etc.) inside the callback — the framework doesn't impose any special dialog widget.
 
 The sealed class hierarchies give you:
 
-- **Exhaustive pattern matching** — the Dart compiler ensures every route is handled. Adding a new `@Add2AppFlutterRoute` or `@Add2AppFlutterDialog` makes the `switch` non-exhaustive, producing a compile error until you add a case.
+- **Exhaustive pattern matching** — the Dart compiler ensures every route is handled. Adding a new `@InlayFlutterRoute` or `@InlayFlutterDialog` makes the `switch` non-exhaustive, producing a compile error until you add a case.
 - **Field destructuring** — extract route fields directly in the pattern (e.g. `ConfirmDeleteDialog(:final itemId)`) without manually accessing them from a page object.
 - **No boilerplate** — no handler class to extend, no interface to implement, no abstract methods. Just a `switch` expression.
-- **`null` handles unknowns** — `decodeAdd2AppRouteData` returns `null` for unrecognized route IDs (including the prewarm engine's placeholder), so you handle them naturally in the `null` branch.
+- **`null` handles unknowns** — `decodeInlayRouteData` returns `null` for unrecognized route IDs (including the prewarm engine's placeholder), so you handle them naturally in the `null` branch.
 
 `fetchInitialRoute` retrieves the full route data (including non-path parameters like lists and complex objects) from the native host and returns the sealed type for exhaustive matching.
 
@@ -528,15 +528,15 @@ Call once at app startup to create the engine group. Both `start()` and `init()`
 **iOS (AppDelegate):**
 
 ```swift
-Add2AppNavigator.shared.start() // prewarm: true by default
-Add2AppNavigator.shared.setNativeRouteHandler(MyNativeRouteHandler())
+InlayNavigator.shared.start() // prewarm: true by default
+InlayNavigator.shared.setNativeRouteHandler(MyNativeRouteHandler())
 ```
 
 **Android (Application.onCreate):**
 
 ```kotlin
-Add2AppNavigator.init(applicationContext) // prewarm = true by default
-Add2AppNavigator.setNativeRouteHandler(MyNativeRouteHandler())
+InlayNavigator.init(applicationContext) // prewarm = true by default
+InlayNavigator.setNativeRouteHandler(MyNativeRouteHandler())
 ```
 
 ### Engine Prewarming
@@ -545,14 +545,14 @@ By default the framework keeps a hidden prewarmed engine so the first Flutter na
 
 ```swift
 // iOS
-Add2AppNavigator.shared.setPrewarmEnabled(false)
-Add2AppNavigator.shared.destroyPrewarmedEngine()
+InlayNavigator.shared.setPrewarmEnabled(false)
+InlayNavigator.shared.destroyPrewarmedEngine()
 ```
 
 ```kotlin
 // Android
-Add2AppNavigator.setPrewarmEnabled(false)
-Add2AppNavigator.destroyPrewarmedEngine()
+InlayNavigator.setPrewarmEnabled(false)
+InlayNavigator.destroyPrewarmedEngine()
 ```
 
 ## How It Works Under the Hood
@@ -560,8 +560,8 @@ Add2AppNavigator.destroyPrewarmedEngine()
 1. **Native init** — `start()` / `init()` creates a `FlutterEngineGroup` and optionally prewarms one engine.
 2. **Push** — When a route is pushed, the framework encodes `PageSettings` into a URL string, creates a new engine from the group, and presents it in a native container (Activity / ViewController).
 3. **Present dialog** — For dialog routes, the native side creates a transparent container (`DialogFragment` on Android, `.overFullScreen` modal on iOS) instead of an opaque one. The engine starts the same way, but Flutter renders over the visible native screen underneath.
-4. **Dart entrypoint** — Every engine runs the same Dart entrypoint (`add2appMain`). A routing library reads the initial path to render the correct screen, or the imperative approach decodes `PageSettings` into a sealed `FlutterRoute` / `FlutterDialogRoute` for pattern matching.
-5. **Pop** — Dismissing the native container destroys the engine and cleans up platform channel registrations. For dialogs, Flutter's `Add2AppNavigator.instance.pop()` is called automatically when the dialog/sheet is dismissed.
+4. **Dart entrypoint** — Every engine runs the same Dart entrypoint (`inlayMain`). A routing library reads the initial path to render the correct screen, or the imperative approach decodes `PageSettings` into a sealed `FlutterRoute` / `FlutterDialogRoute` for pattern matching.
+5. **Pop** — Dismissing the native container destroys the engine and cleans up platform channel registrations. For dialogs, Flutter's `InlayNavigator.instance.pop()` is called automatically when the dialog/sheet is dismissed.
 
 Routes are serialized as:
 
@@ -569,4 +569,4 @@ Routes are serialized as:
 /path/with/:params?extraParam=value
 ```
 
-The Dart side decodes this with `Add2AppNavigator.initialPath`.
+The Dart side decodes this with `InlayNavigator.initialPath`.
