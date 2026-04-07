@@ -1,6 +1,6 @@
 import SwiftUI
 import UIKit
-import leancode_add2app
+import inlay
 
 @main
 final class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -10,8 +10,8 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
     ) -> Bool {
-        Add2AppNavigator.shared.start()
-        Add2AppNavigator.shared.setNativeRouteHandler(ExampleNativeRouteHandler())
+        InlayNavigator.shared.start()
+        InlayNavigator.shared.setNativeRouteHandler(ExampleNativeRouteHandler())
 
         let window = UIWindow(frame: UIScreen.main.bounds)
         window.rootViewController = RootTabBarController()

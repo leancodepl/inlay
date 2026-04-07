@@ -1,5 +1,5 @@
 import UIKit
-import leancode_add2app
+import inlay
 
 final class ExampleNativeRouteHandler: NativeRouteHandler {
     override func onNativeSettings(page: NativeSettingsPage, viewController: UIViewController) {

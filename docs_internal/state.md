@@ -2,13 +2,13 @@
 
 The framework provides a shared key-value storage layer that stays synchronized across all Flutter engines and native code. Any change made from one place is automatically broadcast to all other consumers.
 
-On the Flutter side, you can use the generated store directly or pair it with the optional `Add2AppCubit` helper for a reactive UI pattern. Native code (iOS/Android) accesses the same data through a `NativeStorageScope`.
+On the Flutter side, you can use the generated store directly or pair it with the optional `InlayCubit` helper for a reactive UI pattern. Native code (iOS/Android) accesses the same data through a `NativeStorageScope`.
 
 ## Background for Native Developers
 
 A few Flutter/Dart concepts referenced in this guide:
 
-- **Cubit** — A lightweight state holder from the [bloc](https://bloclibrary.dev/) library. Think of it as a ViewModel that emits immutable state objects. The framework's `Add2AppCubit` is an optional convenience built on top of it. **You do not need to use Cubits** — the store and storage layers work independently.
+- **Cubit** — A lightweight state holder from the [bloc](https://bloclibrary.dev/) library. Think of it as a ViewModel that emits immutable state objects. The framework's `InlayCubit` is an optional convenience built on top of it. **You do not need to use Cubits** — the store and storage layers work independently.
 - **Dart isolate** — Each Flutter engine runs in its own isolate (similar to a thread with its own memory). This is why cross-engine synchronization goes through the platform layer rather than shared memory.
 - **Stream** — Dart's equivalent of reactive observables (like `Flow` in Kotlin or `AsyncSequence`/Combine publishers in Swift). Stores expose a `stream` that emits whenever data changes.
 
@@ -41,10 +41,10 @@ All reads and writes go through a platform-side in-memory dictionary. When any c
 Stores are defined as plain Dart classes with annotations. The code generator produces typed wrappers with getters, setters, reactive streams, and snapshot support.
 
 ```dart
-@Add2AppStore(key: 'sounds_notifications')
+@InlayStore(key: 'sounds_notifications')
 class SoundsNotificationsStore {
   const SoundsNotificationsStore({
-    @Add2AppStoreKey() required this.contactId,
+    @InlayStoreKey() required this.contactId,
     this.mute = false,
     this.showPreviews = true,
     this.sound = 'Default',
@@ -63,8 +63,8 @@ class SoundsNotificationsStore {
 
 | Annotation | Purpose |
 |---|---|
-| `@Add2AppStore(key: 'prefix')` | Marks a class as a store definition. The `key` sets the prefix used in storage keys. |
-| `@Add2AppStoreKey()` | Marks a field as a **key segment** — it's used in the storage path to scope data, but is not stored as a value itself. |
+| `@InlayStore(key: 'prefix')` | Marks a class as a store definition. The `key` sets the prefix used in storage keys. |
+| `@InlayStoreKey()` | Marks a field as a **key segment** — it's used in the storage path to scope data, but is not stored as a value itself. |
 
 ### Supported Field Types
 
@@ -125,9 +125,9 @@ store.stream.listen((snapshot) {
 });
 ```
 
-### Using with Add2AppCubit (Optional)
+### Using with InlayCubit (Optional)
 
-`Add2AppCubit` is an optional convenience layer built on the [bloc](https://bloclibrary.dev/) library. It connects a store to a reactive UI pattern by:
+`InlayCubit` is an optional convenience layer built on the [bloc](https://bloclibrary.dev/) library. It connects a store to a reactive UI pattern by:
 
 1. Loading the initial snapshot from the store automatically
 2. Subscribing to the store's `stream` for cross-engine sync
@@ -141,18 +141,18 @@ If your team already uses bloc/Cubit in Flutter, this is a natural fit. If not, 
 
 ```dart
 class SoundsNotificationsCubit
-    extends Add2AppCubit<SoundsNotificationsStoreSnapshot> {
+    extends InlayCubit<SoundsNotificationsStoreSnapshot> {
   SoundsNotificationsCubit(super.store);
 
   void toggleMute() {
-    if (state case Add2AppStateReady(data: final current)) {
-      emit(Add2AppStateReady(current.copyWith(mute: !current.mute)));
+    if (state case InlayStateReady(data: final current)) {
+      emit(InlayStateReady(current.copyWith(mute: !current.mute)));
     }
   }
 
   void changeSound(String sound) {
-    if (state case Add2AppStateReady(data: final current)) {
-      emit(Add2AppStateReady(current.copyWith(sound: sound)));
+    if (state case InlayStateReady(data: final current)) {
+      emit(InlayStateReady(current.copyWith(sound: sound)));
     }
   }
 }
@@ -175,11 +175,11 @@ class SoundsNotificationsScreen extends StatelessWidget {
         ),
       )..init(),
       child: BlocBuilder<SoundsNotificationsCubit,
-          Add2AppState<SoundsNotificationsStoreSnapshot>>(
+          InlayState<SoundsNotificationsStoreSnapshot>>(
         builder: (context, state) => switch (state) {
-          Add2AppStateLoading() =>
+          InlayStateLoading() =>
             const Center(child: CircularProgressIndicator()),
-          Add2AppStateReady(:final data) => ListView(
+          InlayStateReady(:final data) => ListView(
             children: [
               SwitchListTile(
                 title: const Text('Mute'),
@@ -196,14 +196,14 @@ class SoundsNotificationsScreen extends StatelessWidget {
 }
 ```
 
-**`Add2AppState`** is a sealed type with two variants:
+**`InlayState`** is a sealed type with two variants:
 
 | Variant | Description |
 |---|---|
-| `Add2AppStateLoading` | The initial snapshot is still being loaded from the store. |
-| `Add2AppStateReady(data)` | The snapshot is loaded and ready. |
+| `InlayStateLoading` | The initial snapshot is still being loaded from the store. |
+| `InlayStateReady(data)` | The snapshot is loaded and ready. |
 
-**Observing multiple stores** in a single Cubit is supported via the `Add2AppStoreObserver` mixin.
+**Observing multiple stores** in a single Cubit is supported via the `InlayStoreObserver` mixin.
 
 ## Using Stores from Native Code
 
@@ -304,7 +304,7 @@ Here's what happens when a value is changed:
 
 1. **Write** — A consumer (Flutter store, Cubit, or native scope) writes a value. The write goes through the platform via a Pigeon channel.
 2. **Platform broadcast** — The platform-side in-memory store updates and notifies all registered consumers *except* the writer.
-3. **Flutter engines receive** — Each other Flutter engine's `KeyValueStorage.stream` emits the change. If using a generated store, the store's `stream` filters for relevant keys and emits a new snapshot. If using `Add2AppCubit`, the Cubit automatically updates its state.
+3. **Flutter engines receive** — Each other Flutter engine's `KeyValueStorage.stream` emits the change. If using a generated store, the store's `stream` filters for relevant keys and emits a new snapshot. If using `InlayCubit`, the Cubit automatically updates its state.
 4. **Native scopes receive** — Registered `NativeStorageScope` observers receive the change via their callback.
 
 ### Thread Safety
@@ -322,7 +322,7 @@ Here's what happens when a value is changed:
 
 | Approach | Type Safety | Cross-engine sync | Best for |
 |---|---|---|---|
-| `@Add2AppStore` + `Add2AppCubit` | Full (typed fields, snapshots) | Automatic | Flutter screens that need reactive state tied to storage |
-| `@Add2AppStore` (direct) | Full | Manual (listen to `stream`) | Flutter code that doesn't use bloc |
+| `@InlayStore` + `InlayCubit` | Full (typed fields, snapshots) | Automatic | Flutter screens that need reactive state tied to storage |
+| `@InlayStore` (direct) | Full | Manual (listen to `stream`) | Flutter code that doesn't use bloc |
 | `KeyValueStorage` (raw) | Manual (string keys/values) | Manual (listen to `stream`) | Ad-hoc values, one-off reads/writes |
 | `NativeStorageScope` + generated store | Full (typed properties) | Via `startObserving` + `containsChanges` | Native code (iOS/Android) |

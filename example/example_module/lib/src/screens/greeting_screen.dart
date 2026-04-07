@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:leancode_add2app/leancode_add2app.dart';
+import 'package:inlay/inlay.dart';
 
 import '../generated/routes.g.dart';
 
@@ -21,7 +21,7 @@ class GreetingScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         leading: BackButton(
-          onPressed: () => Add2AppNavigator.instance.maybePop(context),
+          onPressed: () => InlayNavigator.instance.maybePop(context),
         ),
         title: const Text('Greeting'),
       ),
@@ -55,14 +55,14 @@ class GreetingScreen extends StatelessWidget {
             const SizedBox(height: 12),
             OutlinedButton(
               onPressed: () {
-                Add2AppNavigator.instance.push(const CounterPage());
+                InlayNavigator.instance.push(const CounterPage());
               },
               child: const Text('Open Counter (new engine/container)'),
             ),
             const SizedBox(height: 12),
             OutlinedButton(
               onPressed: () {
-                Add2AppNavigator.instance.push(
+                InlayNavigator.instance.push(
                   const ProfilePage(
                     userId: '42',
                     badges: [
@@ -76,7 +76,7 @@ class GreetingScreen extends StatelessWidget {
             const SizedBox(height: 12),
             OutlinedButton(
               onPressed: () {
-                Add2AppNavigator.instance.push(
+                InlayNavigator.instance.push(
                   const NativeAboutPage(appVersion: '1.0.0').toNativeRoute(),
                 );
               },

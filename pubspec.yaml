@@ -1,14 +1,12 @@
-name: add2app_framework_poc
+name: inlay
 publish_to: none
 
 environment:
   sdk: ^3.11.0
 
 workspace:
-  - leancode_add2app
-  - leancode_add2app_gen
-  - signal_module
-  - signal_module/signal_module_native
+  - inlay
+  - inlay_gen
   - example/example_module
   - example/example_module/example_module_native
 

@@ -1,6 +1,6 @@
 # Example Apps
 
-This folder contains a standalone showcase for the add2app framework:
+This folder contains a standalone showcase for the Inlay framework:
 
 - `example_module` - Flutter module with routes, stores, cubits, and three integrations:
   - go_router

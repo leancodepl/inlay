@@ -1,0 +1,13 @@
+# inlay configuration for example_module.
+routes: lib/inlay/routes.dart
+stores: lib/inlay/stores.dart
+
+dart:
+  output: lib/src/generated/
+
+kotlin:
+  output: example_module_native/android/src/main/kotlin/co/leancode/example_module/generated/
+  package: co.leancode.example_module.generated
+
+swift:
+  output: example_module_native/ios/Classes/Generated/

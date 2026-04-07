@@ -25,7 +25,7 @@
         <activity android:name=".ComposeActivity" android:exported="false" />
 
         <activity
-            android:name="co.leancode.add2app.Add2AppFlutterActivity"
+            android:name="co.leancode.inlay.InlayFlutterActivity"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
             android:exported="false"
             android:hardwareAccelerated="true"

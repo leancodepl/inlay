@@ -1,4 +1,4 @@
-# leancode_add2app
+# Flutter Inlay
 
 An opinionated Flutter add-to-app framework providing **type-safe navigation** and **cross-platform state sharing** for apps that embed Flutter inside a native iOS or Android host.
 
@@ -23,21 +23,21 @@ This framework solves both problems with a code-generation-driven, type-safe app
 
 ```dart
 // A Flutter screen — navigable from native or from other Flutter screens
-@Add2AppFlutterRoute('/sounds-notifications/:contactId')
+@InlayFlutterRoute('/sounds-notifications/:contactId')
 class SoundsNotificationsPage {
   const SoundsNotificationsPage({required this.contactId});
   final String contactId;
 }
 
 // A Flutter dialog — rendered by Flutter over a native screen
-@Add2AppFlutterDialog('/confirm-delete/:itemId')
+@InlayFlutterDialog('/confirm-delete/:itemId')
 class ConfirmDeleteDialog {
   const ConfirmDeleteDialog({required this.itemId});
   final String itemId;
 }
 
 // A native screen — navigable from Flutter
-@Add2AppNativeRoute()
+@InlayNativeRoute()
 class NativeEditProfilePage {
   const NativeEditProfilePage({required this.contactId});
   final String contactId;
@@ -52,12 +52,12 @@ From **Dart** (Flutter):
 
 ```dart
 // Open a Flutter screen (creates a new native container with a Flutter engine)
-await Add2AppNavigator.instance.push(
+await InlayNavigator.instance.push(
   SoundsNotificationsPage(contactId: 'abc-123'),
 );
 
 // Open a native screen from Flutter
-await Add2AppNavigator.instance.push(
+await InlayNavigator.instance.push(
   NativeEditProfilePage(contactId: 'abc-123').toNativeRoute(),
 );
 ```
@@ -65,7 +65,7 @@ await Add2AppNavigator.instance.push(
 From **Swift** (iOS):
 
 ```swift
-Add2AppNavigator.shared.push(
+InlayNavigator.shared.push(
   from: viewController,
   route: SoundsNotificationsPage(contactId: "abc-123"),
   animated: true
@@ -75,7 +75,7 @@ Add2AppNavigator.shared.push(
 From **Kotlin** (Android):
 
 ```kotlin
-Add2AppNavigator.push(context, SoundsNotificationsPage(contactId = "abc-123"))
+InlayNavigator.push(context, SoundsNotificationsPage(contactId = "abc-123"))
 ```
 
 ### 3. Share state
@@ -83,10 +83,10 @@ Add2AppNavigator.push(context, SoundsNotificationsPage(contactId = "abc-123"))
 Define a store (Dart):
 
 ```dart
-@Add2AppStore(key: 'sounds_notifications')
+@InlayStore(key: 'sounds_notifications')
 class SoundsNotificationsStore {
   const SoundsNotificationsStore({
-    @Add2AppStoreKey() required this.contactId,
+    @InlayStoreKey() required this.contactId,
     this.mute = false,
     this.sound = 'Default',
   });
@@ -127,18 +127,9 @@ scope.startObserving { entries ->
 }
 ```
 
-On the Flutter side, the generated store can be used directly or combined with the optional `Add2AppCubit` helper (see the [State Management](docs_internal/state.md) guide).
+On the Flutter side, the generated store can be used directly or combined with the optional `InlayCubit` helper (see the [State Management](docs_internal/state.md) guide).
 
 ## Documentation
 
 - [Navigation](docs_internal/navigation.md) — Route definitions, dialogs & bottom sheets, cross-boundary navigation, go_router & auto_route integration
 - [State Management](docs_internal/state.md) — Stores, native access, optional Cubit integration, cross-engine sync
-
-## Signal App
-
-This repository contains forks of Signal native iOS and Android apps used as a real-world benchmark for the framework.
-
-Checkouts (latest main from 07.01.2026):
-
-- iOS `36015e7`
-- Android `d88a862`

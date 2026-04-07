@@ -1,0 +1,16 @@
+# build_runner configuration for inlay_gen
+#
+# This builder generates Dart, Kotlin, and Swift code from inlay schema files.
+# Schema files are specs (like Pigeon) - app code imports generated files only.
+
+builders:
+  inlay:
+    import: "package:inlay_gen/builder.dart"
+    builder_factories: ["inlayBuilder"]
+    build_extensions:
+      r"$lib$":
+        - "src/generated/routes.g.dart"
+        - "src/generated/stores.g.dart"
+    auto_apply: dependents
+    build_to: source
+    required_inputs: [".dart"]

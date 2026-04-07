@@ -13,8 +13,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  leancode_add2app:
-    path: ../../../leancode_add2app
+  inlay:
+    path: ../../../inlay
 
 flutter:
   plugin:
