@@ -156,6 +156,36 @@ For **Jetpack Compose**, use the provided composable:
 InlayFlutterScreen(route = ContactDetailsPage(contactId = "abc-123"))
 ```
 
+#### Host Activity forwarding
+
+`InlayFlutterFragment` extends Flutter's `FlutterFragment`, which requires the host Activity to forward seven callbacks — without them deep links, back handling, user-leave events, and memory trimming don't reach Flutter. This applies to any Activity that hosts an `InlayFlutterFragment` directly, via `InlayFlutterScreen` in Compose, or via `InlayFlutterDialogFragment`.
+
+The simplest option is to extend [`InlayFlutterHostActivity`](../inlay/android/src/main/kotlin/co/leancode/inlay/InlayFlutterHostActivity.kt), which wires the forwarding for you.
+
+If you need a different base class (for example `AppCompatActivity`), use [`InlayFragmentHostDelegate`](../inlay/android/src/main/kotlin/co/leancode/inlay/InlayFragmentHostDelegate.kt) from your own Activity overrides:
+
+```kotlin
+class MyActivity : AppCompatActivity() {
+  private val inlayHost by lazy { InlayFragmentHostDelegate(this) }
+
+  override fun onPostResume() { super.onPostResume(); inlayHost.onPostResume() }
+  override fun onNewIntent(intent: Intent) { super.onNewIntent(intent); inlayHost.onNewIntent(intent) }
+  override fun onBackPressed() {
+    if (!inlayHost.onBackPressed()) super.onBackPressed()
+  }
+  override fun onUserLeaveHint() { super.onUserLeaveHint(); inlayHost.onUserLeaveHint() }
+  override fun onTrimMemory(level: Int) { super.onTrimMemory(level); inlayHost.onTrimMemory(level) }
+  override fun onActivityResult(r: Int, rc: Int, d: Intent?) {
+    super.onActivityResult(r, rc, d); inlayHost.onActivityResult(r, rc, d)
+  }
+  override fun onRequestPermissionsResult(r: Int, p: Array<out String>, g: IntArray) {
+    super.onRequestPermissionsResult(r, p, g); inlayHost.onRequestPermissionsResult(r, p, g)
+  }
+}
+```
+
+The delegate walks the whole Fragment tree, so nested `InlayFlutterFragment`s (including the one inside `InlayFlutterDialogFragment`) are covered automatically.
+
 ### Dialogs
 
 Dialog routes are presented in a transparent native container so the underlying screen remains visible. Flutter renders the dialog content, barrier, and animations.

@@ -1,9 +1,11 @@
 package co.leancode.inlay.example.android
 
+import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import co.leancode.inlay.InlayFragmentHostDelegate
 import co.leancode.inlay.InlayNavigator
 import co.leancode.inlay.KeyValueStorageImpl
 import co.leancode.inlay.NativeStorageScope
@@ -11,6 +13,7 @@ import co.leancode.example_module.generated.CounterPage
 import co.leancode.example_module.generated.CounterStore
 
 class FlutterCounterFragmentActivity : AppCompatActivity() {
+  private val inlayHost by lazy { InlayFragmentHostDelegate(this) }
   private lateinit var storage: NativeStorageScope
   private lateinit var store: CounterStore
   private lateinit var value: TextView
@@ -50,6 +53,50 @@ class FlutterCounterFragmentActivity : AppCompatActivity() {
   override fun onDestroy() {
     super.onDestroy()
     storage.dispose()
+  }
+
+  override fun onPostResume() {
+    super.onPostResume()
+    inlayHost.onPostResume()
+  }
+
+  override fun onNewIntent(intent: Intent) {
+    super.onNewIntent(intent)
+    inlayHost.onNewIntent(intent)
+  }
+
+  @Deprecated("Deprecated in Java")
+  override fun onBackPressed() {
+    if (!inlayHost.onBackPressed()) {
+      @Suppress("DEPRECATION")
+      super.onBackPressed()
+    }
+  }
+
+  @Deprecated("Deprecated in Java")
+  override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+    @Suppress("DEPRECATION")
+    super.onActivityResult(requestCode, resultCode, data)
+    inlayHost.onActivityResult(requestCode, resultCode, data)
+  }
+
+  override fun onRequestPermissionsResult(
+    requestCode: Int,
+    permissions: Array<out String>,
+    grantResults: IntArray,
+  ) {
+    super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+    inlayHost.onRequestPermissionsResult(requestCode, permissions, grantResults)
+  }
+
+  override fun onUserLeaveHint() {
+    super.onUserLeaveHint()
+    inlayHost.onUserLeaveHint()
+  }
+
+  override fun onTrimMemory(level: Int) {
+    super.onTrimMemory(level)
+    inlayHost.onTrimMemory(level)
   }
 
   private fun render() {
