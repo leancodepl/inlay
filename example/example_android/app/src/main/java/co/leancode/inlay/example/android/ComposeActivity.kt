@@ -1,5 +1,6 @@
 package co.leancode.inlay.example.android
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
@@ -27,6 +28,7 @@ import androidx.navigation.compose.dialog
 import androidx.navigation.compose.rememberNavController
 import co.leancode.inlay.InlayFlutterDialogScreen
 import co.leancode.inlay.InlayFlutterScreen
+import co.leancode.inlay.InlayFragmentHostDelegate
 import co.leancode.inlay.KeyValueStorageImpl
 import co.leancode.example_module.generated.BadgeLevel
 import co.leancode.example_module.generated.ConfirmActionDialog
@@ -36,6 +38,8 @@ import co.leancode.example_module.generated.ProfilePage
 import co.leancode.example_module.generated.UserBadge
 
 class ComposeActivity : AppCompatActivity() {
+  private val inlayHost by lazy { InlayFragmentHostDelegate(this) }
+
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     setContent {
@@ -43,6 +47,50 @@ class ComposeActivity : AppCompatActivity() {
         ComposeHost()
       }
     }
+  }
+
+  override fun onPostResume() {
+    super.onPostResume()
+    inlayHost.onPostResume()
+  }
+
+  override fun onNewIntent(intent: Intent) {
+    super.onNewIntent(intent)
+    inlayHost.onNewIntent(intent)
+  }
+
+  @Deprecated("Deprecated in Java")
+  override fun onBackPressed() {
+    if (!inlayHost.onBackPressed()) {
+      @Suppress("DEPRECATION")
+      super.onBackPressed()
+    }
+  }
+
+  @Deprecated("Deprecated in Java")
+  override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+    @Suppress("DEPRECATION")
+    super.onActivityResult(requestCode, resultCode, data)
+    inlayHost.onActivityResult(requestCode, resultCode, data)
+  }
+
+  override fun onRequestPermissionsResult(
+    requestCode: Int,
+    permissions: Array<out String>,
+    grantResults: IntArray,
+  ) {
+    super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+    inlayHost.onRequestPermissionsResult(requestCode, permissions, grantResults)
+  }
+
+  override fun onUserLeaveHint() {
+    super.onUserLeaveHint()
+    inlayHost.onUserLeaveHint()
+  }
+
+  override fun onTrimMemory(level: Int) {
+    super.onTrimMemory(level)
+    inlayHost.onTrimMemory(level)
   }
 }
 
