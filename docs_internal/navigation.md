@@ -150,15 +150,28 @@ val fragment = InlayNavigator.createFragment(
 )
 ```
 
-For **Jetpack Compose**, use the provided composable:
+For **Jetpack Compose**, add the optional `inlay_compose` plugin and use the provided composable:
+
+```yaml
+# pubspec.yaml of your Flutter module
+dependencies:
+  inlay:
+    path: ../path/to/inlay
+  inlay_compose:
+    path: ../path/to/inlay_compose
+```
 
 ```kotlin
+import co.leancode.inlay.compose.InlayFlutterScreen
+
 InlayFlutterScreen(route = ContactDetailsPage(contactId = "abc-123"))
 ```
 
+Projects that don't use Compose should depend only on `inlay` — no Compose dependencies end up on the classpath. Use `InlayNavigator.push(...)` or `InlayNavigator.createFragment(...)` directly in that case.
+
 #### Host Activity forwarding
 
-`InlayFlutterFragment` extends Flutter's `FlutterFragment`, which requires the host Activity to forward seven callbacks — without them deep links, back handling, user-leave events, and memory trimming don't reach Flutter. This applies to any Activity that hosts an `InlayFlutterFragment` directly, via `InlayFlutterScreen` in Compose, or via `InlayFlutterDialogFragment`.
+`InlayFlutterFragment` extends Flutter's `FlutterFragment`, which requires the host Activity to forward seven callbacks — without them deep links, back handling, user-leave events, and memory trimming don't reach Flutter. This applies to any Activity that hosts an `InlayFlutterFragment` directly, via `InlayFlutterScreen` from the `inlay_compose` plugin, or via `InlayFlutterDialogFragment`.
 
 The simplest option is to extend [`InlayFlutterHostActivity`](../inlay/android/src/main/kotlin/co/leancode/inlay/InlayFlutterHostActivity.kt), which wires the forwarding for you.
 
@@ -238,9 +251,11 @@ InlayNavigator.presentDialog(activity, ConfirmDeleteDialog(itemId = "42"))
 
 This shows an `InlayFlutterDialogFragment` — a `DialogFragment` with a transparent fullscreen window.
 
-**Jetpack Compose** — use a Compose Navigation `dialog()` destination:
+**Jetpack Compose** — add the `inlay_compose` plugin (see above) and use a Compose Navigation `dialog()` destination:
 
 ```kotlin
+import co.leancode.inlay.compose.InlayFlutterDialogScreen
+
 NavHost(navController, startDestination = "home") {
     composable("home") { HomeScreen() }
     dialog("confirm-delete/{itemId}") { entry ->

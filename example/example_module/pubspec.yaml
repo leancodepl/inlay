@@ -19,6 +19,8 @@ dependencies:
   go_router: ^15.1.2
   inlay:
     path: ../../inlay
+  inlay_compose:
+    path: ../../inlay_compose
 
 dev_dependencies:
   build_runner: ^2.11.0
