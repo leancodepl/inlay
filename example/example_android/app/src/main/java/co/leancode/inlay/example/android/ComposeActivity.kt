@@ -26,10 +26,10 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.dialog
 import androidx.navigation.compose.rememberNavController
-import co.leancode.inlay.InlayFlutterDialogScreen
-import co.leancode.inlay.InlayFlutterScreen
 import co.leancode.inlay.InlayFragmentHostDelegate
 import co.leancode.inlay.KeyValueStorageImpl
+import co.leancode.inlay.compose.InlayFlutterDialogScreen
+import co.leancode.inlay.compose.InlayFlutterScreen
 import co.leancode.example_module.generated.BadgeLevel
 import co.leancode.example_module.generated.ConfirmActionDialog
 import co.leancode.example_module.generated.CounterPage

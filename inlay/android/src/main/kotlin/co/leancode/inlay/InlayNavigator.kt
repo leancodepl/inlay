@@ -316,11 +316,19 @@ object InlayNavigator {
      * Engine configuration (Pigeon APIs, storage) is set up automatically
      * when the fragment attaches — no manual wiring needed.
      */
-    fun createFragment(context: Context, route: FlutterRoute): InlayFlutterFragment {
-        return createFragment(context, route.toPageSettings())
+    fun createFragment(
+        context: Context,
+        route: FlutterRoute,
+        useBackDispatcher: Boolean = false,
+    ): InlayFlutterFragment {
+        return createFragment(context, route.toPageSettings(), useBackDispatcher)
     }
 
-    internal fun createFragment(context: Context, page: PageSettings): InlayFlutterFragment {
+    fun createFragment(
+        context: Context,
+        page: PageSettings,
+        useBackDispatcher: Boolean = false,
+    ): InlayFlutterFragment {
         init(context, prewarm = isPrewarmEnabled)
         val initialRoute = encodePageSettings(page)
         val fragmentId = java.util.UUID.randomUUID().toString()
@@ -332,12 +340,11 @@ object InlayNavigator {
             .dartEntrypoint(DART_ENTRYPOINT)
             .initialRoute(initialRoute)
             .build<InlayFlutterFragment>()
-        fragment.arguments?.putString(EXTRA_FRAGMENT_ROUTE_ID, fragmentId)
-            ?: run {
-                val args = android.os.Bundle()
-                args.putString(EXTRA_FRAGMENT_ROUTE_ID, fragmentId)
-                fragment.arguments = args
-            }
+        val args = fragment.arguments ?: android.os.Bundle().also { fragment.arguments = it }
+        args.putString(EXTRA_FRAGMENT_ROUTE_ID, fragmentId)
+        if (useBackDispatcher) {
+            args.putBoolean(InlayFlutterFragment.ARG_USE_BACK_DISPATCHER, true)
+        }
         return fragment
     }
 

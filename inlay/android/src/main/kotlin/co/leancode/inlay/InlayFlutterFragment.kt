@@ -19,10 +19,11 @@ import io.flutter.embedding.engine.FlutterEngine
  * ### Back-dispatcher mode
  *
  * When the [ARG_USE_BACK_DISPATCHER] argument is `true` (set automatically by
- * [InlayFlutterScreen]), Flutter's `pop()` calls
- * `onBackPressedDispatcher.onBackPressed()` instead of `activity.finish()`.
- * This integrates correctly with Compose Navigation, Fragment back stacks,
- * and any other `OnBackPressedCallback` consumers.
+ * [InlayNavigator.createFragment] when `useBackDispatcher = true`, e.g. from
+ * the `InlayFlutterScreen` composable in the `inlay_compose` plugin),
+ * Flutter's `pop()` calls `onBackPressedDispatcher.onBackPressed()` instead
+ * of `activity.finish()`. This integrates correctly with Compose Navigation,
+ * Fragment back stacks, and any other `OnBackPressedCallback` consumers.
  */
 class InlayFlutterFragment : FlutterFragment() {
 

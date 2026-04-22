@@ -1,0 +1,31 @@
+name: inlay_compose
+description: >
+  Optional Jetpack Compose integration for the inlay framework. Add this
+  plugin when you want to embed inlay Flutter screens directly into Compose
+  navigation graphs. Android-only; the core `inlay` plugin has no Compose
+  dependency.
+publish_to: none
+resolution: workspace
+
+version: 0.1.0
+
+environment:
+  sdk: ^3.11.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  inlay:
+    path: ../inlay
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  leancode_lint: ^21.0.0
+
+flutter:
+  plugin:
+    platforms:
+      android:
+        package: co.leancode.inlay.compose
+        pluginClass: InlayComposePlugin

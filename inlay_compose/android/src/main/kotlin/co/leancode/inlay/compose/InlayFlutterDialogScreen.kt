@@ -1,7 +1,8 @@
-package co.leancode.inlay
+package co.leancode.inlay.compose
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import co.leancode.inlay.FlutterDialogRoute
 
 /**
  * Compose-ready wrapper that renders a Flutter dialog described by [route]
@@ -21,7 +22,7 @@ import androidx.compose.ui.Modifier
  * ```
  *
  * Under the hood this delegates to [InlayFlutterScreen] with the dialog
- * route's [PageSettings]. Flutter handles the visual overlay.
+ * route's `PageSettings`. Flutter handles the visual overlay.
  */
 @Composable
 fun InlayFlutterDialogScreen(

@@ -6,7 +6,8 @@ import androidx.fragment.app.FragmentActivity
 /**
  * Convenience base class for Activities that host [InlayFlutterFragment]
  * directly (via [InlayNavigator.createFragment]) or indirectly (e.g.
- * through [InlayFlutterScreen] in Compose, or [InlayFlutterDialogFragment]).
+ * through `InlayFlutterScreen` from the optional `inlay_compose` plugin,
+ * or [InlayFlutterDialogFragment]).
  *
  * Flutter's `FlutterFragment` requires the host Activity to forward seven
  * callbacks to it. This class does that forwarding using
