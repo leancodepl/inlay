@@ -68,31 +68,39 @@ Future<void> _runAdd2AppWithGoRouter() async {
 }
 
 Future<void> _runAdd2AppWithAutoRoute() async {
+  runApp(await prepareSignalAdd2App());
+}
+
+Future<Widget> prepareSignalAdd2App({
+  String? initialLocation,
+  FlutterRouteBase? routeData,
+  bool fetchInitialRouteData = true,
+}) async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await KeyValueStorage.instance.init();
 
-  final path = Add2AppNavigator.initialPath;
-  final route = await Add2AppNavigator.fetchInitialRoute(
-    decodeFlutterRouteData,
-  );
+  final path = initialLocation ?? Add2AppNavigator.initialPath;
+  final route =
+      routeData ??
+      (fetchInitialRouteData
+          ? await Add2AppNavigator.fetchInitialRoute(decodeFlutterRouteData)
+          : null);
 
-  final initialLocation = normalizeSignalAutoRouteLocation(path);
+  final normalizedLocation = normalizeSignalAutoRouteLocation(path);
   final router = createSignalAutoRouter(routeData: route);
 
-  runApp(
-    MaterialApp.router(
-      routeInformationParser: router.defaultRouteParser(
-        includePrefixMatches: true,
-      ),
-      routerDelegate: router.delegate(
-        deepLinkBuilder: (_) => DeepLink.path(initialLocation),
-        rebuildStackOnDeepLink: true,
-      ),
-      backButtonDispatcher: Add2AppBackButtonDispatcher(),
-      builder: (_, child) => Add2AppNativePopGestureObserver(
-        child: child ?? const SizedBox.shrink(),
-      ),
+  return MaterialApp.router(
+    routeInformationParser: router.defaultRouteParser(
+      includePrefixMatches: true,
+    ),
+    routerDelegate: router.delegate(
+      deepLinkBuilder: (_) => DeepLink.path(normalizedLocation),
+      rebuildStackOnDeepLink: true,
+    ),
+    backButtonDispatcher: Add2AppBackButtonDispatcher(),
+    builder: (_, child) => Add2AppNativePopGestureObserver(
+      child: child ?? const SizedBox.shrink(),
     ),
   );
 }

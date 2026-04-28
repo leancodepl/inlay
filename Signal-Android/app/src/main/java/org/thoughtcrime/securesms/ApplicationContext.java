@@ -19,6 +19,8 @@ package org.thoughtcrime.securesms;
 import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Handler;
+import android.os.Looper;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -121,6 +123,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import io.flutter.embedding.engine.FlutterEngine;
+import io.flutter.embedding.engine.FlutterEngineCache;
+import io.flutter.embedding.engine.dart.DartExecutor;
+import io.flutter.plugins.GeneratedPluginRegistrant;
 import io.reactivex.rxjava3.exceptions.OnErrorNotImplementedException;
 import io.reactivex.rxjava3.exceptions.UndeliverableException;
 import io.reactivex.rxjava3.plugins.RxJavaPlugins;
@@ -173,6 +179,8 @@ public class ApplicationContext extends Application implements AppForegroundObse
 //      }
 //    }, engine -> {
 //    });
+
+    setupPatrolFlutterEngineIfNeeded();
 
     // ADD2APP: Set the typed native route handler so Flutter can navigate to
     // native Android Activities via Add2AppNavigator.pushNativeRoute(...).
@@ -262,6 +270,45 @@ public class ApplicationContext extends Application implements AppForegroundObse
     Log.d(TAG, "onCreate() took " + (System.currentTimeMillis() - startTime) + " ms");
     SignalLocalMetrics.ColdStart.onApplicationCreateFinished();
     Tracer.getInstance().end("Application#onCreate()");
+  }
+
+  private void setupPatrolFlutterEngineIfNeeded() {
+    if (!BuildConfig.PATROL_ENABLED) {
+      return;
+    }
+
+    co.leancode.add2app.Add2AppNavigator.INSTANCE.init(this, false);
+    co.leancode.add2app.Add2AppNavigator.INSTANCE.setPrewarmEnabled(false);
+
+    FlutterEngine engine = FlutterEngineCache.getInstance()
+                                             .get(co.leancode.add2app.Add2AppNavigator.PATROL_ENGINE_CACHE_ID);
+    if (engine == null) {
+      engine = new FlutterEngine(this);
+      GeneratedPluginRegistrant.registerWith(engine);
+      FlutterEngineCache.getInstance()
+                        .put(co.leancode.add2app.Add2AppNavigator.PATROL_ENGINE_CACHE_ID, engine);
+    }
+
+    co.leancode.add2app.Add2AppNavigator.INSTANCE.setPatrolRenderingEngine(engine);
+  }
+
+  public static void startPatrolDartIfNeeded() {
+    if (!BuildConfig.PATROL_ENABLED) {
+      return;
+    }
+
+    if (Looper.myLooper() != Looper.getMainLooper()) {
+      new Handler(Looper.getMainLooper()).post(ApplicationContext::startPatrolDartIfNeeded);
+      return;
+    }
+
+    FlutterEngine engine = FlutterEngineCache.getInstance()
+                                             .get(co.leancode.add2app.Add2AppNavigator.PATROL_ENGINE_CACHE_ID);
+    if (engine == null || engine.getDartExecutor().isExecutingDart()) {
+      return;
+    }
+
+    engine.getDartExecutor().executeDartEntrypoint(DartExecutor.DartEntrypoint.createDefault());
   }
 
   @Override

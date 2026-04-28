@@ -60,6 +60,10 @@ val signalMinSdkVersion: Int by rootProject.extra
 val signalNdkVersion: String by rootProject.extra
 val signalJavaVersion: JavaVersion by rootProject.extra
 val signalKotlinJvmTarget: String by rootProject.extra
+val isPatrolBuild = providers.gradleProperty("target")
+  .map { it.contains("patrol_test") || it.endsWith("test_bundle.dart") }
+  .orElse(false)
+  .get()
 
 wire {
   kotlin {
@@ -89,7 +93,7 @@ android {
   ndkVersion = signalNdkVersion
 
   flavorDimensions += listOf("distribution", "environment")
-  testBuildType = "instrumentation"
+  testBuildType = if (isPatrolBuild) "debug" else "instrumentation"
 
   android.bundle.language.enableSplit = false
 
@@ -109,7 +113,9 @@ android {
   }
 
   testOptions {
-    execution = "ANDROIDX_TEST_ORCHESTRATOR"
+    if (!isPatrolBuild) {
+      execution = "ANDROIDX_TEST_ORCHESTRATOR"
+    }
 
     unitTests {
       isIncludeAndroidResources = true
@@ -133,7 +139,11 @@ android {
     }
 
     getByName("androidTest") {
-      java.srcDir("$projectDir/src/testShared")
+      if (isPatrolBuild) {
+        java.setSrcDirs(listOf("$projectDir/src/androidTestPatrol/java"))
+      } else {
+        java.srcDir("$projectDir/src/testShared")
+      }
     }
   }
 
@@ -254,8 +264,19 @@ android {
       }
     }
 
-    testInstrumentationRunner = "org.thoughtcrime.securesms.testing.SignalTestRunner"
-    testInstrumentationRunnerArguments["clearPackageData"] = "true"
+    buildConfigField("boolean", "PATROL_ENABLED", isPatrolBuild.toString())
+
+    testInstrumentationRunner = if (isPatrolBuild) {
+      "org.thoughtcrime.securesms.testing.SignalPatrolTestRunner"
+    } else {
+      "org.thoughtcrime.securesms.testing.SignalTestRunner"
+    }
+
+    if (isPatrolBuild) {
+      testInstrumentationRunnerArguments["class"] = "org.thoughtcrime.securesms.testing.MainActivityPatrolTest"
+    } else {
+      testInstrumentationRunnerArguments["clearPackageData"] = "true"
+    }
   }
 
   buildTypes {
@@ -645,18 +666,22 @@ dependencies {
 
   "perfImplementation"(libs.androidx.compose.ui.test.manifest)
 
-  androidTestImplementation(platform(libs.androidx.compose.bom))
-  androidTestImplementation(libs.androidx.compose.ui.test.junit4)
-  androidTestImplementation(testLibs.androidx.test.ext.junit)
-  androidTestImplementation(testLibs.espresso.core)
-  androidTestImplementation(testLibs.androidx.test.core)
-  androidTestImplementation(testLibs.androidx.test.core.ktx)
-  androidTestImplementation(testLibs.androidx.test.ext.junit.ktx)
-  androidTestImplementation(testLibs.assertk)
-  androidTestImplementation(testLibs.mockk.android)
-  androidTestImplementation(testLibs.diff.utils)
+  if (isPatrolBuild) {
+    androidTestImplementation(project(":patrol"))
+  } else {
+    androidTestImplementation(platform(libs.androidx.compose.bom))
+    androidTestImplementation(libs.androidx.compose.ui.test.junit4)
+    androidTestImplementation(testLibs.androidx.test.ext.junit)
+    androidTestImplementation(testLibs.espresso.core)
+    androidTestImplementation(testLibs.androidx.test.core)
+    androidTestImplementation(testLibs.androidx.test.core.ktx)
+    androidTestImplementation(testLibs.androidx.test.ext.junit.ktx)
+    androidTestImplementation(testLibs.assertk)
+    androidTestImplementation(testLibs.mockk.android)
+    androidTestImplementation(testLibs.diff.utils)
 
-  androidTestUtil(testLibs.androidx.test.orchestrator)
+    androidTestUtil(testLibs.androidx.test.orchestrator)
+  }
 }
 
 fun assertIsGitRepo() {

@@ -71,6 +71,7 @@ class _SetWallpaperScreenState extends State<SetWallpaperScreen>
       },
       child: Scaffold(
         appBar: AppBar(
+          key: const Key('set_wallpaper_screen_app_bar'),
           title: const Text('Set Wallpaper'),
           leading: const IconButton(
             icon: Icon(Icons.arrow_back),

@@ -27,7 +27,19 @@ dev_dependencies:
   leancode_add2app_gen:
     path: ../leancode_add2app_gen
   leancode_lint: ^21.0.0
+  patrol:
+    path: /Users/szymonkwiatek/Documents/patrol/packages/patrol
+  patrol_cli:
+    path: /Users/szymonkwiatek/Documents/patrol/packages/patrol_cli
   pigeon: ^26.1.0
+
+patrol:
+  app_name: Signal
+  add_to_app: true
+  android:
+    package_name: org.thoughtcrime.securesms
+    flavor: playProd
+    native_project_path: ../Signal-Android
 
 flutter:
   uses-material-design: true

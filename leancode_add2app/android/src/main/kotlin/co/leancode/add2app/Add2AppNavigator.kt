@@ -10,6 +10,7 @@ import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.android.FlutterFragment
 import io.flutter.embedding.android.TransparencyMode
 import io.flutter.embedding.engine.FlutterEngine
+import io.flutter.embedding.engine.FlutterEngineCache
 import io.flutter.embedding.engine.FlutterEngineGroup
 import io.flutter.embedding.engine.FlutterEngineGroupCache
 import io.flutter.embedding.engine.dart.DartExecutor
@@ -74,6 +75,7 @@ object Add2AppNavigator {
 
     private const val ENGINE_GROUP_ID = "add2app_engine_group"
     private const val PREWARM_ROUTE_ID = "__add2app_prewarm__"
+    const val PATROL_ENGINE_CACHE_ID = "add2app_patrol_engine"
 
     /** The single Dart entrypoint used by all add2app pages. */
     private const val DART_ENTRYPOINT = "add2appMain"
@@ -86,6 +88,8 @@ object Add2AppNavigator {
     private var isPrewarmEnabled: Boolean = true
     /** Hidden warm-up engine kept alive for app lifetime. */
     private var prewarmedEngine: FlutterEngine? = null
+    /** Existing engine used by Patrol so tests and rendered UI share one isolate. */
+    private var patrolRenderingEngine: FlutterEngine? = null
     /** Route data for fragments, keyed by fragment ID (consumed once on configureEngine). */
     private val pendingRouteData = mutableMapOf<String, PageSettings>()
 
@@ -142,6 +146,25 @@ object Add2AppNavigator {
         prewarmedEngine = null
     }
 
+    /**
+     * Use a pre-created engine for every add-to-app surface.
+     *
+     * Patrol starts the Dart test bundle on this engine; the native host then
+     * renders Flutter Activities/Fragments from the same engine so widget
+     * finders can see the UI.
+     */
+    @Synchronized
+    fun setPatrolRenderingEngine(engine: FlutterEngine?) {
+        patrolRenderingEngine = engine
+        if (engine == null) {
+            FlutterEngineCache.getInstance().remove(PATROL_ENGINE_CACHE_ID)
+            return
+        }
+
+        setPrewarmEnabled(false)
+        FlutterEngineCache.getInstance().put(PATROL_ENGINE_CACHE_ID, engine)
+    }
+
     private fun ensureEngineGroup() {
         if (!FlutterEngineGroupCache.getInstance().contains(ENGINE_GROUP_ID)) {
             FlutterEngineGroupCache.getInstance()
@@ -158,6 +181,7 @@ object Add2AppNavigator {
      */
     @Synchronized
     private fun prewarmEngineIfNeeded() {
+        if (patrolRenderingEngine != null) return
         if (prewarmedEngine != null) return
 
         val engineGroup = FlutterEngineGroupCache.getInstance().get(ENGINE_GROUP_ID) ?: return
@@ -243,6 +267,22 @@ object Add2AppNavigator {
         val initialRoute = encodePageSettings(page)
         val fragmentId = java.util.UUID.randomUUID().toString()
         pendingRouteData[fragmentId] = page
+        val patrolEngine = patrolRenderingEngine
+        if (patrolEngine != null) {
+            FlutterEngineCache.getInstance().put(PATROL_ENGINE_CACHE_ID, patrolEngine)
+            val fragment = FlutterFragment.CachedEngineFragmentBuilder(
+                Add2AppFlutterFragment::class.java,
+                PATROL_ENGINE_CACHE_ID
+            )
+                .transparencyMode(TransparencyMode.transparent)
+                .destroyEngineWithFragment(false)
+                .build<Add2AppFlutterFragment>()
+            fragment.arguments = (fragment.arguments ?: Bundle()).apply {
+                putString(EXTRA_FRAGMENT_ROUTE_ID, fragmentId)
+                putBoolean(Add2AppFlutterFragment.ARG_USE_BACK_DISPATCHER, true)
+            }
+            return fragment
+        }
         val fragment = FlutterFragment.NewEngineInGroupFragmentBuilder(
             Add2AppFlutterFragment::class.java,
             ENGINE_GROUP_ID
@@ -325,6 +365,20 @@ object Add2AppNavigator {
         val initialRoute = encodePageSettings(page)
         val fragmentId = java.util.UUID.randomUUID().toString()
         pendingRouteData[fragmentId] = page
+        val patrolEngine = patrolRenderingEngine
+        if (patrolEngine != null) {
+            FlutterEngineCache.getInstance().put(PATROL_ENGINE_CACHE_ID, patrolEngine)
+            val fragment = FlutterFragment.CachedEngineFragmentBuilder(
+                Add2AppFlutterFragment::class.java,
+                PATROL_ENGINE_CACHE_ID
+            )
+                .destroyEngineWithFragment(false)
+                .build<Add2AppFlutterFragment>()
+            fragment.arguments = (fragment.arguments ?: Bundle()).apply {
+                putString(EXTRA_FRAGMENT_ROUTE_ID, fragmentId)
+            }
+            return fragment
+        }
         val fragment = FlutterFragment.NewEngineInGroupFragmentBuilder(
             Add2AppFlutterFragment::class.java,
             ENGINE_GROUP_ID
@@ -346,13 +400,24 @@ object Add2AppNavigator {
     internal fun createIntent(context: Context, page: PageSettings): Intent {
         init(context, prewarm = isPrewarmEnabled)
         val initialRoute = encodePageSettings(page)
-        val intent = FlutterActivity.NewEngineInGroupIntentBuilder(
-            Add2AppFlutterActivity::class.java,
-            ENGINE_GROUP_ID
-        )
-            .dartEntrypoint(DART_ENTRYPOINT)
-            .initialRoute(initialRoute)
-            .build(context)
+        val patrolEngine = patrolRenderingEngine
+        val intent = if (patrolEngine != null) {
+            FlutterEngineCache.getInstance().put(PATROL_ENGINE_CACHE_ID, patrolEngine)
+            FlutterActivity.CachedEngineIntentBuilder(
+                Add2AppFlutterActivity::class.java,
+                PATROL_ENGINE_CACHE_ID
+            )
+                .destroyEngineWithActivity(false)
+                .build(context)
+        } else {
+            FlutterActivity.NewEngineInGroupIntentBuilder(
+                Add2AppFlutterActivity::class.java,
+                ENGINE_GROUP_ID
+            )
+                .dartEntrypoint(DART_ENTRYPOINT)
+                .initialRoute(initialRoute)
+                .build(context)
+        }
         putRouteDataExtra(intent, page)
         return intent
     }
@@ -448,6 +513,9 @@ object Add2AppNavigator {
      * [Add2AppFlutterFragment.cleanUpFlutterEngine].
      */
     internal fun cleanUpEngine(engine: FlutterEngine) {
+        if (engine == patrolRenderingEngine) {
+            return
+        }
         Add2AppNavigatorHostApi.setUp(engine.dartExecutor.binaryMessenger, null)
         KeyValueStorageImpl.detachFromEngine(engine)
     }
