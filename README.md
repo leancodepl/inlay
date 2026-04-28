@@ -78,6 +78,8 @@ From **Kotlin** (Android):
 InlayNavigator.push(context, SoundsNotificationsPage(contactId = "abc-123"))
 ```
 
+For Jetpack Compose support add the optional `inlay_compose` plugin alongside `inlay` in your module's `pubspec.yaml`. Projects that don't use Compose depend only on `inlay` — no Compose transitive dependencies. See the [Navigation](docs_internal/navigation.md) guide for details.
+
 ### 3. Share state
 
 Define a store (Dart):

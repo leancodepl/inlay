@@ -1,6 +1,5 @@
-package co.leancode.inlay
+package co.leancode.inlay.compose
 
-import android.os.Bundle
 import android.view.View
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -10,6 +9,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentContainerView
+import co.leancode.inlay.FlutterRoute
+import co.leancode.inlay.InlayFlutterFragment
+import co.leancode.inlay.InlayNavigator
 import co.leancode.inlay.navigator.PageSettings
 
 /**
@@ -99,11 +101,11 @@ fun InlayFlutterScreen(
     //    Both sides live in a single DisposableEffect so they are always
     //    paired correctly.
     DisposableEffect(containerId, fragmentTag) {
-        val fragment = InlayNavigator.createFragment(context, route).apply {
-            arguments = (arguments ?: Bundle()).apply {
-                putBoolean(InlayFlutterFragment.ARG_USE_BACK_DISPATCHER, true)
-            }
-        }
+        val fragment = InlayNavigator.createFragment(
+            context = context,
+            page = route,
+            useBackDispatcher = true,
+        )
 
         fragmentManager.beginTransaction()
             .replace(containerId, fragment, fragmentTag)

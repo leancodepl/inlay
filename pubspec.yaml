@@ -6,6 +6,7 @@ environment:
 
 workspace:
   - inlay
+  - inlay_compose
   - inlay_gen
   - example/example_module
   - example/example_module/example_module_native
