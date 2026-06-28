@@ -1,5 +1,0 @@
-targets:
-  $default:
-    builders:
-      inlay_gen|inlay:
-        enabled: true
