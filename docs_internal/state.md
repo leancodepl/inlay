@@ -8,9 +8,9 @@ On the Flutter side, you can use the generated store directly or pair it with th
 
 A few Flutter/Dart concepts referenced in this guide:
 
-- **Cubit** — A lightweight state holder from the [bloc](https://bloclibrary.dev/) library. Think of it as a ViewModel that emits immutable state objects. The framework's `InlayCubit` is an optional convenience built on top of it. **You do not need to use Cubits** — the store and storage layers work independently.
-- **Dart isolate** — Each Flutter engine runs in its own isolate (similar to a thread with its own memory). This is why cross-engine synchronization goes through the platform layer rather than shared memory.
-- **Stream** — Dart's equivalent of reactive observables (like `Flow` in Kotlin or `AsyncSequence`/Combine publishers in Swift). Stores expose a `stream` that emits whenever data changes.
+- **Cubit** - A lightweight state holder from the [bloc](https://bloclibrary.dev/) library. Think of it as a ViewModel that emits immutable state objects. The framework's `InlayCubit` is an optional convenience built on top of it. **You do not need to use Cubits** - the store and storage layers work independently.
+- **Dart isolate** - Each Flutter engine runs in its own isolate (similar to a thread with its own memory). This is why cross-engine synchronization goes through the platform layer rather than shared memory.
+- **Stream** - Dart's equivalent of reactive observables (like `Flow` in Kotlin or `AsyncSequence`/Combine publishers in Swift). Stores expose a `stream` that emits whenever data changes.
 
 ## Architecture Overview
 
@@ -64,7 +64,7 @@ class SoundsNotificationsStore {
 | Annotation | Purpose |
 |---|---|
 | `@InlayStore(key: 'prefix')` | Marks a class as a store definition. The `key` sets the prefix used in storage keys. |
-| `@InlayStoreKey()` | Marks a field as a **key segment** — it's used in the storage path to scope data, but is not stored as a value itself. |
+| `@InlayStoreKey()` | Marks a field as a **key segment** - it's used in the storage path to scope data, but is not stored as a value itself. |
 
 ### Supported Field Types
 
@@ -94,14 +94,14 @@ This means different contacts (or any scoped entity) each get their own set of k
 
 For the store above, the generator produces:
 
-- **`SoundsNotificationsStore`** (Dart) — A wrapper with typed async getters/setters (e.g. `getMute()`, `setMute(bool)`), a reactive `stream`, and snapshot support.
-- **`SoundsNotificationsStoreSnapshot`** (Dart) — An immutable data class holding all field values, with a `copyWith` method.
+- **`SoundsNotificationsStore`** (Dart) - A wrapper with typed async getters/setters (e.g. `getMute()`, `setMute(bool)`), a reactive `stream`, and snapshot support.
+- **`SoundsNotificationsStoreSnapshot`** (Dart) - An immutable data class holding all field values, with a `copyWith` method.
 
 ## Using Stores from Flutter (Dart)
 
 ### Direct Store Usage
 
-You can use the generated store directly — no Cubit required:
+You can use the generated store directly - no Cubit required:
 
 ```dart
 final store = SoundsNotificationsStore(
@@ -209,7 +209,7 @@ class SoundsNotificationsScreen extends StatelessWidget {
 
 Native code accesses the same storage through a `NativeStorageScope`. You create a scope, read/write values, and optionally observe changes.
 
-The code generator produces typed store wrappers for both Swift and Kotlin. These wrappers provide typed properties and a `containsChanges` helper for observer filtering — no hardcoded key strings needed.
+The code generator produces typed store wrappers for both Swift and Kotlin. These wrappers provide typed properties and a `containsChanges` helper for observer filtering - no hardcoded key strings needed.
 
 ### iOS (Swift)
 
@@ -292,7 +292,7 @@ await KeyValueStorage.instance.putAll([
 ]);
 final entries = await KeyValueStorage.instance.getByPrefix('sounds_');
 
-// Reactive stream — emits when OTHER writers change values
+// Reactive stream - emits when OTHER writers change values
 KeyValueStorage.instance.stream.listen((entries) {
   // handle external changes
 });
@@ -302,10 +302,10 @@ KeyValueStorage.instance.stream.listen((entries) {
 
 Here's what happens when a value is changed:
 
-1. **Write** — A consumer (Flutter store, Cubit, or native scope) writes a value. The write goes through the platform via a Pigeon channel.
-2. **Platform broadcast** — The platform-side in-memory store updates and notifies all registered consumers *except* the writer.
-3. **Flutter engines receive** — Each other Flutter engine's `KeyValueStorage.stream` emits the change. If using a generated store, the store's `stream` filters for relevant keys and emits a new snapshot. If using `InlayCubit`, the Cubit automatically updates its state.
-4. **Native scopes receive** — Registered `NativeStorageScope` observers receive the change via their callback.
+1. **Write** - A consumer (Flutter store, Cubit, or native scope) writes a value. The write goes through the platform via a Pigeon channel.
+2. **Platform broadcast** - The platform-side in-memory store updates and notifies all registered consumers *except* the writer.
+3. **Flutter engines receive** - Each other Flutter engine's `KeyValueStorage.stream` emits the change. If using a generated store, the store's `stream` filters for relevant keys and emits a new snapshot. If using `InlayCubit`, the Cubit automatically updates its state.
+4. **Native scopes receive** - Registered `NativeStorageScope` observers receive the change via their callback.
 
 ### Thread Safety
 

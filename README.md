@@ -6,37 +6,37 @@ An opinionated Flutter add-to-app framework providing **type-safe navigation** a
 
 Integrating Flutter into an existing native app is painful:
 
-- **Navigation** — There are no official guidelines for seamless navigation between native and Flutter screens. The typical approach is raw `MethodChannel` calls with arbitrary strings, which is error-prone and not type-safe.
-- **State** — There is no standard way to share data between native code and Flutter, especially when multiple Flutter screens (engines) are involved.
+- **Navigation** - There are no official guidelines for seamless navigation between native and Flutter screens. The typical approach is raw `MethodChannel` calls with arbitrary strings, which is error-prone and not type-safe.
+- **State** - There is no standard way to share data between native code and Flutter, especially when multiple Flutter screens (engines) are involved.
 
 This framework solves both problems with a code-generation-driven, type-safe approach. Engine management (based on `FlutterEngineGroup`) is handled for you behind the scenes.
 
 ## Features
 
-- **Navigation** — Type-safe routing between Native and Flutter screens (in both directions), with code-generated route classes for Dart, Swift, and Kotlin.
-- **Shared State** — A key-value storage layer that stays in sync across all Flutter engines and native code. Changes made anywhere are automatically broadcast to all other consumers.
-- **Engine Management** — The framework creates and destroys Flutter engines automatically. You never interact with `FlutterEngineGroup` directly (unless you want to).
+- **Navigation** - Type-safe routing between Native and Flutter screens (in both directions), with code-generated route classes for Dart, Swift, and Kotlin.
+- **Shared State** - A key-value storage layer that stays in sync across all Flutter engines and native code. Changes made anywhere are automatically broadcast to all other consumers.
+- **Engine Management** - The framework creates and destroys Flutter engines automatically. You never interact with `FlutterEngineGroup` directly (unless you want to).
 
 ## Quick Start
 
 ### 1. Define routes (Dart)
 
 ```dart
-// A Flutter screen — navigable from native or from other Flutter screens
+// A Flutter screen - navigable from native or from other Flutter screens
 @InlayFlutterRoute('/sounds-notifications/:contactId')
 class SoundsNotificationsPage {
   const SoundsNotificationsPage({required this.contactId});
   final String contactId;
 }
 
-// A Flutter dialog — rendered by Flutter over a native screen
+// A Flutter dialog - rendered by Flutter over a native screen
 @InlayFlutterDialog('/confirm-delete/:itemId')
 class ConfirmDeleteDialog {
   const ConfirmDeleteDialog({required this.itemId});
   final String itemId;
 }
 
-// A native screen — navigable from Flutter
+// A native screen - navigable from Flutter
 @InlayNativeRoute()
 class NativeEditProfilePage {
   const NativeEditProfilePage({required this.contactId});
@@ -78,7 +78,7 @@ From **Kotlin** (Android):
 InlayNavigator.push(context, SoundsNotificationsPage(contactId = "abc-123"))
 ```
 
-For Jetpack Compose support add the optional `inlay_compose` plugin alongside `inlay` in your module's `pubspec.yaml`. Projects that don't use Compose depend only on `inlay` — no Compose transitive dependencies. See the [Navigation](docs_internal/navigation.md) guide for details.
+For Jetpack Compose support add the optional `inlay_compose` plugin alongside `inlay` in your module's `pubspec.yaml`. Projects that don't use Compose depend only on `inlay` - no Compose transitive dependencies. See the [Navigation](docs_internal/navigation.md) guide for details.
 
 ### 3. Share state
 
@@ -99,7 +99,7 @@ class SoundsNotificationsStore {
 }
 ```
 
-Read and write from native — **Swift**:
+Read and write from native - **Swift**:
 
 ```swift
 let scope = KeyValueStorageImpl.shared.createScope()
@@ -114,7 +114,7 @@ scope.startObserving { entries in
 }
 ```
 
-Read and write from native — **Kotlin**:
+Read and write from native - **Kotlin**:
 
 ```kotlin
 val scope = KeyValueStorageImpl.createScope()
@@ -133,5 +133,5 @@ On the Flutter side, the generated store can be used directly or combined with t
 
 ## Documentation
 
-- [Navigation](docs_internal/navigation.md) — Route definitions, dialogs & bottom sheets, cross-boundary navigation, go_router & auto_route integration
-- [State Management](docs_internal/state.md) — Stores, native access, optional Cubit integration, cross-engine sync
+- [Navigation](docs_internal/navigation.md) - Route definitions, dialogs & bottom sheets, cross-boundary navigation, go_router & auto_route integration
+- [State Management](docs_internal/state.md) - Stores, native access, optional Cubit integration, cross-engine sync
