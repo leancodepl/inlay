@@ -26,7 +26,14 @@ class KeyValueStorage
 
   KeyValueStorage._();
 
-  static final instance = KeyValueStorage._();
+  static KeyValueStorage _instance = KeyValueStorage._();
+
+  static KeyValueStorage get instance => _instance;
+
+  /// Replaces the singleton with a test double, e.g. `FakeKeyValueStorage`
+  /// from `package:inlay/testing.dart`.
+  @visibleForTesting
+  static set instance(KeyValueStorage storage) => _instance = storage;
 
   final _hostApi = KeyValueStorageHostApi();
   final _controller = StreamController<List<StorageEntry>>.broadcast();

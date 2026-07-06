@@ -233,7 +233,14 @@ class NativeRouteWrapper extends InlayRoute {
 class InlayNavigator {
   InlayNavigator._();
 
-  static final instance = InlayNavigator._();
+  static InlayNavigator _instance = InlayNavigator._();
+
+  static InlayNavigator get instance => _instance;
+
+  /// Replaces the singleton with a test double, e.g. `FakeInlayNavigator`
+  /// from `package:inlay/testing.dart`.
+  @visibleForTesting
+  static set instance(InlayNavigator navigator) => _instance = navigator;
 
   final _hostApi = InlayNavigatorHostApi();
 
