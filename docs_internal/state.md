@@ -318,6 +318,48 @@ Here's what happens when a value is changed:
 | Conflicts | Last-write-wins; `writeSnapshot` diffs against the previous state and only writes changed fields, minimizing conflict surface |
 | App backgrounding | `KeyValueStorage` performs a full sync on `AppLifecycleState.resumed` to catch changes made while the engine was inactive |
 
+## Theme and Locale Propagation (`InlayAppearance`)
+
+Each engine starts blank, so app-level settings (dark mode, in-app language override)
+can't live in widget state. `InlayAppearance` keeps them in the shared storage layer under
+reserved keys (`__inlay/appearance/themeMode`, `__inlay/appearance/locale`), so every
+engine reads the current values at startup and follows changes live.
+
+Native (typed API, both directions sync automatically):
+
+```swift
+InlayAppearance.shared.themeMode = .dark
+InlayAppearance.shared.localeLanguageTag = "pl-PL"   // nil = follow system
+```
+
+```kotlin
+InlayAppearance.themeMode = InlayThemeMode.DARK
+InlayAppearance.localeLanguageTag = "pl-PL"          // null = follow system
+```
+
+Dart entrypoint (after `KeyValueStorage.init`):
+
+```dart
+await InlayAppearance.instance.init();
+runApp(
+  ListenableBuilder(
+    listenable: InlayAppearance.instance,
+    builder: (context, _) => MaterialApp.router(
+      themeMode: InlayAppearance.instance.themeMode,
+      theme: ThemeData.light(),
+      darkTheme: ThemeData.dark(),
+      locale: InlayAppearance.instance.locale,
+      // ...
+    ),
+  ),
+);
+```
+
+Flutter can also set values (`setThemeMode`, `setLocale`) and they propagate everywhere.
+`runInlayDialog` follows `InlayAppearance` automatically unless given an explicit
+`themeMode`. Note: system dark mode propagates to Flutter on its own - this API is for
+in-app overrides driven by the host.
+
 ## When to Use What
 
 | Approach | Type Safety | Cross-engine sync | Best for |

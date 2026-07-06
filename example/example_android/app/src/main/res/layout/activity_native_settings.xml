@@ -138,6 +138,30 @@
             android:text="Clear notification prefs" />
 
         <Button
+            android:id="@+id/btnFlutterThemeSystem"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Flutter theme: system" />
+
+        <Button
+            android:id="@+id/btnFlutterThemeDark"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Flutter theme: dark" />
+
+        <Button
+            android:id="@+id/btnFlutterLangPolish"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Flutter language: polski" />
+
+        <Button
+            android:id="@+id/btnFlutterLangSystem"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Flutter language: system" />
+
+        <Button
             android:id="@+id/btnOpenFlutterProfile"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

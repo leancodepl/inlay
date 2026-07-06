@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../appearance/inlay_appearance.dart';
 import 'inlay_navigator.dart';
 
 /// Runs a transparent [MaterialApp] and calls [onReady] after the first frame.
@@ -29,16 +30,23 @@ void runInlayDialog({
   ThemeData? darkTheme,
   ThemeMode? themeMode,
 }) {
+  // Dialogs render over a native screen, so they should follow the
+  // app-level appearance ([InlayAppearance]) unless explicitly overridden.
+  unawaited(InlayAppearance.instance.init());
   runApp(
-    MaterialApp(
-      theme: (theme ?? ThemeData.light()).copyWith(
-        scaffoldBackgroundColor: Colors.transparent,
+    ListenableBuilder(
+      listenable: InlayAppearance.instance,
+      builder: (context, _) => MaterialApp(
+        theme: (theme ?? ThemeData.light()).copyWith(
+          scaffoldBackgroundColor: Colors.transparent,
+        ),
+        darkTheme: (darkTheme ?? ThemeData.dark()).copyWith(
+          scaffoldBackgroundColor: Colors.transparent,
+        ),
+        themeMode: themeMode ?? InlayAppearance.instance.themeMode,
+        locale: InlayAppearance.instance.locale,
+        home: _DialogLauncher(onReady: onReady),
       ),
-      darkTheme: darkTheme?.copyWith(
-        scaffoldBackgroundColor: Colors.transparent,
-      ),
-      themeMode: themeMode,
-      home: _DialogLauncher(onReady: onReady),
     ),
   );
 }

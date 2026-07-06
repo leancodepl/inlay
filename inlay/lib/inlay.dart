@@ -10,6 +10,7 @@
 library;
 
 export 'src/annotations.dart';
+export 'src/appearance/inlay_appearance.dart';
 export 'src/cubit/inlay_cubit.dart';
 export 'src/cubit/inlay_state.dart';
 export 'src/cubit/inlay_store_observer.dart';

@@ -4,7 +4,9 @@ import android.os.Bundle
 import android.widget.Button
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import co.leancode.inlay.InlayAppearance
 import co.leancode.inlay.InlayNavigator
+import co.leancode.inlay.InlayThemeMode
 import co.leancode.inlay.KeyValueStorageImpl
 import co.leancode.inlay.NativeStorageScope
 import co.leancode.example_module.generated.AppTheme
@@ -74,6 +76,21 @@ class NativeSettingsActivity : AppCompatActivity() {
     findViewById<Button>(R.id.btnClearNotifPrefs).setOnClickListener {
       store.notificationPreferences = null
       render()
+    }
+    // App-level appearance (InlayAppearance): applied by every Flutter
+    // engine's MaterialApp, unlike the store-based theme demo above which
+    // is plain shared state.
+    findViewById<Button>(R.id.btnFlutterThemeSystem).setOnClickListener {
+      InlayAppearance.themeMode = InlayThemeMode.SYSTEM
+    }
+    findViewById<Button>(R.id.btnFlutterThemeDark).setOnClickListener {
+      InlayAppearance.themeMode = InlayThemeMode.DARK
+    }
+    findViewById<Button>(R.id.btnFlutterLangPolish).setOnClickListener {
+      InlayAppearance.localeLanguageTag = "pl"
+    }
+    findViewById<Button>(R.id.btnFlutterLangSystem).setOnClickListener {
+      InlayAppearance.localeLanguageTag = null
     }
     findViewById<Button>(R.id.btnOpenFlutterProfile).setOnClickListener {
       InlayNavigator.push(this, ProfilePage(userId = "42", badges = null))

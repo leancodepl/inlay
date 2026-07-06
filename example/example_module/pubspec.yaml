@@ -16,6 +16,8 @@ dependencies:
   flutter:
     sdk: flutter
   flutter_bloc: ^9.1.0
+  flutter_localizations:
+    sdk: flutter
   go_router: ^15.1.2
   inlay:
     path: ../../inlay

@@ -110,6 +110,10 @@ class _GreetingScreenState extends State<GreetingScreen> {
             ),
             const Spacer(),
             Text(
+              'Locale: ${Localizations.localeOf(context)}',
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+            Text(
               packageInfo == null
                   ? 'Reading host app info...'
                   : 'Host app: ${packageInfo.appName} '

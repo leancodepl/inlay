@@ -51,6 +51,13 @@ final class NativeSettingsViewController: UIViewController {
             makeButton("Theme: system", action: { [weak self] in self?.setTheme(.system) }),
             makeButton("Theme: light", action: { [weak self] in self?.setTheme(.light) }),
             makeButton("Theme: dark", action: { [weak self] in self?.setTheme(.dark) }),
+            // App-level appearance (InlayAppearance): applied by every
+            // Flutter engine's MaterialApp, unlike the store-based theme
+            // demo above which is plain shared state.
+            makeButton("Flutter theme: system", action: { InlayAppearance.shared.themeMode = .system }),
+            makeButton("Flutter theme: dark", action: { InlayAppearance.shared.themeMode = .dark }),
+            makeButton("Flutter language: polski", action: { InlayAppearance.shared.localeLanguageTag = "pl" }),
+            makeButton("Flutter language: system", action: { InlayAppearance.shared.localeLanguageTag = nil }),
             makeButton("Open Flutter Profile", action: openFlutterProfile),
         ])
         stack.axis = .vertical
