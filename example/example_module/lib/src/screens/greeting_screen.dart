@@ -1,22 +1,44 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:inlay/inlay.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 import '../generated/routes.g.dart';
 
-class GreetingScreen extends StatelessWidget {
+class GreetingScreen extends StatefulWidget {
   const GreetingScreen({super.key, required this.name, required this.style});
 
   final String name;
   final GreetingStyle? style;
 
   @override
+  State<GreetingScreen> createState() => _GreetingScreenState();
+}
+
+class _GreetingScreenState extends State<GreetingScreen> {
+  // package_info_plus talks to the host over a platform channel, so this
+  // call only works when the host registered plugins on this engine
+  // (setOnEngineCreated on iOS, automatic on Android).
+  PackageInfo? _packageInfo;
+
+  @override
+  void initState() {
+    super.initState();
+    PackageInfo.fromPlatform().then((info) {
+      if (mounted) {
+        setState(() => _packageInfo = info);
+      }
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final greeting = switch (style) {
-      GreetingStyle.formal => 'Hello, $name.',
-      GreetingStyle.casual => 'Hi $name!',
-      null => 'Welcome, $name!',
+    final greeting = switch (widget.style) {
+      GreetingStyle.formal => 'Hello, ${widget.name}.',
+      GreetingStyle.casual => 'Hi ${widget.name}!',
+      null => 'Welcome, ${widget.name}!',
     };
+    final packageInfo = _packageInfo;
 
     return Scaffold(
       appBar: AppBar(
@@ -75,12 +97,25 @@ class GreetingScreen extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             OutlinedButton(
-              onPressed: () {
-                InlayNavigator.instance.push(
-                  const NativeAboutPage(appVersion: '1.0.0').toNativeRoute(),
-                );
-              },
+              onPressed: packageInfo == null
+                  ? null
+                  : () {
+                      InlayNavigator.instance.push(
+                        NativeAboutPage(
+                          appVersion: packageInfo.version,
+                        ).toNativeRoute(),
+                      );
+                    },
               child: const Text('Open native About screen'),
+            ),
+            const Spacer(),
+            Text(
+              packageInfo == null
+                  ? 'Reading host app info...'
+                  : 'Host app: ${packageInfo.appName} '
+                        '${packageInfo.version}+${packageInfo.buildNumber} '
+                        '(${packageInfo.packageName})',
+              style: Theme.of(context).textTheme.bodySmall,
             ),
           ],
         ),

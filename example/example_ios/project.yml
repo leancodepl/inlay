@@ -18,3 +18,28 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: co.leancode.inlay.example.ios
         INFOPLIST_FILE: Resources/Info.plist
         SWIFT_VERSION: 5.9
+
+  ExampleAppUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - path: UITests
+    dependencies:
+      - target: ExampleApp
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: co.leancode.inlay.example.ios.uitests
+        SWIFT_VERSION: 5.9
+        GENERATE_INFOPLIST_FILE: YES
+
+schemes:
+  ExampleApp:
+    build:
+      targets:
+        ExampleApp: all
+    run:
+      config: Debug
+    test:
+      config: Debug
+      targets:
+        - ExampleAppUITests

@@ -573,6 +573,12 @@ Call once at app startup to create the engine group. Both `start()` and `init()`
 **iOS (AppDelegate):**
 
 ```swift
+// Register plugins on every engine inlay creates. The iOS embedding does
+// not do this automatically - without it, every plugin with native iOS
+// code throws MissingPluginException on inlay's engines.
+InlayNavigator.shared.setOnEngineCreated { engine in
+    GeneratedPluginRegistrant.register(with: engine)
+}
 InlayNavigator.shared.start() // prewarm: true by default
 InlayNavigator.shared.setNativeRouteHandler(MyNativeRouteHandler())
 ```
@@ -583,6 +589,22 @@ InlayNavigator.shared.setNativeRouteHandler(MyNativeRouteHandler())
 InlayNavigator.init(applicationContext) // prewarm = true by default
 InlayNavigator.setNativeRouteHandler(MyNativeRouteHandler())
 ```
+
+### Plugin Registration (`setOnEngineCreated`)
+
+Flutter plugins register **per engine**. On Android the Flutter embedding invokes
+`GeneratedPluginRegistrant` automatically for every engine, so nothing is needed there.
+On iOS registration is manual, and since inlay creates engines internally, the host can't
+reach them directly - `setOnEngineCreated` is the hook for that. The callback runs exactly
+once per engine (including the hidden prewarmed engine), right after the engine starts.
+
+- Set the callback **before** `start()` so the prewarmed engine is covered. If a prewarmed
+  engine already exists when the callback is set, it is invoked on it immediately.
+- On Android, `setOnEngineCreated` also exists, but do **not** register plugins in it (they
+  register automatically - doing it again would double-register). Use it for other per-engine
+  setup, e.g. custom platform channels or platform view factories.
+- `GeneratedPluginRegistrant` on iOS lives in the `FlutterPluginRegistrant` pod (source
+  integration via `podhelper.rb`) - `import FlutterPluginRegistrant` in the AppDelegate.
 
 ### Engine Prewarming
 

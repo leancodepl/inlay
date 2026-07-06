@@ -1,3 +1,4 @@
+import FlutterPluginRegistrant
 import SwiftUI
 import UIKit
 import inlay
@@ -10,6 +11,12 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
     ) -> Bool {
+        // The iOS embedding does not register plugins automatically, so every
+        // engine inlay creates needs an explicit registration. Set before
+        // start() so the prewarmed engine is covered too.
+        InlayNavigator.shared.setOnEngineCreated { engine in
+            GeneratedPluginRegistrant.register(with: engine)
+        }
         InlayNavigator.shared.start()
         InlayNavigator.shared.setNativeRouteHandler(ExampleNativeRouteHandler())
 

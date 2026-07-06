@@ -49,6 +49,10 @@ public protocol NativeRouteHandling: AnyObject {
 /// - Creates a generic `InlayFlutterViewController` for every push.
 /// - Registers the Pigeon HostApi on each engine so Flutter can push/pop too.
 /// - Attaches `KeyValueStorageImpl` to each engine.
+///
+/// Plugin registration is **not** automatic on iOS. If the Flutter module
+/// uses plugins with native iOS code, register them per engine via
+/// ``setOnEngineCreated(_:)``.
 public final class InlayNavigator {
 
     // MARK: - Singleton
@@ -69,12 +73,43 @@ public final class InlayNavigator {
 
     /// The single native route handler set by the app.
     private var nativeRouteHandler: NativeRouteHandling?
+    /// Per-engine setup hook invoked once for every engine inlay creates.
+    private var onEngineCreated: ((FlutterEngine) -> Void)?
     /// Whether `start()` should prewarm a hidden engine.
     private var isPrewarmEnabled = true
     /// Hidden warm-up engine kept alive for app lifetime.
     private var prewarmedEngine: FlutterEngine?
 
     // MARK: - Initialisation
+
+    /// Set a callback invoked exactly once for every `FlutterEngine` inlay
+    /// creates — including the hidden prewarmed engine — right after the
+    /// engine starts running.
+    ///
+    /// The iOS embedding does not register plugins automatically, so every
+    /// plugin with native iOS code stays unregistered on inlay's engines
+    /// (`MissingPluginException` at runtime) until the host registers it
+    /// per engine. This callback is the place to do that:
+    ///
+    /// ```swift
+    /// // In AppDelegate.didFinishLaunching, before start():
+    /// InlayNavigator.shared.setOnEngineCreated { engine in
+    ///     GeneratedPluginRegistrant.register(with: engine)
+    /// }
+    /// InlayNavigator.shared.start()
+    /// ```
+    ///
+    /// Set the callback before `start()` so the prewarmed engine is covered
+    /// from the beginning. If a prewarmed engine already exists when the
+    /// callback is set, the callback is invoked on it immediately. Set it
+    /// once — replacing the callback later invokes the new one on the
+    /// prewarmed engine again.
+    public func setOnEngineCreated(_ callback: ((FlutterEngine) -> Void)?) {
+        onEngineCreated = callback
+        if let engine = prewarmedEngine {
+            callback?(engine)
+        }
+    }
 
     /// Call once at app startup (e.g. `application(_:didFinishLaunchingWithOptions:)`).
     /// Idempotent — safe to call multiple times.
@@ -127,6 +162,7 @@ public final class InlayNavigator {
         options.initialRoute = Self.prewarmRouteId
 
         let engine = engineGroup.makeEngine(with: options)
+        onEngineCreated?(engine)
 
         // The Dart entrypoint initializes Inlay services, so we must register
         // HostApi + storage even for a hidden warm-up engine.
@@ -247,6 +283,7 @@ public final class InlayNavigator {
         options.entrypoint = Self.dartEntrypoint
         options.initialRoute = initialRoute
         let engine = engineGroup!.makeEngine(with: options)
+        onEngineCreated?(engine)
 
         let vc = InlayFlutterDialogViewController(engine: engine, nibName: nil, bundle: nil)
         vc.page = page
@@ -338,6 +375,7 @@ public final class InlayNavigator {
         options.entrypoint = Self.dartEntrypoint
         options.initialRoute = initialRoute
         let engine = engineGroup!.makeEngine(with: options)
+        onEngineCreated?(engine)
 
         let vc = InlayFlutterViewController(engine: engine, nibName: nil, bundle: nil)
         vc.page = page

@@ -82,6 +82,9 @@ object InlayNavigator {
 
     /** The single native route handler set by the app. */
     private var nativeRouteHandler: NativeRouteHandler? = null
+    /** Per-engine setup hook invoked once for every engine used by inlay pages. */
+    @Volatile
+    private var onEngineCreated: ((FlutterEngine) -> Unit)? = null
     /** Whether [init] should prewarm a hidden engine. */
     private var isPrewarmEnabled: Boolean = true
     /** Hidden warm-up engine kept alive for app lifetime. */
@@ -103,6 +106,26 @@ object InlayNavigator {
         if (isPrewarmEnabled) {
             prewarmEngineIfNeeded()
         }
+    }
+
+    /**
+     * Set a callback invoked exactly once for every [FlutterEngine] used by
+     * inlay pages — including the hidden prewarmed engine — right after the
+     * engine is created and before Flutter content is shown.
+     *
+     * Unlike iOS, plugins register automatically on Android: the Flutter
+     * embedding invokes `GeneratedPluginRegistrant` on every engine, so do
+     * **not** register plugins here (they would register twice). Use this
+     * hook for any additional per-engine native setup, e.g. attaching
+     * custom platform channels or platform view factories.
+     *
+     * If the prewarmed engine already exists when the callback is set, the
+     * callback is invoked on it immediately.
+     */
+    @Synchronized
+    fun setOnEngineCreated(callback: ((FlutterEngine) -> Unit)?) {
+        onEngineCreated = callback
+        prewarmedEngine?.let { callback?.invoke(it) }
     }
 
     /**
@@ -164,6 +187,7 @@ object InlayNavigator {
         val bundlePath = FlutterInjector.instance().flutterLoader().findAppBundlePath()
         val entrypoint = DartExecutor.DartEntrypoint(bundlePath, DART_ENTRYPOINT)
         val engine = engineGroup.createAndRunEngine(appContext, entrypoint, PREWARM_ROUTE_ID)
+        onEngineCreated?.invoke(engine)
 
         InlayNavigatorHostApi.setUp(
             engine.dartExecutor.binaryMessenger,
@@ -422,6 +446,7 @@ object InlayNavigator {
         onPop: (() -> Unit)? = null,
         routeData: PageSettings? = null,
     ) {
+        onEngineCreated?.invoke(engine)
         val hostApi = object : InlayNavigatorHostApi {
             override fun push(page: PageSettings) {
                 activity.startActivity(createIntent(activity, page))
