@@ -5,6 +5,14 @@ import Foundation
 import UIKit
 import inlay
 
+private let _inlayRouteAllowedCharacters = CharacterSet(
+    charactersIn: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_.~!*'()"
+)
+
+private func _inlayEncode(_ value: String) -> String {
+    value.addingPercentEncoding(withAllowedCharacters: _inlayRouteAllowedCharacters) ?? value
+}
+
 enum GreetingStyle: Int {
     case casual = 0
     case formal = 1
@@ -64,9 +72,9 @@ struct GreetingPage: FlutterRoute {
     }
 
     func toPath() -> String {
-        let basePath = "/greeting/\(name.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? name)"
+        let basePath = "/greeting/\(_inlayEncode(name))"
         var query: [String] = []
-        if let styleVal = style { query.append("style=\(String(styleVal.rawValue).addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? String(styleVal.rawValue))") }
+        if let styleVal = style { query.append("style=\(_inlayEncode(String(styleVal.rawValue)))") }
         if query.isEmpty { return basePath }
         return "\(basePath)?\(query.joined(separator: "&"))"
     }
@@ -103,7 +111,7 @@ struct CounterPage: FlutterRoute {
     func toPath() -> String {
         let basePath = "/counter"
         var query: [String] = []
-        if let seedVal = seed { query.append("seed=\(String(describing: seedVal).addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? String(describing: seedVal))") }
+        if let seedVal = seed { query.append("seed=\(_inlayEncode(String(describing: seedVal)))") }
         if query.isEmpty { return basePath }
         return "\(basePath)?\(query.joined(separator: "&"))"
     }
@@ -141,7 +149,7 @@ struct ProfilePage: FlutterRoute {
     }
 
     func toPath() -> String {
-        "/profile/\(userId.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? userId)"
+        "/profile/\(_inlayEncode(userId))"
     }
 
     func toPageSettings() -> PageSettings {
@@ -178,9 +186,9 @@ struct ConfirmActionDialog: FlutterDialogRoute {
     }
 
     func toPath() -> String {
-        let basePath = "/confirm-action/\(action.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? action)"
+        let basePath = "/confirm-action/\(_inlayEncode(action))"
         var query: [String] = []
-        if let messageVal = message { query.append("message=\(messageVal.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? messageVal)") }
+        if let messageVal = message { query.append("message=\(_inlayEncode(messageVal))") }
         if query.isEmpty { return basePath }
         return "\(basePath)?\(query.joined(separator: "&"))"
     }
@@ -215,7 +223,7 @@ struct ThemePickerDialog: FlutterDialogRoute {
     }
 
     func toPath() -> String {
-        "/theme-picker/\(userId.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? userId)"
+        "/theme-picker/\(_inlayEncode(userId))"
     }
 
     func toPageSettings() -> PageSettings {

@@ -119,20 +119,40 @@ String generateKotlinDecode(
     ),
   );
 
-  // Handle nullable.
+  // Handle nullable. Casts check against the *wire* type (what the codec
+  // actually delivers), not the decoded Kotlin type - e.g. an enum arrives
+  // as an ordinal number, a custom class as a List.
   if (type.isNullable) {
+    if (baseName == 'int') {
+      return '($expression as? Number)?.toLong()';
+    }
+    if (baseName == 'double') {
+      return '($expression as? Number)?.toDouble()';
+    }
+    if (baseName == 'num') {
+      return '$expression as? Number';
+    }
+    if (typeGraph[baseName] is EnumType) {
+      return '($expression as? Number)?.let { $baseName.entries[it.toInt()] }';
+    }
     final nonNullType = TypeInfo(
       name: baseName,
       isNullable: false,
       typeArguments: type.typeArguments,
     );
     final nonNullDecode = generateKotlinDecode('it', nonNullType, typeGraph);
-    return '($expression as? ${_rawKotlinCast(type)})?.let { $nonNullDecode }';
+    return '($expression as? ${_rawKotlinCast(type, typeGraph)})?.let { $nonNullDecode }';
   }
 
-  // Primitives.
+  // Primitives. Integers travel as Int32 or Int64 depending on magnitude
+  // (StandardMessageCodec), so numeric decodes go through Number.
   if (_isPrimitive(baseName)) {
-    return '$expression as $kotlinType';
+    return switch (baseName) {
+      'int' => '($expression as Number).toLong()',
+      'double' => '($expression as Number).toDouble()',
+      'num' => '$expression as Number',
+      _ => '$expression as $kotlinType',
+    };
   }
 
   // Uint8List.
@@ -165,7 +185,7 @@ String generateKotlinDecode(
 
   // Enum.
   if (typeGraph[baseName] is EnumType) {
-    return '$baseName.entries[$expression as Int]';
+    return '$baseName.entries[($expression as Number).toInt()]';
   }
 
   // Custom class.
@@ -219,14 +239,25 @@ bool _isPrimitive(String typeName) {
   return const {'bool', 'int', 'double', 'num', 'String'}.contains(typeName);
 }
 
-String _rawKotlinCast(TypeInfo type) {
+/// The type to safe-cast against for nullable decodes: the shape the codec
+/// delivers on the wire, not the final Kotlin type.
+String _rawKotlinCast(TypeInfo type, Map<String, TypeDefinition> typeGraph) {
   final baseName = type.baseName;
+
+  if (typeGraph.containsKey(baseName)) {
+    // Enums travel as ordinal numbers, custom classes as lists.
+    return typeGraph[baseName] is EnumType ? 'Number' : 'List<*>';
+  }
 
   switch (baseName) {
     case 'List':
       return 'List<*>';
     case 'Map':
       return 'Map<*, *>';
+    case 'int':
+    case 'double':
+    case 'num':
+      return 'Number';
     default:
       return dartTypeToKotlin(
         TypeInfo(

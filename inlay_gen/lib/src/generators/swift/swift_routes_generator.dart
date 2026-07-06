@@ -27,6 +27,22 @@ String generateSwiftRoutes({
     ..writeln('import Foundation')
     ..writeln('import UIKit')
     ..writeln('import inlay')
+    ..writeln()
+    // Percent-encoding matching Dart's Uri.encodeComponent and Android's
+    // Uri.encode, so route paths are byte-identical across platforms.
+    // Foundation's .urlQueryAllowed/.urlPathAllowed are unsafe here: they
+    // leave `&`, `=` and `/` unencoded inside values.
+    ..writeln('private let _inlayRouteAllowedCharacters = CharacterSet(')
+    ..writeln(
+      '    charactersIn: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_.~!*\'()"',
+    )
+    ..writeln(')')
+    ..writeln()
+    ..writeln('private func _inlayEncode(_ value: String) -> String {')
+    ..writeln(
+      '    value.addingPercentEncoding(withAllowedCharacters: _inlayRouteAllowedCharacters) ?? value',
+    )
+    ..writeln('}')
     ..writeln();
 
   // Generate enums.
@@ -198,12 +214,12 @@ void _writeSwiftToPath(
     if (isNullable) {
       pathExpr = pathExpr.replaceAll(
         ':$paramName',
-        '\\(($paramName ?? "").addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? "")',
+        '\\(_inlayEncode($paramName ?? ""))',
       );
     } else {
       pathExpr = pathExpr.replaceAll(
         ':$paramName',
-        '\\($paramName.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? $paramName)',
+        '\\(_inlayEncode($paramName))',
       );
     }
   }
@@ -227,11 +243,11 @@ void _writeSwiftToPath(
       );
       if (field.type.isNullable) {
         buffer.writeln(
-          '        if let ${name}Val = $name { query.append("$name=\\($valueExpr.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? $valueExpr)") }',
+          '        if let ${name}Val = $name { query.append("$name=\\(_inlayEncode($valueExpr))") }',
         );
       } else {
         buffer.writeln(
-          '        query.append("$name=\\($valueExpr.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? $valueExpr)")',
+          '        query.append("$name=\\(_inlayEncode($valueExpr))")',
         );
       }
     }

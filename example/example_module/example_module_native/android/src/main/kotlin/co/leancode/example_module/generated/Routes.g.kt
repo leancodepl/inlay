@@ -28,7 +28,7 @@ data class UserBadge(
     companion object {
         fun fromList(list: List<Any?>): UserBadge = UserBadge(
             label = list[0] as String,
-            level = BadgeLevel.entries[list[1] as Int],
+            level = BadgeLevel.entries[(list[1] as Number).toInt()],
         )
     }
 
@@ -48,7 +48,7 @@ data class GreetingPage(
 
         fun fromList(list: List<Any?>): GreetingPage = GreetingPage(
             name = list[0] as String,
-            style = (list[1] as? GreetingStyle)?.let { GreetingStyle.entries[it as Int] },
+            style = (list[1] as? Number)?.let { GreetingStyle.entries[it.toInt()] },
         )
     }
 
@@ -81,7 +81,7 @@ data class CounterPage(
         const val PATH_TEMPLATE = "/counter"
 
         fun fromList(list: List<Any?>): CounterPage = CounterPage(
-            seed = (list[0] as? Long)?.let { it as Long },
+            seed = (list[0] as? Number)?.toLong(),
         )
     }
 

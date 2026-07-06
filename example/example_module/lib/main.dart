@@ -41,9 +41,7 @@ Future<void> _runInlayWithGoRouter() async {
   await KeyValueStorage.instance.init();
 
   final path = InlayNavigator.initialPath;
-  final route = await InlayNavigator.fetchInitialRoute(
-    decodeInlayRouteData,
-  );
+  final route = await InlayNavigator.fetchInitialRoute(decodeInlayRouteData);
   final router = createExampleGoRouter(
     initialLocation: path,
     initialExtra: route,
@@ -74,9 +72,7 @@ Future<void> _runInlayWithAutoRoute() async {
   await KeyValueStorage.instance.init();
 
   final path = InlayNavigator.initialPath;
-  final route = await InlayNavigator.fetchInitialRoute(
-    decodeInlayRouteData,
-  );
+  final route = await InlayNavigator.fetchInitialRoute(decodeInlayRouteData);
   final router = createExampleAutoRouter(routeData: route);
 
   runApp(
@@ -100,9 +96,7 @@ Future<void> _runInlayImperative() async {
   WidgetsFlutterBinding.ensureInitialized();
   await KeyValueStorage.instance.init();
 
-  final route = await InlayNavigator.fetchInitialRoute(
-    decodeInlayRouteData,
-  );
+  final route = await InlayNavigator.fetchInitialRoute(decodeInlayRouteData);
 
   switch (route) {
     case GreetingPage(:final name, :final style):
