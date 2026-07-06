@@ -33,6 +33,12 @@ android.apply {
         minSdk = 24
     }
 
+    testOptions {
+        // Storage unit tests only touch the data layer; Handler/Looper
+        // notification dispatch becomes a no-op instead of throwing.
+        unitTests.isReturnDefaultValues = true
+    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
@@ -47,4 +53,5 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
 
 project.dependencies.apply {
     add("implementation", "androidx.fragment:fragment-ktx:1.8.3")
+    add("testImplementation", "junit:junit:4.13.2")
 }

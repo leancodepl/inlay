@@ -7,10 +7,13 @@ import co.leancode.inlay.storage.KeyValueStorageHostApi
 import co.leancode.inlay.storage.StorageChangeEvent
 import co.leancode.inlay.storage.StorageEntry
 import io.flutter.embedding.engine.FlutterEngine
-import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.locks.ReentrantReadWriteLock
+import kotlin.concurrent.read
+import kotlin.concurrent.write
 
 /**
- * Framework-level key-value storage backed by an in-memory [ConcurrentHashMap].
+ * Framework-level key-value storage backed by an in-memory map guarded by a
+ * read-write lock.
  *
  * Single source of truth that bridges Android code and any number of Flutter
  * engine isolates (EngineGroup).
@@ -47,14 +50,19 @@ import java.util.concurrent.ConcurrentHashMap
  *   notified back about its own change.
  * - **Main-thread dispatch**: all observer callbacks (Flutter and Android) are
  *   posted to the main looper so consumers never need `runOnUiThread`.
- * - **Thread-safe store**: [ConcurrentHashMap] for the data, synchronized
- *   blocks for the observer registries.
+ * - **Thread-safe store**: a [ReentrantReadWriteLock] guards the data, so
+ *   batch operations ([putAllInternal], [clearInternal], [removeByPrefixInternal])
+ *   are atomic with respect to readers - a concurrent [getAllInternal] /
+ *   [getByPrefixInternal] never observes a half-applied multi-field write.
+ *   This mirrors the iOS implementation (concurrent queue with barrier
+ *   writes). Observer registries use synchronized blocks.
  */
 object KeyValueStorageImpl {
 
     // ── Data store ───────────────────────────────────────────────────────
 
-    private val store = ConcurrentHashMap<String, String>()
+    private val store = HashMap<String, String>()
+    private val storeLock = ReentrantReadWriteLock()
 
     // ── Flutter engine registry ──────────────────────────────────────────
 
@@ -111,49 +119,55 @@ object KeyValueStorageImpl {
     // ── Internal: data operations ────────────────────────────────────────
 
     internal fun putInternal(entry: StorageEntry, excludeEngineId: Int? = null, excludeScope: NativeStorageScope? = null) {
-        store[entry.key] = entry.value
+        storeLock.write { store[entry.key] = entry.value }
         notifyChanged(listOf(entry), excludeEngineId, excludeScope)
     }
 
     internal fun putAllInternal(entries: List<StorageEntry>, excludeEngineId: Int? = null, excludeScope: NativeStorageScope? = null) {
-        for (e in entries) store[e.key] = e.value
+        storeLock.write {
+            for (e in entries) store[e.key] = e.value
+        }
         notifyChanged(entries, excludeEngineId, excludeScope)
     }
 
     internal fun getInternal(key: String): StorageEntry? {
-        val value = store[key] ?: return null
+        val value = storeLock.read { store[key] } ?: return null
         return StorageEntry(key, value)
     }
 
     internal fun getByPrefixInternal(prefix: String): List<StorageEntry> {
-        return store.entries
-            .filter { it.key.startsWith(prefix) }
-            .map { StorageEntry(it.key, it.value) }
+        return storeLock.read {
+            store.entries
+                .filter { it.key.startsWith(prefix) }
+                .map { StorageEntry(it.key, it.value) }
+        }
     }
 
     internal fun removeInternal(key: String, excludeEngineId: Int? = null, excludeScope: NativeStorageScope? = null): Boolean {
-        val removed = store.remove(key) != null
+        val removed = storeLock.write { store.remove(key) != null }
         if (removed) notifyChanged(listOf(StorageEntry(key, "")), excludeEngineId, excludeScope)
         return removed
     }
 
     internal fun removeByPrefixInternal(prefix: String, excludeEngineId: Int? = null, excludeScope: NativeStorageScope? = null) {
-        val removedEntries = mutableListOf<StorageEntry>()
-        val iter = store.entries.iterator()
-        while (iter.hasNext()) {
-            val e = iter.next()
-            if (e.key.startsWith(prefix)) { iter.remove(); removedEntries.add(StorageEntry(e.key, "")) }
+        val removedEntries = storeLock.write {
+            val removed = store.keys.filter { it.startsWith(prefix) }
+            for (key in removed) store.remove(key)
+            removed.map { StorageEntry(it, "") }
         }
         if (removedEntries.isNotEmpty()) notifyChanged(removedEntries, excludeEngineId, excludeScope)
     }
 
     internal fun getAllInternal(): List<StorageEntry> {
-        return store.entries.map { StorageEntry(it.key, it.value) }
+        return storeLock.read { store.entries.map { StorageEntry(it.key, it.value) } }
     }
 
     internal fun clearInternal(excludeEngineId: Int? = null, excludeScope: NativeStorageScope? = null) {
-        val allKeys = store.keys().toList()
-        store.clear()
+        val allKeys = storeLock.write {
+            val keys = store.keys.toList()
+            store.clear()
+            keys
+        }
         notifyChanged(allKeys.map { StorageEntry(it, "") }, excludeEngineId, excludeScope)
     }
 
