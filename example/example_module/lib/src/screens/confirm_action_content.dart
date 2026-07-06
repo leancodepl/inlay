@@ -13,11 +13,11 @@ class ConfirmActionContent extends StatelessWidget {
       content: message != null ? Text(message!) : null,
       actions: [
         TextButton(
-          onPressed: () => Navigator.pop(context),
+          onPressed: () => Navigator.pop(context, false),
           child: const Text('Cancel'),
         ),
         TextButton(
-          onPressed: () => Navigator.pop(context),
+          onPressed: () => Navigator.pop(context, true),
           child: const Text('Confirm'),
         ),
       ],

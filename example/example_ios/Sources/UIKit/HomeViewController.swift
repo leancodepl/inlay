@@ -53,11 +53,27 @@ final class HomeViewController: UIViewController {
             )
         })
 
-        stack.addArrangedSubview(makeButton("Open Confirm Dialog") { [weak self] in
+        stack.addArrangedSubview(makeButton("Open Confirm Dialog (await result)") { [weak self] in
             guard let self else { return }
             InlayNavigator.shared.presentDialog(
                 from: self,
-                route: ConfirmActionDialog(action: "delete", message: "Are you sure?")
+                route: ConfirmActionDialog(action: "delete", message: "Are you sure?"),
+                onResult: { [weak self] raw in
+                    let confirmed = ConfirmActionDialog.decodeResult(raw)
+                    self?.showResult("Confirm dialog", value: confirmed.map(String.init) ?? "dismissed")
+                }
+            )
+        })
+
+        stack.addArrangedSubview(makeButton("Open Counter (await result)") { [weak self] in
+            guard let self else { return }
+            InlayNavigator.shared.push(
+                from: self,
+                route: CounterPage(seed: nil),
+                onResult: { [weak self] raw in
+                    let count = CounterPage.decodeResult(raw)
+                    self?.showResult("Counter", value: count.map(String.init) ?? "dismissed")
+                }
             )
         })
 
@@ -78,6 +94,16 @@ final class HomeViewController: UIViewController {
                 )
             })
         }
+    }
+
+    private func showResult(_ label: String, value: String) {
+        let alert = UIAlertController(
+            title: "\(label) returned",
+            message: value,
+            preferredStyle: .alert
+        )
+        alert.addAction(UIAlertAction(title: "OK", style: .default))
+        present(alert, animated: true)
     }
 
     private func makeButton(_ title: String, action: @escaping () -> Void) -> UIButton {

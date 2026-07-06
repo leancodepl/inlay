@@ -28,6 +28,15 @@ class FakeInlayNavigator implements InlayNavigator {
   /// could not pop an in-Flutter route).
   int popCount = 0;
 
+  /// Wire-encoded results passed to [pop], in call order (`null` entries
+  /// included).
+  final poppedResults = <Object?>[];
+
+  /// Scripted results returned by the `*ForResult` methods, keyed by
+  /// `routeId`. Missing entries resolve to `null` (dismissed without a
+  /// result).
+  final resultsByRouteId = <String, Object?>{};
+
   /// Last value passed to [setNativePopGestureEnabled], if any.
   bool? nativePopGestureEnabled;
 
@@ -38,8 +47,9 @@ class FakeInlayNavigator implements InlayNavigator {
   }
 
   @override
-  Future<void> pop() async {
+  Future<void> pop([Object? result]) async {
     popCount++;
+    poppedResults.add(result);
   }
 
   @override
@@ -63,12 +73,30 @@ class FakeInlayNavigator implements InlayNavigator {
   }
 
   @override
+  Future<Object?> pushFlutterRouteForResult(PageSettings page) async {
+    pushedPages.add(page);
+    return resultsByRouteId[page.routeId];
+  }
+
+  @override
   Future<void> pushNativeRoute(PageSettings page) async {
     pushedPages.add(page);
   }
 
   @override
+  Future<Object?> pushNativeRouteForResult(PageSettings page) async {
+    pushedPages.add(page);
+    return resultsByRouteId[page.routeId];
+  }
+
+  @override
   Future<void> presentFlutterDialog(PageSettings page) async {
     pushedPages.add(page);
+  }
+
+  @override
+  Future<Object?> presentFlutterDialogForResult(PageSettings page) async {
+    pushedPages.add(page);
+    return resultsByRouteId[page.routeId];
   }
 }

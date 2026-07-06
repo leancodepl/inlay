@@ -27,7 +27,10 @@ String computeSchemaFingerprint(Schema schema) {
   for (final route in [
     ...schema.allRoutes,
   ]..sort((a, b) => a.routeName.compareTo(b.routeName))) {
-    buffer.write('route ${route.routeName} path=${route.path}(');
+    buffer.write(
+      'route ${route.routeName} path=${route.path} '
+      'result=${route.resultType?.toSource()}(',
+    );
     writeFields(route.fields);
     buffer.write(')\n');
   }

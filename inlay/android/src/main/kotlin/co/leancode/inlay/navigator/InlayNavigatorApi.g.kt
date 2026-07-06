@@ -165,6 +165,7 @@ private open class InlayNavigatorApiPigeonCodec : StandardMessageCodec() {
   }
 }
 
+
 /**
  * Host API — Flutter asks the platform to push a new Activity/ViewController.
  *
@@ -177,8 +178,19 @@ private open class InlayNavigatorApiPigeonCodec : StandardMessageCodec() {
 interface InlayNavigatorHostApi {
   /** Push a new Flutter Activity/ViewController for the given page. */
   fun push(page: PageSettings)
-  /** Pop the current Flutter Activity/ViewController. */
-  fun pop()
+  /**
+   * Push a new Flutter Activity/ViewController and complete with the
+   * result the pushed screen pops with (`null` when dismissed without
+   * one). The result travels in the generated route's wire encoding.
+   */
+  fun pushForResult(page: PageSettings, callback: (Result<Any?>) -> Unit)
+  /**
+   * Pop the current Flutter Activity/ViewController.
+   *
+   * [result] is delivered to the caller that pushed this container with
+   * a result callback; `null` when the screen has nothing to return.
+   */
+  fun pop(result: Any?)
   /**
    * Enable/disable native iOS back gesture for this container.
    *
@@ -195,6 +207,13 @@ interface InlayNavigatorHostApi {
    */
   fun pushNativeRoute(route: PageSettings)
   /**
+   * Open a native screen and complete with the result the native side
+   * passes to the handler completion (`null` when the screen finishes
+   * without one). The result travels in the generated route's wire
+   * encoding.
+   */
+  fun pushNativeRouteForResult(route: PageSettings, callback: (Result<Any?>) -> Unit)
+  /**
    * Return the full route data that the native host stored for this engine.
    *
    * Flutter calls this once at startup to retrieve the typed route object
@@ -210,6 +229,11 @@ interface InlayNavigatorHostApi {
    * (barrier, animation, positioning) over the native screen underneath.
    */
   fun presentDialog(page: PageSettings)
+  /**
+   * Present a Flutter dialog and complete with the result it pops with
+   * (`null` when dismissed without one).
+   */
+  fun presentDialogForResult(page: PageSettings, callback: (Result<Any?>) -> Unit)
 
   companion object {
     /** The codec used by InlayNavigatorHostApi. */
@@ -239,11 +263,33 @@ interface InlayNavigatorHostApi {
         }
       }
       run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.inlay.InlayNavigatorHostApi.pushForResult$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val pageArg = args[0] as PageSettings
+            api.pushForResult(pageArg) { result: Result<Any?> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(InlayNavigatorApiPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(InlayNavigatorApiPigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
         val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.inlay.InlayNavigatorHostApi.pop$separatedMessageChannelSuffix", codec)
         if (api != null) {
-          channel.setMessageHandler { _, reply ->
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val resultArg = args[0]
             val wrapped: List<Any?> = try {
-              api.pop()
+              api.pop(resultArg)
               listOf(null)
             } catch (exception: Throwable) {
               InlayNavigatorApiPigeonUtils.wrapError(exception)
@@ -291,6 +337,26 @@ interface InlayNavigatorHostApi {
         }
       }
       run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.inlay.InlayNavigatorHostApi.pushNativeRouteForResult$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val routeArg = args[0] as PageSettings
+            api.pushNativeRouteForResult(routeArg) { result: Result<Any?> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(InlayNavigatorApiPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(InlayNavigatorApiPigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
         val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.inlay.InlayNavigatorHostApi.getInitialRouteData$separatedMessageChannelSuffix", codec)
         if (api != null) {
           channel.setMessageHandler { _, reply ->
@@ -318,6 +384,26 @@ interface InlayNavigatorHostApi {
               InlayNavigatorApiPigeonUtils.wrapError(exception)
             }
             reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.inlay.InlayNavigatorHostApi.presentDialogForResult$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val pageArg = args[0] as PageSettings
+            api.presentDialogForResult(pageArg) { result: Result<Any?> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(InlayNavigatorApiPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(InlayNavigatorApiPigeonUtils.wrapResult(data))
+              }
+            }
           }
         } else {
           channel.setMessageHandler(null)

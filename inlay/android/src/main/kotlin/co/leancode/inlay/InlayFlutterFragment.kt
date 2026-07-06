@@ -44,17 +44,18 @@ class InlayFlutterFragment : FlutterFragment() {
         val useBackDispatcher =
             arguments?.getBoolean(ARG_USE_BACK_DISPATCHER, false) ?: false
         val fragmentId = arguments?.getString(EXTRA_FRAGMENT_ROUTE_ID)
+        val resultId = arguments?.getString(InlayNavigator.EXTRA_RESULT_ID)
         val routeData = InlayNavigator.consumePendingRouteData(fragmentId)
 
         if (customOnPop != null) {
-            InlayNavigator.configureEngine(flutterEngine, requireActivity(), onPop = customOnPop, routeData = routeData)
+            InlayNavigator.configureEngine(flutterEngine, requireActivity(), onPop = customOnPop, routeData = routeData, resultId = resultId)
         } else if (useBackDispatcher) {
             val componentActivity = requireActivity() as ComponentActivity
             InlayNavigator.configureEngine(flutterEngine, requireActivity(), onPop = {
                 componentActivity.onBackPressedDispatcher.onBackPressed()
-            }, routeData = routeData)
+            }, routeData = routeData, resultId = resultId)
         } else {
-            InlayNavigator.configureEngine(flutterEngine, requireActivity(), routeData = routeData)
+            InlayNavigator.configureEngine(flutterEngine, requireActivity(), routeData = routeData, resultId = resultId)
         }
     }
 

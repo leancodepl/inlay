@@ -86,6 +86,13 @@ class CounterScreen extends StatelessWidget {
                     },
                     child: const Text('Open native Settings screen'),
                   ),
+                  const SizedBox(height: 8),
+                  // Closes this engine's container and returns the count to
+                  // whoever opened it with pushForResult / onResult.
+                  FilledButton(
+                    onPressed: () => CounterPage.popWithResult(snapshot.count),
+                    child: const Text('Done — return count to caller'),
+                  ),
                 ],
               ),
             ),

@@ -53,7 +53,8 @@ GoRouter createExampleGoRouter({
               ? state.extra! as ConfirmActionDialog
               : null;
           final action = dialog?.action ?? state.pathParameters['action'] ?? '';
-          return InlayDialogPage(
+          return InlayDialogPage<bool>(
+            encodeResult: ConfirmActionDialog.encodeResult,
             builder: (_) =>
                 ConfirmActionContent(action: action, message: dialog?.message),
           );

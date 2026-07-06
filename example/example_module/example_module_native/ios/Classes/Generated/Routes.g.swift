@@ -18,7 +18,7 @@ private func _inlayEncode(_ value: String) -> String {
 /// Embedded into every outgoing `PageSettings` and verified by the
 /// generated route handler, so host/module schema drift fails fast.
 enum InlaySchema {
-    static let fingerprint = "1597917a4f771129"
+    static let fingerprint = "231397b50962578d"
 }
 
 enum GreetingStyle: Int {
@@ -110,6 +110,15 @@ struct CounterPage: FlutterRoute {
         ]
     }
 
+    static func encodeResult(_ result: Int64) -> Any? {
+        result
+    }
+
+    static func decodeResult(_ raw: Any?) -> Int64? {
+        guard let raw = raw else { return nil }
+        return raw as! Int64
+    }
+
     func toDict() -> [String: String] {
         [
             "seed": seed.map { String(describing: $0) } ?? ""
@@ -184,6 +193,15 @@ struct ConfirmActionDialog: FlutterDialogRoute {
             action,
             message.map { $0 },
         ]
+    }
+
+    static func encodeResult(_ result: Bool) -> Any? {
+        result
+    }
+
+    static func decodeResult(_ raw: Any?) -> Bool? {
+        guard let raw = raw else { return nil }
+        return raw as! Bool
     }
 
     func toDict() -> [String: String] {
@@ -273,11 +291,20 @@ struct NativeAboutPage {
             appVersion,
         ]
     }
+
+    static func encodeResult(_ result: String) -> Any? {
+        result
+    }
+
+    static func decodeResult(_ raw: Any?) -> String? {
+        guard let raw = raw else { return nil }
+        return raw as! String
+    }
 }
 
 class NativeRouteHandler: NativeRouteHandling {
 
-    func handle(viewController: UIViewController, route: PageSettings) {
+    func handle(viewController: UIViewController, route: PageSettings, completion: @escaping (Any?) -> Void) {
         if let remote = route.schemaFingerprint, remote != InlaySchema.fingerprint {
             fatalError(
                 "Inlay schema mismatch: the Flutter module sent a route generated "
@@ -292,13 +319,16 @@ class NativeRouteHandler: NativeRouteHandling {
                 page: NativeSettingsPage.fromList(route.params as! [Any?]),
                 viewController: viewController
             )
+            completion(nil)
         case "nativeAbout":
             onNativeAbout(
                 page: NativeAboutPage.fromList(route.params as! [Any?]),
-                viewController: viewController
+                viewController: viewController,
+                completion: { result in completion(NativeAboutPage.encodeResult(result)) }
             )
         default:
             onUnknownRoute(route: route, viewController: viewController)
+            completion(nil)
         }
     }
 
@@ -306,7 +336,7 @@ class NativeRouteHandler: NativeRouteHandling {
         fatalError("Must override onNativeSettings")
     }
 
-    func onNativeAbout(page: NativeAboutPage, viewController: UIViewController) {
+    func onNativeAbout(page: NativeAboutPage, viewController: UIViewController, completion: @escaping (String) -> Void) {
         fatalError("Must override onNativeAbout")
     }
 

@@ -266,8 +266,13 @@ class InlayNavigator {
   }
 
   /// Pop (finish) the current Flutter Activity/ViewController.
-  Future<void> pop() async {
-    await _hostApi.pop();
+  ///
+  /// [result] is delivered to the caller that opened this screen with a
+  /// result callback (`onResult` natively, a `*ForResult` future in Dart).
+  /// Encode typed results with the generated `encodeResult`; the generated
+  /// `popWithResult` does both steps in one call.
+  Future<void> pop([Object? result]) async {
+    await _hostApi.pop(result);
   }
 
   /// Enable/disable native iOS swipe-back gesture for this container.
@@ -324,6 +329,15 @@ class InlayNavigator {
     await _hostApi.push(page);
   }
 
+  /// Like [pushFlutterRoute], but completes with the result the pushed
+  /// screen pops with (`null` when dismissed without one).
+  ///
+  /// The value is in wire encoding; generated routes with a result type
+  /// expose a typed `pushForResult()` that decodes it.
+  Future<Object?> pushFlutterRouteForResult(PageSettings page) {
+    return _hostApi.pushForResult(page);
+  }
+
   /// Internal method: open a native Activity/ViewController route.
   ///
   /// The platform side dispatches to the `NativeRouteHandler` set via
@@ -340,6 +354,16 @@ class InlayNavigator {
     await _hostApi.pushNativeRoute(page);
   }
 
+  /// Like [pushNativeRoute], but completes with the result the native
+  /// screen passes to its handler completion (`null` when it finishes
+  /// without one).
+  ///
+  /// The value is in wire encoding; generated native routes with a result
+  /// type expose a typed `pushForResult()` that decodes it.
+  Future<Object?> pushNativeRouteForResult(PageSettings page) {
+    return _hostApi.pushNativeRouteForResult(page);
+  }
+
   /// Present a Flutter dialog in a transparent native container.
   ///
   /// The native side creates a transparent Activity/ViewController with a
@@ -347,6 +371,12 @@ class InlayNavigator {
   /// animation, positioning) over the native screen underneath.
   Future<void> presentFlutterDialog(PageSettings page) async {
     await _hostApi.presentDialog(page);
+  }
+
+  /// Like [presentFlutterDialog], but completes with the result the dialog
+  /// pops with (`null` when dismissed without one).
+  Future<Object?> presentFlutterDialogForResult(PageSettings page) {
+    return _hostApi.presentDialogForResult(page);
   }
 
   // ── Initial route parsing ─────────────────────────────────────────

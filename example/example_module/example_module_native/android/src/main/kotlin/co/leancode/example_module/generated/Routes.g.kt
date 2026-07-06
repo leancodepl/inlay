@@ -17,7 +17,7 @@ import co.leancode.inlay.navigator.PageSettings
  * generated route handler, so host/module schema drift fails fast.
  */
 object InlaySchema {
-    const val FINGERPRINT = "1597917a4f771129"
+    const val FINGERPRINT = "231397b50962578d"
 }
 
 enum class GreetingStyle {
@@ -93,6 +93,11 @@ data class CounterPage(
         fun fromList(list: List<Any?>): CounterPage = CounterPage(
             seed = (list[0] as? Number)?.toLong(),
         )
+
+        fun encodeResult(result: Long): Any? = result
+
+        fun decodeResult(raw: Any?): Long? =
+            if (raw == null) null else (raw as Number).toLong()
     }
 
     fun toList(): List<Any?> = listOf(
@@ -155,6 +160,11 @@ data class ConfirmActionDialog(
             action = list[0] as String,
             message = (list[1] as? String)?.let { it as String },
         )
+
+        fun encodeResult(result: Boolean): Any? = result
+
+        fun decodeResult(raw: Any?): Boolean? =
+            if (raw == null) null else raw as Boolean
     }
 
     fun toList(): List<Any?> = listOf(
@@ -228,6 +238,11 @@ data class NativeAboutPage(
         fun fromList(list: List<Any?>): NativeAboutPage = NativeAboutPage(
             appVersion = list[0] as String,
         )
+
+        fun encodeResult(result: String): Any? = result
+
+        fun decodeResult(raw: Any?): String? =
+            if (raw == null) null else raw as String
     }
 
     fun toList(): List<Any?> = listOf(
@@ -237,7 +252,7 @@ data class NativeAboutPage(
 
 abstract class NativeRouteHandler : NativeRouteHandling {
 
-    override fun handle(context: Context, route: PageSettings) {
+    override fun handle(context: Context, route: PageSettings, completion: (Any?) -> Unit) {
         route.schemaFingerprint?.let { remote ->
             check(remote == InlaySchema.FINGERPRINT) {
                 "Inlay schema mismatch: the Flutter module sent a route generated " +
@@ -247,20 +262,22 @@ abstract class NativeRouteHandler : NativeRouteHandling {
             }
         }
         when (route.routeId) {
-            "nativeSettings" -> onNativeSettings(
-                NativeSettingsPage.fromList(route.params as List<Any?>),
-                context
-            )
-            "nativeAbout" -> onNativeAbout(
-                NativeAboutPage.fromList(route.params as List<Any?>),
-                context
-            )
-            else -> onUnknownRoute(route, context)
+            "nativeSettings" -> {
+                onNativeSettings(NativeSettingsPage.fromList(route.params as List<Any?>), context)
+                completion(null)
+            }
+            "nativeAbout" -> {
+                onNativeAbout(NativeAboutPage.fromList(route.params as List<Any?>), context) { result -> completion(NativeAboutPage.encodeResult(result)) }
+            }
+            else -> {
+                onUnknownRoute(route, context)
+                completion(null)
+            }
         }
     }
 
     abstract fun onNativeSettings(page: NativeSettingsPage, context: Context)
-    abstract fun onNativeAbout(page: NativeAboutPage, context: Context)
+    abstract fun onNativeAbout(page: NativeAboutPage, context: Context, completion: (String) -> Unit)
 
     open fun onUnknownRoute(route: PageSettings, context: Context) {
         throw IllegalArgumentException("Unknown route: ${route.routeId}")

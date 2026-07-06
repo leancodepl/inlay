@@ -18,6 +18,20 @@ public final class InlayFlutterViewController: FlutterViewController {
     /// navigation-controller pop / modal dismiss.
     public var onPop: (() -> Void)?
 
+    /// Invoked exactly once with the result the Flutter screen popped with,
+    /// or `nil` when the container is dismissed without one (back gesture,
+    /// programmatic dismiss).
+    public var onResult: ((Any?) -> Void)?
+
+    private var resultDelivered = false
+
+    /// Delivers [result] to `onResult` exactly once.
+    func deliverResult(_ result: Any?) {
+        guard !resultDelivered else { return }
+        resultDelivered = true
+        onResult?(result)
+    }
+
     /// When `true`, the native UIKit navigation bar is left visible so the
     /// native back button and interactive pop gesture work out-of-the-box.
     ///
@@ -151,6 +165,9 @@ public final class InlayFlutterViewController: FlutterViewController {
     }
 
     deinit {
+        // Dismissed without an explicit result (back gesture, programmatic
+        // dismiss) - the caller still gets its callback, with nil.
+        deliverResult(nil)
         InlayNavigator.shared.cleanUpEngine(engine)
     }
 }

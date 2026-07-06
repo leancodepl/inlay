@@ -606,6 +606,33 @@ once per engine (including the hidden prewarmed engine), right after the engine 
 - `GeneratedPluginRegistrant` on iOS lives in the `FlutterPluginRegistrant` pod (source
   integration via `podhelper.rb`) - `import FlutterPluginRegistrant` in the AppDelegate.
 
+### Returning Results from Screens
+
+Declare a result type on a route annotation and the generator emits typed plumbing:
+
+```dart
+@InlayFlutterDialog('/confirm-action/:action', result: bool)   // Flutter dialog -> bool
+@InlayFlutterRoute('/counter', result: int)                    // Flutter screen -> int
+@InlayNativeRoute(result: String)                              // native screen -> String
+```
+
+The result type joins the schema fingerprint. Dismissal without an explicit result delivers
+`null`, exactly once.
+
+**Native → Flutter** (native awaits): `push`/`presentDialog` take an `onResult` callback;
+decode with the generated `Route.decodeResult(raw)`. The Flutter screen returns via
+`Route.popWithResult(value)` (full screen) or an `InlayDialogPage`/`InlayBottomSheetPage`'s
+`encodeResult:` + `Navigator.pop(context, value)` (dialog/sheet).
+
+**Flutter → native / Flutter → Flutter** (Flutter awaits): the generated route class exposes
+`Future<R?> pushForResult()`. On the native side, the generated `NativeRouteHandler` method for
+a result-typed route gains a `completion: (R) -> Unit/Void` the developer invokes.
+
+Transport: `InlayNavigatorHostApi` gained `@async pushForResult` / `presentDialogForResult` /
+`pushNativeRouteForResult`, and `pop(result)` carries the value back. Per-container result
+callbacks live in process memory (Android: keyed by an Intent/dialog id; not restored across
+process death).
+
 ### Schema Fingerprint (automatic drift detection)
 
 The generated Dart compiles into the module and the generated Kotlin/Swift compile into the

@@ -130,11 +130,13 @@ Future<void> _runInlayImperative() async {
       );
     case ConfirmActionDialog(:final action, :final message):
       runInlayDialog(
-        onReady: (context) => showDialog(
+        onReady: (context) => showDialog<bool>(
           context: context,
           builder: (_) =>
               ConfirmActionContent(action: action, message: message),
         ),
+        encodeResult: (result) =>
+            result is bool ? ConfirmActionDialog.encodeResult(result) : null,
       );
     case ThemePickerDialog(:final userId):
       runInlayDialog(

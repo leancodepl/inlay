@@ -8,8 +8,12 @@ final class ExampleNativeRouteHandler: NativeRouteHandler {
             ?? viewController.present(UINavigationController(rootViewController: target), animated: true)
     }
 
-    override func onNativeAbout(page: NativeAboutPage, viewController: UIViewController) {
-        let target = NativeAboutViewController(version: page.appVersion)
+    override func onNativeAbout(
+        page: NativeAboutPage,
+        viewController: UIViewController,
+        completion: @escaping (String) -> Void
+    ) {
+        let target = NativeAboutViewController(version: page.appVersion, onFeedback: completion)
         viewController.navigationController?.pushViewController(target, animated: true)
             ?? viewController.present(UINavigationController(rootViewController: target), animated: true)
     }

@@ -56,6 +56,11 @@ class InlayFlutterDialogFragment : DialogFragment() {
                 requireContext(),
                 routeData,
             )
+            // The result callback (if any) is registered under this dialog's
+            // id; the child fragment's engine delivers pop(result) to it.
+            fragment.arguments = (fragment.arguments ?: Bundle()).apply {
+                putString(InlayNavigator.EXTRA_RESULT_ID, routeId)
+            }
             // Dismiss the DialogFragment directly instead of going through
             // onBackPressedDispatcher, which would re-enter the FlutterFragment's
             // own back-pressed callback and finish the activity.
@@ -64,6 +69,14 @@ class InlayFlutterDialogFragment : DialogFragment() {
                 .replace(view.id, fragment)
                 .commitNow()
         }
+    }
+
+    override fun onDestroyView() {
+        // Dismissed without an explicit result (barrier tap, back) - the
+        // caller still gets its callback, with null. deliverResult is
+        // exactly-once, so this is a no-op after pop(result).
+        InlayNavigator.deliverResult(arguments?.getString(EXTRA_DIALOG_ROUTE_ID), null)
+        super.onDestroyView()
     }
 
     override fun onStart() {

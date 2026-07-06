@@ -41,22 +41,25 @@ void main() {
     );
   });
 
-  testWidgets('pushes Counter on a new engine through InlayNavigator', (
-    tester,
-  ) async {
+  testWidgets('awaits the Counter result and shows it', (tester) async {
+    navigator.resultsByRouteId[CounterPage.routeName] =
+        CounterPage.encodeResult(7);
     await pumpGreeting(tester);
 
-    await tester.tap(find.text('Open Counter (new engine/container)'));
+    await tester.tap(find.text('Open Counter (new engine, await result)'));
+    await tester.pumpAndSettle();
 
-    expect(navigator.pushedRoutes.single, isA<CounterPage>());
+    expect(navigator.pushedPages.single.routeId, CounterPage.routeName);
+    expect(find.text('Counter returned: 7'), findsOneWidget);
   });
 
-  testWidgets('opens the native About screen with the real app version', (
-    tester,
-  ) async {
+  testWidgets('awaits the native About feedback and shows it', (tester) async {
+    navigator.resultsByRouteId[NativeAboutPage.routeId] =
+        NativeAboutPage.encodeResult('great app');
     await pumpGreeting(tester);
 
-    await tester.tap(find.text('Open native About screen'));
+    await tester.tap(find.text('Open native About (await result)'));
+    await tester.pumpAndSettle();
 
     final page = navigator.pushedPages.single;
     expect(page.routeId, NativeAboutPage.routeId);
@@ -66,5 +69,18 @@ void main() {
       ).appVersion,
       '9.9.9',
     );
+    expect(find.text('About returned: great app'), findsOneWidget);
+  });
+
+  testWidgets('shows (dismissed) when a screen returns no result', (
+    tester,
+  ) async {
+    // No scripted result -> FakeInlayNavigator returns null.
+    await pumpGreeting(tester);
+
+    await tester.tap(find.text('Open Counter (new engine, await result)'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Counter returned: (dismissed)'), findsOneWidget);
   });
 }

@@ -27,7 +27,7 @@ class SoundsNotificationsPage {
   final String contactId;
 }
 
-@InlayNativeRoute('edit-profile')
+@InlayNativeRoute(name: 'edit-profile')
 class NativeEditProfilePage {
   const NativeEditProfilePage({required this.contactId});
 

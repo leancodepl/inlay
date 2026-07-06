@@ -61,8 +61,17 @@ abstract class InlayNavigatorHostApi {
   /// Push a new Flutter Activity/ViewController for the given page.
   void push(PageSettings page);
 
+  /// Push a new Flutter Activity/ViewController and complete with the
+  /// result the pushed screen pops with (`null` when dismissed without
+  /// one). The result travels in the generated route's wire encoding.
+  @async
+  Object? pushForResult(PageSettings page);
+
   /// Pop the current Flutter Activity/ViewController.
-  void pop();
+  ///
+  /// [result] is delivered to the caller that pushed this container with
+  /// a result callback; `null` when the screen has nothing to return.
+  void pop(Object? result);
 
   /// Enable/disable native iOS back gesture for this container.
   ///
@@ -77,6 +86,13 @@ abstract class InlayNavigatorHostApi {
   /// (or throws, depending on platform configuration).
   void pushNativeRoute(PageSettings route);
 
+  /// Open a native screen and complete with the result the native side
+  /// passes to the handler completion (`null` when the screen finishes
+  /// without one). The result travels in the generated route's wire
+  /// encoding.
+  @async
+  Object? pushNativeRouteForResult(PageSettings route);
+
   /// Return the full route data that the native host stored for this engine.
   ///
   /// Flutter calls this once at startup to retrieve the typed route object
@@ -90,4 +106,9 @@ abstract class InlayNavigatorHostApi {
   /// starts a new Flutter engine. Flutter renders the dialog content
   /// (barrier, animation, positioning) over the native screen underneath.
   void presentDialog(PageSettings page);
+
+  /// Present a Flutter dialog and complete with the result it pops with
+  /// (`null` when dismissed without one).
+  @async
+  Object? presentDialogForResult(PageSettings page);
 }

@@ -9,6 +9,7 @@ class RouteDefinition {
     required this.routeName,
     required this.fields,
     this.path,
+    this.resultType,
   });
 
   final String className;
@@ -22,6 +23,10 @@ class RouteDefinition {
   /// URL path template for Flutter routes (e.g. '/products/:id').
   /// Null for native routes.
   final String? path;
+
+  /// Result type the screen returns to its caller, from the annotation's
+  /// `result:` argument. Null when the route returns nothing.
+  final TypeInfo? resultType;
 
   @override
   String toString() =>

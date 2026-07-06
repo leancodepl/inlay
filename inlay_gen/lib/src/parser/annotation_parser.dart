@@ -71,6 +71,7 @@ class _SchemaCollectorVisitor extends RecursiveAstVisitor<void> {
           routeName: routeName,
           fields: fields,
           path: path,
+          resultType: _extractResultType(flutterAnnotation),
         ),
       );
       super.visitClassDeclaration(node);
@@ -89,6 +90,7 @@ class _SchemaCollectorVisitor extends RecursiveAstVisitor<void> {
           routeName: routeName,
           fields: fields,
           path: path,
+          resultType: _extractResultType(dialogAnnotation),
         ),
       );
       super.visitClassDeclaration(node);
@@ -105,6 +107,7 @@ class _SchemaCollectorVisitor extends RecursiveAstVisitor<void> {
           routeType: RouteType.native,
           routeName: routeName,
           fields: fields,
+          resultType: _extractResultType(nativeAnnotation),
         ),
       );
       super.visitClassDeclaration(node);
@@ -166,8 +169,44 @@ class _SchemaCollectorVisitor extends RecursiveAstVisitor<void> {
   /// If the annotation has a positional argument, use that.
   /// Otherwise, derive from the class name (remove "Page" suffix, camelCase).
   String _extractRouteName(Annotation annotation, String className) {
-    final value = _extractPositionalStringArg(annotation);
+    final value =
+        _extractPositionalStringArg(annotation) ??
+        _extractNamedStringArg(annotation, 'name');
     return value ?? routeIdFromClassName(className);
+  }
+
+  /// Extracts a named string literal argument from an annotation.
+  String? _extractNamedStringArg(Annotation annotation, String name) {
+    final arguments = annotation.arguments;
+    if (arguments == null) {
+      return null;
+    }
+    for (final arg in arguments.arguments) {
+      if (arg is NamedExpression && arg.name.label.name == name) {
+        final expr = arg.expression;
+        if (expr is SimpleStringLiteral) {
+          return expr.value;
+        }
+      }
+    }
+    return null;
+  }
+
+  /// Extracts the `result:` type literal from a route annotation.
+  TypeInfo? _extractResultType(Annotation annotation) {
+    final arguments = annotation.arguments;
+    if (arguments == null) {
+      return null;
+    }
+    for (final arg in arguments.arguments) {
+      if (arg is NamedExpression && arg.name.label.name == 'result') {
+        final expr = arg.expression;
+        if (expr is Identifier) {
+          return TypeInfo(name: expr.name, isNullable: false);
+        }
+      }
+    }
+    return null;
   }
 
   /// Extracts the first positional string literal argument from an annotation.

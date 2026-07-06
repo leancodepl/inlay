@@ -6,8 +6,16 @@ import Flutter
 /// The generated `NativeRouteHandler` class conforms to this protocol,
 /// dispatching `PageSettings` to typed `on*` methods. Developers subclass
 /// the generated class rather than implementing this protocol directly.
+///
+/// [completion] must be invoked exactly once with the screen's result
+/// (`nil` for routes without one) - it completes the awaiting Dart future
+/// when the route was pushed via `pushForResult()`.
 public protocol NativeRouteHandling: AnyObject {
-    func handle(viewController: UIViewController, route: PageSettings)
+    func handle(
+        viewController: UIViewController,
+        route: PageSettings,
+        completion: @escaping (Any?) -> Void
+    )
 }
 
 /// Framework-level navigator that hides all Flutter internals
@@ -196,19 +204,25 @@ public final class InlayNavigator {
     ///     route: SoundsNotificationsPage(contactId: "42")
     /// )
     /// ```
+    /// - Parameter onResult: Invoked exactly once with the result the
+    ///   Flutter screen pops with (`nil` when dismissed without one).
+    ///   Generated route extensions provide typed variants; decode raw
+    ///   values with the generated `decodeResult`.
     public func push(
         from viewController: UIViewController,
         route: FlutterRoute,
         enableNativeNavigationBar: Bool = false,
         animated: Bool = true,
-        enableInteractiveContentPopGestureRecognizer: Bool = true
+        enableInteractiveContentPopGestureRecognizer: Bool = true,
+        onResult: ((Any?) -> Void)? = nil
     ) {
         push(
             from: viewController,
             page: route.toPageSettings(),
             enableNativeNavigationBar: enableNativeNavigationBar,
             animated: animated,
-            enableInteractiveContentPopGestureRecognizer: enableInteractiveContentPopGestureRecognizer
+            enableInteractiveContentPopGestureRecognizer: enableInteractiveContentPopGestureRecognizer,
+            onResult: onResult
         )
     }
 
@@ -217,13 +231,15 @@ public final class InlayNavigator {
         from viewController: UIViewController,
         route: FlutterRoute,
         animated: Bool = true,
-        enableInteractiveContentPopGestureRecognizer: Bool = true
+        enableInteractiveContentPopGestureRecognizer: Bool = true,
+        onResult: ((Any?) -> Void)? = nil
     ) {
         present(
             from: viewController,
             page: route.toPageSettings(),
             animated: animated,
-            enableInteractiveContentPopGestureRecognizer: enableInteractiveContentPopGestureRecognizer
+            enableInteractiveContentPopGestureRecognizer: enableInteractiveContentPopGestureRecognizer,
+            onResult: onResult
         )
     }
 
@@ -254,18 +270,26 @@ public final class InlayNavigator {
     public func presentDialog(
         from viewController: UIViewController,
         route: FlutterDialogRoute,
-        animated: Bool = true
+        animated: Bool = true,
+        onResult: ((Any?) -> Void)? = nil
     ) {
-        presentDialog(from: viewController, page: route.toPageSettings(), animated: animated)
+        presentDialog(
+            from: viewController,
+            page: route.toPageSettings(),
+            animated: animated,
+            onResult: onResult
+        )
     }
 
     public func presentDialog(
         from viewController: UIViewController,
         page: PageSettings,
-        animated: Bool = true
+        animated: Bool = true,
+        onResult: ((Any?) -> Void)? = nil
     ) {
         start(prewarm: isPrewarmEnabled)
         let vc = createFlutterDialogViewController(page: page)
+        vc.onResult = onResult
         vc.modalPresentationStyle = .overFullScreen
         vc.modalTransitionStyle = .crossDissolve
         viewController.present(vc, animated: animated)
@@ -303,7 +327,8 @@ public final class InlayNavigator {
         page: PageSettings,
         enableNativeNavigationBar: Bool = false,
         animated: Bool = true,
-        enableInteractiveContentPopGestureRecognizer: Bool = true
+        enableInteractiveContentPopGestureRecognizer: Bool = true,
+        onResult: ((Any?) -> Void)? = nil
     ) {
         start(prewarm: isPrewarmEnabled)
         let flutterVC = createFlutterViewController(
@@ -311,6 +336,7 @@ public final class InlayNavigator {
             enableNativeNavigationBar: enableNativeNavigationBar,
             enableInteractiveContentPopGestureRecognizer: enableInteractiveContentPopGestureRecognizer
         )
+        flutterVC.onResult = onResult
         viewController.navigationController?.pushViewController(flutterVC, animated: animated)
             ?? viewController.present(flutterVC, animated: animated)
     }
@@ -319,13 +345,15 @@ public final class InlayNavigator {
         from viewController: UIViewController,
         page: PageSettings,
         animated: Bool = true,
-        enableInteractiveContentPopGestureRecognizer: Bool = true
+        enableInteractiveContentPopGestureRecognizer: Bool = true,
+        onResult: ((Any?) -> Void)? = nil
     ) {
         start(prewarm: isPrewarmEnabled)
         let flutterVC = createFlutterViewController(
             page: page,
             enableInteractiveContentPopGestureRecognizer: enableInteractiveContentPopGestureRecognizer
         )
+        flutterVC.onResult = onResult
         viewController.present(flutterVC, animated: animated)
     }
 
@@ -347,7 +375,11 @@ public final class InlayNavigator {
 
     /// Dispatch a native route request. Called by the Pigeon HostApi impl.
     /// Throws if no handler is set.
-    func dispatchNativeRoute(from viewController: UIViewController, route: PageSettings) throws {
+    func dispatchNativeRoute(
+        from viewController: UIViewController,
+        route: PageSettings,
+        completion: @escaping (Any?) -> Void = { _ in }
+    ) throws {
         guard let handler = nativeRouteHandler else {
             throw InlayNavigatorError(
                 code: "NO_NATIVE_ROUTE_HANDLER",
@@ -356,7 +388,7 @@ public final class InlayNavigator {
                 details: nil
             )
         }
-        handler.handle(viewController: viewController, route: route)
+        handler.handle(viewController: viewController, route: route, completion: completion)
     }
 
     // MARK: - ViewController factory
@@ -508,16 +540,43 @@ private class InlayNavigatorHostApiImpl: InlayNavigatorHostApi {
         }
     }
 
-    func pop() throws {
+    func pushForResult(page: PageSettings, completion: @escaping (Result<Any?, Error>) -> Void) {
         DispatchQueue.main.async { [weak self] in
-            if let onPop = self?.onPop {
+            guard let self, let vc = self.viewController, let nav = self.navigator else {
+                completion(.success(nil))
+                return
+            }
+            nav.push(from: vc, page: page, onResult: { completion(.success($0)) })
+        }
+    }
+
+    func pop(result: Any?) throws {
+        DispatchQueue.main.async { [weak self] in
+            guard let self else { return }
+            let vc = self.viewController
+            // Deliver the result only after the container is gone, so the
+            // caller's onResult is free to present its own UI on the screen
+            // underneath (presenting mid-dismiss silently fails on iOS).
+            let deliver = {
+                (vc as? InlayFlutterViewController)?.deliverResult(result)
+                (vc as? InlayFlutterDialogViewController)?.deliverResult(result)
+            }
+            if let onPop = self.onPop {
                 onPop()
-            } else if let vc = self?.viewController {
+                deliver()
+            } else if let vc {
                 if let nav = vc.navigationController {
                     nav.popViewController(animated: true)
+                    if let coordinator = nav.transitionCoordinator {
+                        coordinator.animate(alongsideTransition: nil) { _ in deliver() }
+                    } else {
+                        deliver()
+                    }
                 } else {
-                    vc.dismiss(animated: true)
+                    vc.dismiss(animated: true, completion: deliver)
                 }
+            } else {
+                deliver()
             }
         }
     }
@@ -526,6 +585,25 @@ private class InlayNavigatorHostApiImpl: InlayNavigatorHostApi {
         DispatchQueue.main.async { [weak self] in
             guard let self, let vc = self.viewController, let nav = self.navigator else { return }
             try? nav.dispatchNativeRoute(from: vc, route: route)
+        }
+    }
+
+    func pushNativeRouteForResult(
+        route: PageSettings,
+        completion: @escaping (Result<Any?, Error>) -> Void
+    ) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self, let vc = self.viewController, let nav = self.navigator else {
+                completion(.success(nil))
+                return
+            }
+            do {
+                try nav.dispatchNativeRoute(from: vc, route: route) {
+                    completion(.success($0))
+                }
+            } catch {
+                completion(.failure(error))
+            }
         }
     }
 
@@ -546,14 +624,42 @@ private class InlayNavigatorHostApiImpl: InlayNavigatorHostApi {
             nav.presentDialog(from: vc, page: page)
         }
     }
+
+    func presentDialogForResult(
+        page: PageSettings,
+        completion: @escaping (Result<Any?, Error>) -> Void
+    ) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self, let vc = self.viewController, let nav = self.navigator else {
+                completion(.success(nil))
+                return
+            }
+            nav.presentDialog(from: vc, page: page, onResult: { completion(.success($0)) })
+        }
+    }
 }
 
 /// No-op HostApi for the hidden warm-up engine.
 private class InlayNavigatorPrewarmHostApi: InlayNavigatorHostApi {
     func push(page: PageSettings) throws {}
-    func pop() throws {}
+    func pushForResult(page: PageSettings, completion: @escaping (Result<Any?, Error>) -> Void) {
+        completion(.success(nil))
+    }
+    func pop(result: Any?) throws {}
     func pushNativeRoute(route: PageSettings) throws {}
+    func pushNativeRouteForResult(
+        route: PageSettings,
+        completion: @escaping (Result<Any?, Error>) -> Void
+    ) {
+        completion(.success(nil))
+    }
     func setNativePopGestureEnabled(enabled: Bool) throws {}
     func getInitialRouteData() throws -> PageSettings? { nil }
     func presentDialog(page: PageSettings) throws {}
+    func presentDialogForResult(
+        page: PageSettings,
+        completion: @escaping (Result<Any?, Error>) -> Void
+    ) {
+        completion(.success(nil))
+    }
 }

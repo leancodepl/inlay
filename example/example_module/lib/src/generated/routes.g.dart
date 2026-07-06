@@ -8,7 +8,7 @@ import 'package:inlay/inlay.dart';
 /// Embedded into every outgoing [PageSettings] and verified
 /// automatically by the decoders, so host/module schema drift
 /// fails fast instead of corrupting positional data.
-const String inlaySchemaFingerprint = '1597917a4f771129';
+const String inlaySchemaFingerprint = '231397b50962578d';
 
 enum GreetingStyle { casual, formal }
 
@@ -151,6 +151,24 @@ class CounterPage extends FlutterRoute {
       schemaFingerprint: inlaySchemaFingerprint,
     );
   }
+
+  /// Encodes a result value into its wire form.
+  static Object? encodeResult(int result) => result;
+
+  /// Decodes a wire result value, or `null` when absent.
+  static int? decodeResult(Object? raw) => raw == null ? null : raw as int;
+
+  /// Pops the screen, returning [result] to the caller.
+  static Future<void> popWithResult(int result) =>
+      InlayNavigator.instance.pop(encodeResult(result));
+
+  /// Opens this screen in a new engine and awaits its result.
+  Future<int?> pushForResult() async {
+    final raw = await InlayNavigator.instance.pushFlutterRouteForResult(
+      toPageSettings(),
+    );
+    return decodeResult(raw);
+  }
 }
 
 class ProfilePage extends FlutterRoute {
@@ -279,6 +297,24 @@ class ConfirmActionDialog extends FlutterDialogRoute {
       schemaFingerprint: inlaySchemaFingerprint,
     );
   }
+
+  /// Encodes a result value into its wire form.
+  static Object? encodeResult(bool result) => result;
+
+  /// Decodes a wire result value, or `null` when absent.
+  static bool? decodeResult(Object? raw) => raw == null ? null : raw as bool;
+
+  /// Pops the screen, returning [result] to the caller.
+  static Future<void> popWithResult(bool result) =>
+      InlayNavigator.instance.pop(encodeResult(result));
+
+  /// Opens this screen in a new engine and awaits its result.
+  Future<bool?> pushForResult() async {
+    final raw = await InlayNavigator.instance.presentFlutterDialogForResult(
+      toPageSettings(),
+    );
+    return decodeResult(raw);
+  }
 }
 
 class ThemePickerDialog extends FlutterDialogRoute {
@@ -364,6 +400,25 @@ class NativeAboutPage {
       schemaFingerprint: inlaySchemaFingerprint,
     ),
   );
+
+  /// Encodes a result value into its wire form.
+  static Object? encodeResult(String result) => result;
+
+  /// Decodes a wire result value, or `null` when absent.
+  static String? decodeResult(Object? raw) =>
+      raw == null ? null : raw as String;
+
+  /// Opens this native screen and awaits its result.
+  Future<String?> pushForResult() async {
+    final raw = await InlayNavigator.instance.pushNativeRouteForResult(
+      PageSettings(
+        routeId: routeId,
+        params: encode(),
+        schemaFingerprint: inlaySchemaFingerprint,
+      ),
+    );
+    return decodeResult(raw);
+  }
 }
 
 /// Throws when [settings] was produced by generated code from a

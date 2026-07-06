@@ -25,7 +25,8 @@ import 'inlay_navigator.dart';
 /// );
 /// ```
 void runInlayDialog({
-  required Future<void> Function(BuildContext context) onReady,
+  required Future<Object?> Function(BuildContext context) onReady,
+  Object? Function(Object? result)? encodeResult,
   ThemeData? theme,
   ThemeData? darkTheme,
   ThemeMode? themeMode,
@@ -45,16 +46,17 @@ void runInlayDialog({
         ),
         themeMode: themeMode ?? InlayAppearance.instance.themeMode,
         locale: InlayAppearance.instance.locale,
-        home: _DialogLauncher(onReady: onReady),
+        home: _DialogLauncher(onReady: onReady, encodeResult: encodeResult),
       ),
     ),
   );
 }
 
 class _DialogLauncher extends StatefulWidget {
-  const _DialogLauncher({required this.onReady});
+  const _DialogLauncher({required this.onReady, this.encodeResult});
 
-  final Future<void> Function(BuildContext context) onReady;
+  final Future<Object?> Function(BuildContext context) onReady;
+  final Object? Function(Object? result)? encodeResult;
 
   @override
   State<_DialogLauncher> createState() => _DialogLauncherState();
@@ -68,11 +70,11 @@ class _DialogLauncherState extends State<_DialogLauncher> {
       if (!mounted) {
         return;
       }
-      await widget.onReady(context);
+      final result = await widget.onReady(context);
       if (!mounted) {
         return;
       }
-      await InlayNavigator.instance.pop();
+      await InlayNavigator.instance.pop(widget.encodeResult?.call(result));
     });
   }
 
@@ -117,6 +119,7 @@ class _DialogLauncherState extends State<_DialogLauncher> {
 class InlayDialogPage<T> extends Page<T> {
   const InlayDialogPage({
     required this.builder,
+    this.encodeResult,
     this.barrierDismissible = true,
     this.barrierColor,
     this.barrierLabel,
@@ -126,6 +129,13 @@ class InlayDialogPage<T> extends Page<T> {
 
   /// Builds the dialog content (e.g. an [AlertDialog]).
   final WidgetBuilder builder;
+
+  /// Encodes the value the dialog pops with (`Navigator.pop(context, v)`)
+  /// into the wire format delivered to the native caller's result
+  /// callback. Pass the generated route's `encodeResult`. When `null`,
+  /// the container closes without a result.
+  // ignore: unsafe_variance
+  final Object? Function(T result)? encodeResult;
 
   /// Whether tapping the barrier dismisses the dialog.
   final bool barrierDismissible;
@@ -169,6 +179,7 @@ class InlayDialogPage<T> extends Page<T> {
 class InlayBottomSheetPage<T> extends Page<T> {
   const InlayBottomSheetPage({
     required this.builder,
+    this.encodeResult,
     this.isScrollControlled = false,
     this.isDismissible = true,
     this.enableDrag = true,
@@ -181,6 +192,13 @@ class InlayBottomSheetPage<T> extends Page<T> {
 
   /// Builds the bottom sheet content.
   final WidgetBuilder builder;
+
+  /// Encodes the value the sheet pops with (`Navigator.pop(context, v)`)
+  /// into the wire format delivered to the native caller's result
+  /// callback. Pass the generated route's `encodeResult`. When `null`,
+  /// the container closes without a result.
+  // ignore: unsafe_variance
+  final Object? Function(T result)? encodeResult;
 
   /// Whether the sheet takes the full height (for [DraggableScrollableSheet]
   /// or tall content). Forwarded to [ModalBottomSheetRoute.isScrollControlled].
@@ -244,7 +262,7 @@ class _InlayDialogPageRoute<T> extends _TransparentPageRoute<T> {
     Animation<double> animation,
     Animation<double> secondaryAnimation,
   ) {
-    return _ShowDialogOnReady(page: _page);
+    return _ShowDialogOnReady<T>(page: _page);
   }
 }
 
@@ -261,20 +279,20 @@ class _InlayBottomSheetPageRoute<T> extends _TransparentPageRoute<T> {
     Animation<double> animation,
     Animation<double> secondaryAnimation,
   ) {
-    return _ShowBottomSheetOnReady(page: _page);
+    return _ShowBottomSheetOnReady<T>(page: _page);
   }
 }
 
-class _ShowDialogOnReady extends StatefulWidget {
+class _ShowDialogOnReady<T> extends StatefulWidget {
   const _ShowDialogOnReady({required this.page});
 
-  final InlayDialogPage<dynamic> page;
+  final InlayDialogPage<T> page;
 
   @override
-  State<_ShowDialogOnReady> createState() => _ShowDialogOnReadyState();
+  State<_ShowDialogOnReady<T>> createState() => _ShowDialogOnReadyState<T>();
 }
 
-class _ShowDialogOnReadyState extends State<_ShowDialogOnReady> {
+class _ShowDialogOnReadyState<T> extends State<_ShowDialogOnReady<T>> {
   @override
   void initState() {
     super.initState();
@@ -284,7 +302,7 @@ class _ShowDialogOnReadyState extends State<_ShowDialogOnReady> {
       }
       final page = widget.page;
       final navigator = Navigator.of(context);
-      final route = DialogRoute<void>(
+      final route = DialogRoute<Object?>(
         context: context,
         builder: page.builder,
         themes: InheritedTheme.capture(from: context, to: navigator.context),
@@ -296,11 +314,13 @@ class _ShowDialogOnReadyState extends State<_ShowDialogOnReady> {
       // route.completed (from TransitionRoute) resolves after the reverse
       // animation ends, unlike the Future from showDialog which resolves
       // immediately on pop.
-      await route.completed;
+      final result = await route.completed;
       if (!mounted) {
         return;
       }
-      await InlayNavigator.instance.pop();
+      await InlayNavigator.instance.pop(
+        result == null ? null : page.encodeResult?.call(result as T),
+      );
     });
   }
 
@@ -310,17 +330,18 @@ class _ShowDialogOnReadyState extends State<_ShowDialogOnReady> {
   }
 }
 
-class _ShowBottomSheetOnReady extends StatefulWidget {
+class _ShowBottomSheetOnReady<T> extends StatefulWidget {
   const _ShowBottomSheetOnReady({required this.page});
 
-  final InlayBottomSheetPage<dynamic> page;
+  final InlayBottomSheetPage<T> page;
 
   @override
-  State<_ShowBottomSheetOnReady> createState() =>
-      _ShowBottomSheetOnReadyState();
+  State<_ShowBottomSheetOnReady<T>> createState() =>
+      _ShowBottomSheetOnReadyState<T>();
 }
 
-class _ShowBottomSheetOnReadyState extends State<_ShowBottomSheetOnReady> {
+class _ShowBottomSheetOnReadyState<T>
+    extends State<_ShowBottomSheetOnReady<T>> {
   @override
   void initState() {
     super.initState();
@@ -330,7 +351,7 @@ class _ShowBottomSheetOnReadyState extends State<_ShowBottomSheetOnReady> {
       }
       final page = widget.page;
       final navigator = Navigator.of(context);
-      final route = ModalBottomSheetRoute<void>(
+      final route = ModalBottomSheetRoute<Object?>(
         builder: page.builder,
         capturedThemes: InheritedTheme.capture(
           from: context,
@@ -344,11 +365,13 @@ class _ShowBottomSheetOnReadyState extends State<_ShowBottomSheetOnReady> {
         modalBarrierColor: page.modalBarrierColor,
       );
       unawaited(navigator.push(route));
-      await route.completed;
+      final result = await route.completed;
       if (!mounted) {
         return;
       }
-      await InlayNavigator.instance.pop();
+      await InlayNavigator.instance.pop(
+        result == null ? null : page.encodeResult?.call(result as T),
+      );
     });
   }
 

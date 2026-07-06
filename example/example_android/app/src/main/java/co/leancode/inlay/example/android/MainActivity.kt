@@ -3,6 +3,7 @@ package co.leancode.inlay.example.android
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import co.leancode.inlay.InlayNavigator
 import co.leancode.example_module.generated.BadgeLevel
@@ -27,7 +28,11 @@ class MainActivity : AppCompatActivity() {
     }
 
     findViewById<Button>(R.id.btnCounter).setOnClickListener {
-      InlayNavigator.push(this, CounterPage(seed = null))
+      // Native -> Flutter -> typed result back.
+      InlayNavigator.push(this, CounterPage(seed = null)) { raw ->
+        val count = CounterPage.decodeResult(raw)
+        showResult("Counter", count?.toString() ?: "dismissed")
+      }
     }
 
     findViewById<Button>(R.id.btnProfile).setOnClickListener {
@@ -53,10 +58,14 @@ class MainActivity : AppCompatActivity() {
     }
 
     findViewById<Button>(R.id.btnConfirmDialog).setOnClickListener {
+      // Native -> Flutter dialog -> typed result back.
       InlayNavigator.presentDialog(
         this,
         ConfirmActionDialog(action = "delete", message = "Are you sure?"),
-      )
+      ) { raw ->
+        val confirmed = ConfirmActionDialog.decodeResult(raw)
+        showResult("Confirm dialog", confirmed?.toString() ?: "dismissed")
+      }
     }
 
     findViewById<Button>(R.id.btnThemePickerDialog).setOnClickListener {
@@ -65,5 +74,9 @@ class MainActivity : AppCompatActivity() {
         ThemePickerDialog(userId = "42"),
       )
     }
+  }
+
+  private fun showResult(label: String, value: String) {
+    Toast.makeText(this, "$label returned: $value", Toast.LENGTH_LONG).show()
   }
 }

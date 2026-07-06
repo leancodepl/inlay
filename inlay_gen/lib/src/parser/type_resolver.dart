@@ -113,6 +113,15 @@ class TypeResolver {
     // Validate route types.
     for (final route in schema.allRoutes) {
       _validateFields(route.fields, route.className, typeGraph, errors);
+      final resultType = route.resultType;
+      if (resultType != null) {
+        _validateType(
+          resultType,
+          '${route.className} (result)',
+          typeGraph,
+          errors,
+        );
+      }
     }
 
     // Validate data class types.

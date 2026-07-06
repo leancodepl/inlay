@@ -14,10 +14,19 @@
         android:text="Version: unknown"
         android:textSize="18sp" />
 
+    <EditText
+        android:id="@+id/inputFeedback"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:hint="Your feedback"
+        android:importantForAutofill="no"
+        android:inputType="text" />
+
     <Button
-        android:id="@+id/btnClose"
+        android:id="@+id/btnSendFeedback"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:text="Close" />
+        android:text="Send feedback &amp; close" />
 </LinearLayout>

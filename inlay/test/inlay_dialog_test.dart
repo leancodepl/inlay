@@ -55,6 +55,52 @@ void main() {
       expect(navigator.popCount, 1);
     });
 
+    testWidgets('forwards the popped result through encodeResult', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        host(
+          InlayDialogPage<bool>(
+            encodeResult: (value) => value,
+            builder: (dialogContext) => AlertDialog(
+              title: const Text('Confirm?'),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(dialogContext, true),
+                  child: const Text('Confirm'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Confirm'));
+      await tester.pumpAndSettle();
+
+      expect(navigator.poppedResults, [true]);
+      expect(navigator.popCount, 1);
+    });
+
+    testWidgets('barrier dismiss forwards no result', (tester) async {
+      await tester.pumpWidget(
+        host(
+          InlayDialogPage<bool>(
+            encodeResult: (value) => value,
+            builder: (_) => const AlertDialog(title: Text('Confirm?')),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tapAt(const Offset(5, 5));
+      await tester.pumpAndSettle();
+
+      expect(navigator.popCount, 1);
+      expect(navigator.poppedResults.single, isNull);
+    });
+
     testWidgets('barrierDismissible: false keeps the dialog up', (
       tester,
     ) async {

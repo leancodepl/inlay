@@ -26,7 +26,12 @@ import java.nio.ByteBuffer
  * generated class rather than implementing this interface directly.
  */
 fun interface NativeRouteHandler {
-    fun handle(context: Context, route: PageSettings)
+    /**
+     * [completion] must be invoked exactly once with the screen's result
+     * (`null` for routes without one) - it completes the awaiting Dart
+     * future when the route was pushed via `pushForResult()`.
+     */
+    fun handle(context: Context, route: PageSettings, completion: (Any?) -> Unit)
 }
 
 /**
@@ -193,11 +198,20 @@ object InlayNavigator {
             engine.dartExecutor.binaryMessenger,
             object : InlayNavigatorHostApi {
                 override fun push(page: PageSettings) {}
-                override fun pop() {}
+                override fun pushForResult(page: PageSettings, callback: (Result<Any?>) -> Unit) {
+                    callback(Result.success(null))
+                }
+                override fun pop(result: Any?) {}
                 override fun pushNativeRoute(route: PageSettings) {}
+                override fun pushNativeRouteForResult(route: PageSettings, callback: (Result<Any?>) -> Unit) {
+                    callback(Result.success(null))
+                }
                 override fun setNativePopGestureEnabled(enabled: Boolean) {}
                 override fun getInitialRouteData(): PageSettings? = null
                 override fun presentDialog(page: PageSettings) {}
+                override fun presentDialogForResult(page: PageSettings, callback: (Result<Any?>) -> Unit) {
+                    callback(Result.success(null))
+                }
             }
         )
         KeyValueStorageImpl.attachToEngine(engine)
@@ -221,6 +235,48 @@ object InlayNavigator {
         context.startActivity(createIntent(context, route.toPageSettings()))
     }
 
+    /**
+     * Push a Flutter page and receive the result it pops with.
+     *
+     * [onResult] is invoked exactly once - with the popped result, or
+     * `null` when the screen is dismissed without one. Generated route
+     * extensions provide typed variants; decode raw values with the
+     * generated `decodeResult`.
+     *
+     * The callback lives in process memory: if the process is killed while
+     * the Flutter screen is open, it is not restored.
+     */
+    fun push(context: Context, route: FlutterRoute, onResult: (Any?) -> Unit) {
+        init(context, prewarm = isPrewarmEnabled)
+        val intent = createIntent(context, route.toPageSettings())
+        intent.putExtra(EXTRA_RESULT_ID, registerResultCallback(onResult))
+        context.startActivity(intent)
+    }
+
+    // ── Result plumbing ──────────────────────────────────────────────────
+
+    private val pendingResultCallbacks = mutableMapOf<String, (Any?) -> Unit>()
+
+    internal fun registerResultCallback(onResult: (Any?) -> Unit): String {
+        val id = java.util.UUID.randomUUID().toString()
+        synchronized(pendingResultCallbacks) { pendingResultCallbacks[id] = onResult }
+        return id
+    }
+
+    internal fun registerResultCallback(id: String, onResult: (Any?) -> Unit) {
+        synchronized(pendingResultCallbacks) { pendingResultCallbacks[id] = onResult }
+    }
+
+    /**
+     * Delivers [result] to the callback registered under [id], exactly once
+     * (removal makes redundant deliveries no-ops).
+     */
+    internal fun deliverResult(id: String?, result: Any?) {
+        if (id == null) return
+        val callback = synchronized(pendingResultCallbacks) { pendingResultCallbacks.remove(id) }
+        callback?.invoke(result)
+    }
+
     // ── Dialog API ────────────────────────────────────────────────────────
 
     /**
@@ -237,6 +293,28 @@ object InlayNavigator {
         init(activity, prewarm = isPrewarmEnabled)
         val page = route.toPageSettings()
         val dialogFragment = createDialogFragment(activity, page)
+        dialogFragment.show(activity.supportFragmentManager, page.routeId)
+    }
+
+    /**
+     * Present a Flutter dialog and receive the result it pops with.
+     *
+     * [onResult] is invoked exactly once - with the popped result, or
+     * `null` when the dialog is dismissed without one (barrier tap, back).
+     */
+    fun presentDialog(
+        activity: FragmentActivity,
+        route: FlutterDialogRoute,
+        onResult: (Any?) -> Unit,
+    ) {
+        init(activity, prewarm = isPrewarmEnabled)
+        val page = route.toPageSettings()
+        val dialogFragment = createDialogFragment(activity, page)
+        val dialogId = dialogFragment.arguments
+            ?.getString(InlayFlutterDialogFragment.EXTRA_DIALOG_ROUTE_ID)
+        if (dialogId != null) {
+            registerResultCallback(dialogId, onResult)
+        }
         dialogFragment.show(activity.supportFragmentManager, page.routeId)
     }
 
@@ -313,13 +391,17 @@ object InlayNavigator {
      * Dispatch a native route request. Called by the Pigeon HostApi impl.
      * Throws if no handler has been set.
      */
-    internal fun dispatchNativeRoute(context: Context, route: PageSettings) {
+    internal fun dispatchNativeRoute(
+        context: Context,
+        route: PageSettings,
+        completion: (Any?) -> Unit = {},
+    ) {
         val handler = nativeRouteHandler
             ?: throw IllegalStateException(
                 "No native route handler set. " +
                 "Call InlayNavigator.setNativeRouteHandler() in your Application.onCreate()."
             )
-        handler.handle(context, route)
+        handler.handle(context, route, completion)
     }
 
     // ── Fragment factory ──────────────────────────────────────────────────
@@ -391,6 +473,7 @@ object InlayNavigator {
     // ── Route data serialization (Intent extras) ──────────────────────────
 
     private const val EXTRA_FRAGMENT_ROUTE_ID = "inlay_fragment_route_id"
+    internal const val EXTRA_RESULT_ID = "inlay_result_id"
     private const val EXTRA_ROUTE_ID = "inlay_route_id"
     private const val EXTRA_ROUTE_PATH = "inlay_route_path"
     private const val EXTRA_ROUTE_PARAMS = "inlay_route_params"
@@ -448,17 +531,31 @@ object InlayNavigator {
         activity: Activity,
         onPop: (() -> Unit)? = null,
         routeData: PageSettings? = null,
+        resultId: String? = null,
     ) {
         onEngineCreated?.invoke(engine)
         val hostApi = object : InlayNavigatorHostApi {
             override fun push(page: PageSettings) {
                 activity.startActivity(createIntent(activity, page))
             }
-            override fun pop() {
+            override fun pushForResult(page: PageSettings, callback: (Result<Any?>) -> Unit) {
+                val intent = createIntent(activity, page)
+                intent.putExtra(EXTRA_RESULT_ID, registerResultCallback { callback(Result.success(it)) })
+                activity.startActivity(intent)
+            }
+            override fun pop(result: Any?) {
+                deliverResult(resultId, result)
                 onPop?.invoke() ?: activity.finish()
             }
             override fun pushNativeRoute(route: PageSettings) {
                 dispatchNativeRoute(activity, route)
+            }
+            override fun pushNativeRouteForResult(route: PageSettings, callback: (Result<Any?>) -> Unit) {
+                try {
+                    dispatchNativeRoute(activity, route) { callback(Result.success(it)) }
+                } catch (e: IllegalStateException) {
+                    callback(Result.failure(e))
+                }
             }
             override fun setNativePopGestureEnabled(enabled: Boolean) {
                 // iOS-only gesture toggle. No-op on Android.
@@ -472,6 +569,22 @@ object InlayNavigator {
                 fragmentActivity.supportFragmentManager.let { fm ->
                     dialogFragment.show(fm, page.routeId)
                 }
+            }
+            override fun presentDialogForResult(page: PageSettings, callback: (Result<Any?>) -> Unit) {
+                val fragmentActivity = activity as? FragmentActivity
+                if (fragmentActivity == null) {
+                    callback(Result.success(null))
+                    return
+                }
+                val dialogFragment = createDialogFragment(activity, page)
+                val dialogId = dialogFragment.arguments
+                    ?.getString(InlayFlutterDialogFragment.EXTRA_DIALOG_ROUTE_ID)
+                if (dialogId != null) {
+                    registerResultCallback(dialogId) { callback(Result.success(it)) }
+                } else {
+                    callback(Result.success(null))
+                }
+                dialogFragment.show(fragmentActivity.supportFragmentManager, page.routeId)
             }
         }
         InlayNavigatorHostApi.setUp(engine.dartExecutor.binaryMessenger, hostApi)

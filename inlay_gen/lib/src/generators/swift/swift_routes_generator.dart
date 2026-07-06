@@ -162,6 +162,27 @@ void _writeRouteStruct(
     // toList() method.
     ..writeln('    ${generateSwiftToListMethod(fields, typeGraph)}');
 
+  // Result codecs: native routes encode (handler side), Flutter/dialog
+  // routes decode (native caller side). Emitting both is harmless.
+  final result = route.resultType;
+  if (result != null) {
+    final swiftResult = dartTypeToSwift(result);
+    final encode = generateSwiftEncode('result', result, typeGraph);
+    final decode = generateSwiftDecode('raw', result, typeGraph);
+    buffer
+      ..writeln()
+      ..writeln(
+        '    static func encodeResult(_ result: $swiftResult) -> Any? {',
+      )
+      ..writeln('        $encode')
+      ..writeln('    }')
+      ..writeln()
+      ..writeln('    static func decodeResult(_ raw: Any?) -> $swiftResult? {')
+      ..writeln('        guard let raw = raw else { return nil }')
+      ..writeln('        return $decode')
+      ..writeln('    }');
+  }
+
   // For Flutter/dialog routes, add toDict(), toPath(), and toPageSettings().
   if (isFlutterRoute || isDialogRoute) {
     final dictFields = fields
@@ -352,7 +373,7 @@ void _writeNativeRouteHandler(
     ..writeln()
     // handle() method.
     ..writeln(
-      '    func handle(viewController: UIViewController, route: PageSettings) {',
+      '    func handle(viewController: UIViewController, route: PageSettings, completion: @escaping (Any?) -> Void) {',
     )
     ..writeln(
       '        if let remote = route.schemaFingerprint, remote != InlaySchema.fingerprint {',
@@ -374,14 +395,29 @@ void _writeNativeRouteHandler(
 
   for (final route in routes) {
     final methodName = methodNameFromClassName(route.className);
-    buffer
-      ..writeln('        case "${route.routeName}":')
-      ..writeln('            $methodName(')
-      ..writeln(
-        '                page: ${route.className}.fromList(route.params as! [Any?]),',
-      )
-      ..writeln('                viewController: viewController')
-      ..writeln('            )');
+    final result = route.resultType;
+    final decodedPage =
+        'page: ${route.className}.fromList(route.params as! [Any?])';
+    buffer.writeln('        case "${route.routeName}":');
+    if (result != null) {
+      // Developer completes with the typed result; we encode it for the wire.
+      buffer
+        ..writeln('            $methodName(')
+        ..writeln('                $decodedPage,')
+        ..writeln('                viewController: viewController,')
+        ..writeln(
+          '                completion: { result in completion(${route.className}.encodeResult(result)) }',
+        )
+        ..writeln('            )');
+    } else {
+      // No result type: complete with nil once the handler is invoked.
+      buffer
+        ..writeln('            $methodName(')
+        ..writeln('                $decodedPage,')
+        ..writeln('                viewController: viewController')
+        ..writeln('            )')
+        ..writeln('            completion(nil)');
+    }
   }
 
   buffer
@@ -389,6 +425,7 @@ void _writeNativeRouteHandler(
     ..writeln(
       '            onUnknownRoute(route: route, viewController: viewController)',
     )
+    ..writeln('            completion(nil)')
     ..writeln('        }')
     ..writeln('    }')
     ..writeln();
@@ -396,13 +433,26 @@ void _writeNativeRouteHandler(
   // Abstract methods for each route.
   for (final route in routes) {
     final methodName = methodNameFromClassName(route.className);
-    buffer
-      ..writeln(
-        '    func $methodName(page: ${route.className}, viewController: UIViewController) {',
-      )
-      ..writeln('        fatalError("Must override $methodName")')
-      ..writeln('    }')
-      ..writeln();
+    final result = route.resultType;
+    if (result != null) {
+      final swiftResult = dartTypeToSwift(result);
+      buffer
+        ..writeln(
+          '    func $methodName(page: ${route.className}, '
+          'viewController: UIViewController, completion: @escaping ($swiftResult) -> Void) {',
+        )
+        ..writeln('        fatalError("Must override $methodName")')
+        ..writeln('    }')
+        ..writeln();
+    } else {
+      buffer
+        ..writeln(
+          '    func $methodName(page: ${route.className}, viewController: UIViewController) {',
+        )
+        ..writeln('        fatalError("Must override $methodName")')
+        ..writeln('    }')
+        ..writeln();
+    }
   }
 
   buffer

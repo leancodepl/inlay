@@ -164,7 +164,26 @@ void _writeRouteDataClass(
     ..writeln()
     ..writeln(
       '        ${generateKotlinFromListMethod(className, fields, typeGraph)}',
-    )
+    );
+
+  // Result codecs: native routes encode (handler side), Flutter/dialog
+  // routes decode (native caller side). Emitting both is harmless.
+  final result = route.resultType;
+  if (result != null) {
+    final kotlinResult = dartTypeToKotlin(result);
+    final encode = generateKotlinEncode('result', result, typeGraph);
+    final decode = generateKotlinDecode('raw', result, typeGraph);
+    buffer
+      ..writeln()
+      ..writeln(
+        '        fun encodeResult(result: $kotlinResult): Any? = $encode',
+      )
+      ..writeln()
+      ..writeln('        fun decodeResult(raw: Any?): $kotlinResult? =')
+      ..writeln('            if (raw == null) null else $decode');
+  }
+
+  buffer
     ..writeln('    }')
     ..writeln()
     // toList() method.
@@ -296,7 +315,7 @@ void _writeNativeRouteHandler(
     ..writeln()
     // handle() method.
     ..writeln(
-      '    override fun handle(context: Context, route: PageSettings) {',
+      '    override fun handle(context: Context, route: PageSettings, completion: (Any?) -> Unit) {',
     )
     ..writeln('        route.schemaFingerprint?.let { remote ->')
     ..writeln('            check(remote == InlaySchema.FINGERPRINT) {')
@@ -316,17 +335,30 @@ void _writeNativeRouteHandler(
 
   for (final route in routes) {
     final methodName = methodNameFromClassName(route.className);
-    buffer
-      ..writeln('            "${route.routeName}" -> $methodName(')
-      ..writeln(
-        '                ${route.className}.fromList(route.params as List<Any?>),',
-      )
-      ..writeln('                context')
-      ..writeln('            )');
+    final result = route.resultType;
+    final decodedPage =
+        '${route.className}.fromList(route.params as List<Any?>)';
+    buffer.writeln('            "${route.routeName}" -> {');
+    if (result != null) {
+      // Developer completes with the typed result; we encode it for the wire.
+      buffer.writeln(
+        '                $methodName($decodedPage, context) { result -> '
+        'completion(${route.className}.encodeResult(result)) }',
+      );
+    } else {
+      // No result type: complete with null once the handler is invoked.
+      buffer
+        ..writeln('                $methodName($decodedPage, context)')
+        ..writeln('                completion(null)');
+    }
+    buffer.writeln('            }');
   }
 
   buffer
-    ..writeln('            else -> onUnknownRoute(route, context)')
+    ..writeln('            else -> {')
+    ..writeln('                onUnknownRoute(route, context)')
+    ..writeln('                completion(null)')
+    ..writeln('            }')
     ..writeln('        }')
     ..writeln('    }')
     ..writeln();
@@ -334,9 +366,18 @@ void _writeNativeRouteHandler(
   // Abstract methods for each route.
   for (final route in routes) {
     final methodName = methodNameFromClassName(route.className);
-    buffer.writeln(
-      '    abstract fun $methodName(page: ${route.className}, context: Context)',
-    );
+    final result = route.resultType;
+    if (result != null) {
+      final kotlinResult = dartTypeToKotlin(result);
+      buffer.writeln(
+        '    abstract fun $methodName(page: ${route.className}, '
+        'context: Context, completion: ($kotlinResult) -> Unit)',
+      );
+    } else {
+      buffer.writeln(
+        '    abstract fun $methodName(page: ${route.className}, context: Context)',
+      );
+    }
   }
 
   buffer

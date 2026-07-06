@@ -178,8 +178,39 @@ class InlayNavigatorHostApi {
     }
   }
 
+  /// Push a new Flutter Activity/ViewController and complete with the
+  /// result the pushed screen pops with (`null` when dismissed without
+  /// one). The result travels in the generated route's wire encoding.
+  Future<Object?> pushForResult(PageSettings page) async {
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.inlay.InlayNavigatorHostApi.pushForResult$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(
+      <Object?>[page],
+    );
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+    if (pigeonVar_replyList == null) {
+      throw _createConnectionError(pigeonVar_channelName);
+    } else if (pigeonVar_replyList.length > 1) {
+      throw PlatformException(
+        code: pigeonVar_replyList[0]! as String,
+        message: pigeonVar_replyList[1] as String?,
+        details: pigeonVar_replyList[2],
+      );
+    } else {
+      return pigeonVar_replyList[0];
+    }
+  }
+
   /// Pop the current Flutter Activity/ViewController.
-  Future<void> pop() async {
+  ///
+  /// [result] is delivered to the caller that pushed this container with
+  /// a result callback; `null` when the screen has nothing to return.
+  Future<void> pop(Object? result) async {
     final pigeonVar_channelName =
         'dev.flutter.pigeon.inlay.InlayNavigatorHostApi.pop$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
@@ -187,7 +218,9 @@ class InlayNavigatorHostApi {
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(null);
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(
+      <Object?>[result],
+    );
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
       throw _createConnectionError(pigeonVar_channelName);
@@ -261,6 +294,35 @@ class InlayNavigatorHostApi {
     }
   }
 
+  /// Open a native screen and complete with the result the native side
+  /// passes to the handler completion (`null` when the screen finishes
+  /// without one). The result travels in the generated route's wire
+  /// encoding.
+  Future<Object?> pushNativeRouteForResult(PageSettings route) async {
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.inlay.InlayNavigatorHostApi.pushNativeRouteForResult$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(
+      <Object?>[route],
+    );
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+    if (pigeonVar_replyList == null) {
+      throw _createConnectionError(pigeonVar_channelName);
+    } else if (pigeonVar_replyList.length > 1) {
+      throw PlatformException(
+        code: pigeonVar_replyList[0]! as String,
+        message: pigeonVar_replyList[1] as String?,
+        details: pigeonVar_replyList[2],
+      );
+    } else {
+      return pigeonVar_replyList[0];
+    }
+  }
+
   /// Return the full route data that the native host stored for this engine.
   ///
   /// Flutter calls this once at startup to retrieve the typed route object
@@ -316,6 +378,33 @@ class InlayNavigatorHostApi {
       );
     } else {
       return;
+    }
+  }
+
+  /// Present a Flutter dialog and complete with the result it pops with
+  /// (`null` when dismissed without one).
+  Future<Object?> presentDialogForResult(PageSettings page) async {
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.inlay.InlayNavigatorHostApi.presentDialogForResult$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(
+      <Object?>[page],
+    );
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+    if (pigeonVar_replyList == null) {
+      throw _createConnectionError(pigeonVar_channelName);
+    } else if (pigeonVar_replyList.length > 1) {
+      throw PlatformException(
+        code: pigeonVar_replyList[0]! as String,
+        message: pigeonVar_replyList[1] as String?,
+        details: pigeonVar_replyList[2],
+      );
+    } else {
+      return pigeonVar_replyList[0];
     }
   }
 }

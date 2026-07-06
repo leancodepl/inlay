@@ -229,6 +229,7 @@ class InlayNavigatorApiPigeonCodec: FlutterStandardMessageCodec, @unchecked Send
   static let shared = InlayNavigatorApiPigeonCodec(readerWriter: InlayNavigatorApiPigeonCodecReaderWriter())
 }
 
+
 /// Host API — Flutter asks the platform to push a new Activity/ViewController.
 ///
 /// The platform side owns the Activity/ViewController stack; Flutter cannot
@@ -239,8 +240,15 @@ class InlayNavigatorApiPigeonCodec: FlutterStandardMessageCodec, @unchecked Send
 protocol InlayNavigatorHostApi {
   /// Push a new Flutter Activity/ViewController for the given page.
   func push(page: PageSettings) throws
+  /// Push a new Flutter Activity/ViewController and complete with the
+  /// result the pushed screen pops with (`null` when dismissed without
+  /// one). The result travels in the generated route's wire encoding.
+  func pushForResult(page: PageSettings, completion: @escaping (Result<Any?, Error>) -> Void)
   /// Pop the current Flutter Activity/ViewController.
-  func pop() throws
+  ///
+  /// [result] is delivered to the caller that pushed this container with
+  /// a result callback; `null` when the screen has nothing to return.
+  func pop(result: Any?) throws
   /// Enable/disable native iOS back gesture for this container.
   ///
   /// Used by Flutter to disable container-level swipe-back while the in-Flutter
@@ -252,6 +260,11 @@ protocol InlayNavigatorHostApi {
   /// If no handler is registered for the given `routeId`, this is a no-op
   /// (or throws, depending on platform configuration).
   func pushNativeRoute(route: PageSettings) throws
+  /// Open a native screen and complete with the result the native side
+  /// passes to the handler completion (`null` when the screen finishes
+  /// without one). The result travels in the generated route's wire
+  /// encoding.
+  func pushNativeRouteForResult(route: PageSettings, completion: @escaping (Result<Any?, Error>) -> Void)
   /// Return the full route data that the native host stored for this engine.
   ///
   /// Flutter calls this once at startup to retrieve the typed route object
@@ -264,6 +277,9 @@ protocol InlayNavigatorHostApi {
   /// starts a new Flutter engine. Flutter renders the dialog content
   /// (barrier, animation, positioning) over the native screen underneath.
   func presentDialog(page: PageSettings) throws
+  /// Present a Flutter dialog and complete with the result it pops with
+  /// (`null` when dismissed without one).
+  func presentDialogForResult(page: PageSettings, completion: @escaping (Result<Any?, Error>) -> Void)
 }
 
 /// Generated setup class from Pigeon to handle messages through the `binaryMessenger`.
@@ -288,12 +304,37 @@ class InlayNavigatorHostApiSetup {
     } else {
       pushChannel.setMessageHandler(nil)
     }
+    /// Push a new Flutter Activity/ViewController and complete with the
+    /// result the pushed screen pops with (`null` when dismissed without
+    /// one). The result travels in the generated route's wire encoding.
+    let pushForResultChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.inlay.InlayNavigatorHostApi.pushForResult\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      pushForResultChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let pageArg = args[0] as! PageSettings
+        api.pushForResult(page: pageArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      pushForResultChannel.setMessageHandler(nil)
+    }
     /// Pop the current Flutter Activity/ViewController.
+    ///
+    /// [result] is delivered to the caller that pushed this container with
+    /// a result callback; `null` when the screen has nothing to return.
     let popChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.inlay.InlayNavigatorHostApi.pop\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
     if let api = api {
-      popChannel.setMessageHandler { _, reply in
+      popChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let resultArg: Any? = args[0]
         do {
-          try api.pop()
+          try api.pop(result: resultArg)
           reply(wrapResult(nil))
         } catch {
           reply(wrapError(error))
@@ -341,6 +382,27 @@ class InlayNavigatorHostApiSetup {
     } else {
       pushNativeRouteChannel.setMessageHandler(nil)
     }
+    /// Open a native screen and complete with the result the native side
+    /// passes to the handler completion (`null` when the screen finishes
+    /// without one). The result travels in the generated route's wire
+    /// encoding.
+    let pushNativeRouteForResultChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.inlay.InlayNavigatorHostApi.pushNativeRouteForResult\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      pushNativeRouteForResultChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let routeArg = args[0] as! PageSettings
+        api.pushNativeRouteForResult(route: routeArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      pushNativeRouteForResultChannel.setMessageHandler(nil)
+    }
     /// Return the full route data that the native host stored for this engine.
     ///
     /// Flutter calls this once at startup to retrieve the typed route object
@@ -378,6 +440,25 @@ class InlayNavigatorHostApiSetup {
       }
     } else {
       presentDialogChannel.setMessageHandler(nil)
+    }
+    /// Present a Flutter dialog and complete with the result it pops with
+    /// (`null` when dismissed without one).
+    let presentDialogForResultChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.inlay.InlayNavigatorHostApi.presentDialogForResult\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      presentDialogForResultChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let pageArg = args[0] as! PageSettings
+        api.presentDialogForResult(page: pageArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      presentDialogForResultChannel.setMessageHandler(nil)
     }
   }
 }

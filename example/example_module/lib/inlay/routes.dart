@@ -8,7 +8,8 @@ class GreetingPage {
   final GreetingStyle? style;
 }
 
-@InlayFlutterRoute('/counter')
+// Returns the final count to whoever opened it in a new engine.
+@InlayFlutterRoute('/counter', result: int)
 class CounterPage {
   const CounterPage({this.seed});
 
@@ -23,7 +24,8 @@ class ProfilePage {
   final List<UserBadge>? badges;
 }
 
-@InlayFlutterDialog('/confirm-action/:action')
+// Returns whether the user confirmed the action.
+@InlayFlutterDialog('/confirm-action/:action', result: bool)
 class ConfirmActionDialog {
   const ConfirmActionDialog({required this.action, this.message});
 
@@ -45,7 +47,8 @@ class NativeSettingsPage {
   final String? source;
 }
 
-@InlayNativeRoute()
+// Returns feedback text the user typed on the native About screen.
+@InlayNativeRoute(result: String)
 class NativeAboutPage {
   const NativeAboutPage({required this.appVersion});
 

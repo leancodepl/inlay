@@ -21,6 +21,9 @@ class _GreetingScreenState extends State<GreetingScreen> {
   // (setOnEngineCreated on iOS, automatic on Android).
   PackageInfo? _packageInfo;
 
+  // Last value returned by a screen opened for a result.
+  String? _lastResult;
+
   @override
   void initState() {
     super.initState();
@@ -29,6 +32,12 @@ class _GreetingScreenState extends State<GreetingScreen> {
         setState(() => _packageInfo = info);
       }
     });
+  }
+
+  void _showResult(String label, Object? value) {
+    if (mounted) {
+      setState(() => _lastResult = '$label: ${value ?? '(dismissed)'}');
+    }
   }
 
   @override
@@ -76,10 +85,12 @@ class _GreetingScreenState extends State<GreetingScreen> {
             ),
             const SizedBox(height: 12),
             OutlinedButton(
-              onPressed: () {
-                InlayNavigator.instance.push(const CounterPage());
+              onPressed: () async {
+                // Flutter -> Flutter (new engine) -> typed result back.
+                final count = await const CounterPage().pushForResult();
+                _showResult('Counter returned', count);
               },
-              child: const Text('Open Counter (new engine/container)'),
+              child: const Text('Open Counter (new engine, await result)'),
             ),
             const SizedBox(height: 12),
             OutlinedButton(
@@ -99,16 +110,18 @@ class _GreetingScreenState extends State<GreetingScreen> {
             OutlinedButton(
               onPressed: packageInfo == null
                   ? null
-                  : () {
-                      InlayNavigator.instance.push(
-                        NativeAboutPage(
-                          appVersion: packageInfo.version,
-                        ).toNativeRoute(),
-                      );
+                  : () async {
+                      // Flutter -> native -> typed result back.
+                      final feedback = await NativeAboutPage(
+                        appVersion: packageInfo.version,
+                      ).pushForResult();
+                      _showResult('About returned', feedback);
                     },
-              child: const Text('Open native About screen'),
+              child: const Text('Open native About (await result)'),
             ),
             const Spacer(),
+            if (_lastResult != null)
+              Text(_lastResult!, style: Theme.of(context).textTheme.titleSmall),
             Text(
               'Locale: ${Localizations.localeOf(context)}',
               style: Theme.of(context).textTheme.bodySmall,

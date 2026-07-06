@@ -32,10 +32,15 @@ class InlayFlutterRoute {
   /// `:fieldName` syntax matching the class fields.
   /// The internal route identifier is auto-derived from the class name
   /// (strip "Page" suffix, camelCase).
-  const InlayFlutterRoute(this.path);
+  const InlayFlutterRoute(this.path, {this.result});
 
   /// URL path template, e.g. '/sounds-notifications/:contactId'.
   final String path;
+
+  /// Optional result type the screen can return to its caller via the
+  /// generated `popWithResult`. Must be a type the generator supports
+  /// (primitive, enum, or annotated data class).
+  final Type? result;
 }
 
 /// Marks a class as a Flutter dialog route (native -> Flutter overlay).
@@ -58,10 +63,15 @@ class InlayFlutterDialog {
   ///
   /// [path] is the URL path template for this dialog. Path parameters use
   /// `:fieldName` syntax matching the class fields.
-  const InlayFlutterDialog(this.path);
+  const InlayFlutterDialog(this.path, {this.result});
 
   /// URL path template, e.g. '/confirm-delete/:itemId'.
   final String path;
+
+  /// Optional result type the dialog can return to its caller via the
+  /// generated `popWithResult`. Must be a type the generator supports
+  /// (primitive, enum, or annotated data class).
+  final Type? result;
 }
 
 /// Marks a class as a native route (Flutter -> native).
@@ -79,7 +89,7 @@ class InlayFlutterDialog {
 ///   final String contactId;
 /// }
 ///
-/// @InlayNativeRoute('edit-profile')  // explicit route name
+/// @InlayNativeRoute(name: 'edit-profile')  // explicit route name
 /// class NativeEditProfilePage {
 ///   const NativeEditProfilePage({required this.contactId});
 ///   final String contactId;
@@ -90,10 +100,15 @@ class InlayNativeRoute {
   ///
   /// [name] is the route identifier used in navigation. If not provided,
   /// defaults to camelCase of the class name without "Page" suffix.
-  const InlayNativeRoute([this.name]);
+  const InlayNativeRoute({this.name, this.result});
 
   /// Optional route name. Defaults to camelCase of class name without "Page" suffix.
   final String? name;
+
+  /// Optional result type the native screen returns to Flutter via the
+  /// generated handler completion. Must be a type the generator supports
+  /// (primitive, enum, or annotated data class).
+  final Type? result;
 }
 
 /// Marks a class as a typed store over `KeyValueStorage`.

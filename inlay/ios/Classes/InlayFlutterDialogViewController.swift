@@ -16,6 +16,19 @@ public final class InlayFlutterDialogViewController: FlutterViewController {
     /// instead of the default modal dismiss.
     public var onPop: (() -> Void)?
 
+    /// Invoked exactly once with the result the dialog popped with, or
+    /// `nil` when it is dismissed without one.
+    public var onResult: ((Any?) -> Void)?
+
+    private var resultDelivered = false
+
+    /// Delivers [result] to `onResult` exactly once.
+    func deliverResult(_ result: Any?) {
+        guard !resultDelivered else { return }
+        resultDelivered = true
+        onResult?(result)
+    }
+
     // MARK: - Lifecycle
 
     override public func viewDidLoad() {
@@ -35,6 +48,9 @@ public final class InlayFlutterDialogViewController: FlutterViewController {
     }
 
     deinit {
+        // Dismissed without an explicit result - the caller still gets its
+        // callback, with nil.
+        deliverResult(nil)
         InlayNavigator.shared.cleanUpEngine(engine)
     }
 }

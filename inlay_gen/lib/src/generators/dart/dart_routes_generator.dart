@@ -296,7 +296,70 @@ void _writeFlutterRoute(
       ..writeln('  }');
   }
 
+  _writeResultMembers(buffer, route, typeGraph);
   buffer.writeln('}');
+}
+
+/// Emits the result helpers shared by every route class with a `result:`
+/// type: `encodeResult` / `decodeResult` (wire conversion) plus the
+/// caller-side `pushForResult`. Flutter and dialog routes additionally get
+/// the screen-side `popWithResult`.
+void _writeResultMembers(
+  StringBuffer buffer,
+  RouteDefinition route,
+  Map<String, TypeDefinition> typeGraph,
+) {
+  final result = route.resultType;
+  if (result == null) {
+    return;
+  }
+  final type = result.toSource();
+  final encode = generateDartEncode('result', result, typeGraph);
+  final decode = generateDartDecode('raw', result, typeGraph);
+
+  buffer
+    ..writeln()
+    ..writeln('  /// Encodes a result value into its wire form.')
+    ..writeln('  static Object? encodeResult($type result) => $encode;')
+    ..writeln()
+    ..writeln('  /// Decodes a wire result value, or `null` when absent.')
+    ..writeln('  static $type? decodeResult(Object? raw) =>')
+    ..writeln('      raw == null ? null : $decode;');
+
+  final isNative = route.routeType == RouteType.native;
+  if (isNative) {
+    buffer
+      ..writeln()
+      ..writeln('  /// Opens this native screen and awaits its result.')
+      ..writeln('  Future<$type?> pushForResult() async {')
+      ..writeln('    final raw = await InlayNavigator.instance')
+      ..writeln('        .pushNativeRouteForResult(')
+      ..writeln(
+        '      PageSettings(routeId: routeId, params: encode(), schemaFingerprint: inlaySchemaFingerprint),',
+      )
+      ..writeln('    );')
+      ..writeln('    return decodeResult(raw);')
+      ..writeln('  }');
+  } else {
+    final forResult = route.routeType == RouteType.flutterDialog
+        ? 'presentFlutterDialogForResult'
+        : 'pushFlutterRouteForResult';
+    buffer
+      ..writeln()
+      ..writeln('  /// Pops the screen, returning [result] to the caller.')
+      ..writeln('  static Future<void> popWithResult($type result) =>')
+      ..writeln('      InlayNavigator.instance.pop(encodeResult(result));')
+      ..writeln()
+      ..writeln(
+        '  /// Opens this screen in a new engine and awaits its result.',
+      )
+      ..writeln('  Future<$type?> pushForResult() async {')
+      ..writeln(
+        '    final raw = await InlayNavigator.instance.$forResult(toPageSettings());',
+      )
+      ..writeln('    return decodeResult(raw);')
+      ..writeln('  }');
+  }
 }
 
 /// Extracts path parameter names from a path template.
@@ -458,8 +521,10 @@ void _writeNativeRoute(
     ..writeln(
       '    PageSettings(routeId: routeId, params: encode(), schemaFingerprint: inlaySchemaFingerprint),',
     )
-    ..writeln('  );')
-    ..writeln('}');
+    ..writeln('  );');
+
+  _writeResultMembers(buffer, route, typeGraph);
+  buffer.writeln('}');
 }
 
 void _writeFlutterDialogRouteSealedClass(StringBuffer buffer) {
@@ -590,6 +655,7 @@ void _writeFlutterDialogRoute(
       ..writeln('  }');
   }
 
+  _writeResultMembers(buffer, route, typeGraph);
   buffer.writeln('}');
 }
 
