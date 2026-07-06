@@ -606,27 +606,28 @@ once per engine (including the hidden prewarmed engine), right after the engine 
 - `GeneratedPluginRegistrant` on iOS lives in the `FlutterPluginRegistrant` pod (source
   integration via `podhelper.rb`) - `import FlutterPluginRegistrant` in the AppDelegate.
 
-### Schema Fingerprint (`setSchemaFingerprint` / `verifySchemaFingerprint`)
+### Schema Fingerprint (automatic drift detection)
 
 The generated Dart compiles into the module and the generated Kotlin/Swift compile into the
 hosts, so the two binaries can be built from different schema revisions. Serialization is
 positional, which turns such drift into silent corruption or crashes. `inlay_gen` therefore
-emits a stable **schema fingerprint** into every language's output:
+emits a stable **schema fingerprint** into every language's output (Dart:
+`inlaySchemaFingerprint`, Kotlin: `InlaySchema.FINGERPRINT`, Swift: `InlaySchema.fingerprint`)
+and wires the check into the generated code itself - no app code involved:
 
-- Dart: `const inlaySchemaFingerprint` (in `routes.g.dart`, or `stores.g.dart` for
-  store-only modules)
-- Kotlin: `InlaySchema.FINGERPRINT`
-- Swift: `InlaySchema.fingerprint`
+- Every generated `toPageSettings()` embeds the sender's fingerprint into `PageSettings`
+  (`schemaFingerprint` field).
+- Native → Flutter: the generated Dart decoders (`decodeFlutterRouteData`,
+  `decodeFlutterDialogRouteData`, `decodeInlayRouteData`) verify the incoming fingerprint
+  and throw an `InlaySchemaMismatchException` naming both fingerprints on mismatch.
+  `fetchInitialRoute` deliberately rethrows it (unlike other decode errors), so the
+  engine fails loudly instead of falling back to a path-only render.
+- Flutter → native: the generated `NativeRouteHandler` verifies before dispatching
+  (`IllegalStateException` on Android - surfaced to the Dart caller as a
+  `PlatformException` - and `fatalError` on iOS).
 
-The host registers its copy at startup (`InlayNavigator.setSchemaFingerprint(...)`, before
-`start()`/`init()`), and the Dart entrypoint verifies:
-
-```dart
-await InlayNavigator.instance.verifySchemaFingerprint(inlaySchemaFingerprint);
-```
-
-On mismatch this throws a `StateError` naming both fingerprints. If the host never registers
-a fingerprint, the check is skipped.
+A `PageSettings` without a fingerprint (hand-built, or produced by pre-fingerprint
+generated code) skips the check.
 
 ### Engine Prewarming
 

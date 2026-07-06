@@ -23,7 +23,12 @@ import 'package:pigeon/pigeon.dart';
 /// For Flutter pages pushed from native, [params] is a `Map<String, String>`
 /// (produced by URL-decoding the `initialRoute` string).
 class PageSettings {
-  PageSettings({required this.routeId, this.params, this.path});
+  PageSettings({
+    required this.routeId,
+    this.params,
+    this.path,
+    this.schemaFingerprint,
+  });
 
   /// Identifies which screen to show (e.g. "soundsNotifications").
   String routeId;
@@ -35,6 +40,15 @@ class PageSettings {
   /// URL path derived from the typed route object (e.g. "/products/42").
   /// When set, used as the `initialRoute` for router-based navigation.
   String? path;
+
+  /// Fingerprint of the generated schema on the sending side.
+  ///
+  /// Set automatically by generated `toPageSettings()` implementations and
+  /// verified automatically by the generated decoders on the receiving
+  /// side, so a host and module built from different schema revisions fail
+  /// with a descriptive error instead of corrupting positional data.
+  /// `null` when the sender predates fingerprinting (check skipped).
+  String? schemaFingerprint;
 }
 
 /// Host API — Flutter asks the platform to push a new Activity/ViewController.
@@ -76,12 +90,4 @@ abstract class InlayNavigatorHostApi {
   /// starts a new Flutter engine. Flutter renders the dialog content
   /// (barrier, animation, positioning) over the native screen underneath.
   void presentDialog(PageSettings page);
-
-  /// Return the schema fingerprint the host registered via
-  /// `InlayNavigator.setSchemaFingerprint`, or `null` when the host did
-  /// not register one (check disabled).
-  ///
-  /// Flutter calls this at engine startup to detect a host built from a
-  /// different generated schema revision than the module.
-  String? getHostSchemaFingerprint();
 }

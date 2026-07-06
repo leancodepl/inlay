@@ -88,11 +88,11 @@ class CodeGenerator {
         types.routeEnums.isNotEmpty;
     final hasStores = schema.stores.isNotEmpty;
 
-    // The fingerprint covers the full schema (routes + stores) and is
-    // emitted once per language - into the routes file, or the stores file
-    // for modules that only define stores.
+    // The fingerprint covers the full schema (routes + stores). It is
+    // embedded into every outgoing PageSettings and verified automatically
+    // on the receiving side; the constant lives in the routes file, or the
+    // stores file for modules that only define stores.
     final fingerprint = computeSchemaFingerprint(schema);
-    final routesFingerprint = hasRoutes ? fingerprint : null;
     final storesFingerprint = hasRoutes ? null : fingerprint;
 
     return GenerationResult(
@@ -102,7 +102,7 @@ class CodeGenerator {
           ? generateDartRoutes(
               schema: routeSchema,
               typeGraph: typeGraph,
-              schemaFingerprint: routesFingerprint,
+              schemaFingerprint: fingerprint,
             )
           : null,
       dartStoresCode: hasStores
@@ -117,7 +117,7 @@ class CodeGenerator {
               schema: routeSchema,
               typeGraph: typeGraph,
               packageName: kotlinPackage,
-              schemaFingerprint: routesFingerprint,
+              schemaFingerprint: fingerprint,
             )
           : null,
       kotlinStoresCode: hasStores && kotlinPackage != null
@@ -132,7 +132,7 @@ class CodeGenerator {
           ? generateSwiftRoutes(
               schema: routeSchema,
               typeGraph: typeGraph,
-              schemaFingerprint: routesFingerprint,
+              schemaFingerprint: fingerprint,
             )
           : null,
       swiftStoresCode: hasStores

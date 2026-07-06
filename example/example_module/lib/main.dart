@@ -39,7 +39,6 @@ void inlayImperativeMain() {
 Future<void> _runInlayWithGoRouter() async {
   WidgetsFlutterBinding.ensureInitialized();
   await KeyValueStorage.instance.init();
-  await InlayNavigator.instance.verifySchemaFingerprint(inlaySchemaFingerprint);
 
   final path = InlayNavigator.initialPath;
   final route = await InlayNavigator.fetchInitialRoute(decodeInlayRouteData);
@@ -71,7 +70,6 @@ Future<void> _runInlayWithGoRouter() async {
 Future<void> _runInlayWithAutoRoute() async {
   WidgetsFlutterBinding.ensureInitialized();
   await KeyValueStorage.instance.init();
-  await InlayNavigator.instance.verifySchemaFingerprint(inlaySchemaFingerprint);
 
   final path = InlayNavigator.initialPath;
   final route = await InlayNavigator.fetchInitialRoute(decodeInlayRouteData);
@@ -97,7 +95,6 @@ Future<void> _runInlayWithAutoRoute() async {
 Future<void> _runInlayImperative() async {
   WidgetsFlutterBinding.ensureInitialized();
   await KeyValueStorage.instance.init();
-  await InlayNavigator.instance.verifySchemaFingerprint(inlaySchemaFingerprint);
 
   final route = await InlayNavigator.fetchInitialRoute(decodeInlayRouteData);
 

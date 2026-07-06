@@ -590,6 +590,7 @@ class SecondPage {
       final result = resolver.resolve(schema);
 
       final code = generateDartRoutes(
+        schemaFingerprint: 'testfp',
         schema: schema,
         typeGraph: result.typeGraph,
       );
@@ -646,6 +647,7 @@ class SecondPage {
       expect(result.isValid, isTrue);
 
       final code = generateDartRoutes(
+        schemaFingerprint: 'testfp',
         schema: schema,
         typeGraph: result.typeGraph,
       );
@@ -663,6 +665,7 @@ class SecondPage {
       final result = resolver.resolve(schema);
 
       final code = generateDartRoutes(
+        schemaFingerprint: 'testfp',
         schema: schema,
         typeGraph: result.typeGraph,
       );
@@ -693,6 +696,7 @@ class SecondPage {
       final result = resolver.resolve(merged);
 
       final code = generateDartRoutes(
+        schemaFingerprint: 'testfp',
         schema: merged,
         typeGraph: result.typeGraph,
       );
@@ -770,6 +774,7 @@ class SecondPage {
       final result = resolver.resolve(schema);
 
       final code = generateKotlinRoutes(
+        schemaFingerprint: 'testfp',
         schema: schema,
         typeGraph: result.typeGraph,
         packageName: 'com.example.generated',
@@ -811,6 +816,7 @@ class SecondPage {
       final result = resolver.resolve(schema);
 
       final code = generateKotlinRoutes(
+        schemaFingerprint: 'testfp',
         schema: schema,
         typeGraph: result.typeGraph,
         packageName: 'com.example.generated',
@@ -878,6 +884,7 @@ class SecondPage {
       final result = resolver.resolve(schema);
 
       final code = generateSwiftRoutes(
+        schemaFingerprint: 'testfp',
         schema: schema,
         typeGraph: result.typeGraph,
       );
@@ -894,6 +901,7 @@ class SecondPage {
       final result = resolver.resolve(schema);
 
       final code = generateSwiftRoutes(
+        schemaFingerprint: 'testfp',
         schema: schema,
         typeGraph: result.typeGraph,
       );
@@ -929,6 +937,7 @@ class SecondPage {
       final result = resolver.resolve(schema);
 
       final code = generateSwiftRoutes(
+        schemaFingerprint: 'testfp',
         schema: schema,
         typeGraph: result.typeGraph,
       );

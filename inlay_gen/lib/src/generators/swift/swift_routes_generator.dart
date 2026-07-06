@@ -18,7 +18,7 @@ import 'package:inlay_gen/src/utils/naming.dart';
 String generateSwiftRoutes({
   required Schema schema,
   required Map<String, TypeDefinition> typeGraph,
-  String? schemaFingerprint,
+  required String schemaFingerprint,
 }) {
   final buffer = StringBuffer()
     // Header.
@@ -44,23 +44,19 @@ String generateSwiftRoutes({
       '    value.addingPercentEncoding(withAllowedCharacters: _inlayRouteAllowedCharacters) ?? value',
     )
     ..writeln('}')
+    ..writeln()
+    ..writeln('/// Fingerprint of the schema this file was generated from.')
+    ..writeln('///')
+    ..writeln(
+      '/// Embedded into every outgoing `PageSettings` and verified by the',
+    )
+    ..writeln(
+      '/// generated route handler, so host/module schema drift fails fast.',
+    )
+    ..writeln('enum InlaySchema {')
+    ..writeln('    static let fingerprint = "$schemaFingerprint"')
+    ..writeln('}')
     ..writeln();
-
-  if (schemaFingerprint != null) {
-    buffer
-      ..writeln('/// Fingerprint of the schema this file was generated from.')
-      ..writeln('///')
-      ..writeln(
-        '/// Register with `InlayNavigator.shared.setSchemaFingerprint(InlaySchema.fingerprint)`',
-      )
-      ..writeln(
-        '/// so Flutter engines can detect a module built from a different schema revision.',
-      )
-      ..writeln('enum InlaySchema {')
-      ..writeln('    static let fingerprint = "$schemaFingerprint"')
-      ..writeln('}')
-      ..writeln();
-  }
 
   // Generate enums.
   for (final enumDef in schema.enums) {
@@ -194,14 +190,14 @@ void _writeRouteStruct(
       buffer
         ..writeln('    func toPageSettings() -> PageSettings {')
         ..writeln(
-          '        PageSettings(routeId: Self.routeName, params: toList(), path: toPath())',
+          '        PageSettings(routeId: Self.routeName, params: toList(), path: toPath(), schemaFingerprint: InlaySchema.fingerprint)',
         )
         ..writeln('    }');
     } else {
       buffer
         ..writeln('    func toPageSettings() -> PageSettings {')
         ..writeln(
-          '        PageSettings(routeId: Self.routeName, params: toList())',
+          '        PageSettings(routeId: Self.routeName, params: toList(), schemaFingerprint: InlaySchema.fingerprint)',
         )
         ..writeln('    }');
     }
@@ -358,6 +354,22 @@ void _writeNativeRouteHandler(
     ..writeln(
       '    func handle(viewController: UIViewController, route: PageSettings) {',
     )
+    ..writeln(
+      '        if let remote = route.schemaFingerprint, remote != InlaySchema.fingerprint {',
+    )
+    ..writeln('            fatalError(')
+    ..writeln(
+      '                "Inlay schema mismatch: the Flutter module sent a route generated "',
+    )
+    ..writeln(
+      r'                    + "from schema \(remote), but this host was built against schema "',
+    )
+    ..writeln(
+      r'                    + "\(InlaySchema.fingerprint). Re-run inlay_gen and rebuild both "',
+    )
+    ..writeln('                    + "sides from the same schema revision."')
+    ..writeln('            )')
+    ..writeln('        }')
     ..writeln('        switch route.routeId {');
 
   for (final route in routes) {

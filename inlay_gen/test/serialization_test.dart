@@ -114,6 +114,7 @@ void main() {
       final output = generateSwiftRoutes(
         schema: schemaWithRoute(),
         typeGraph: {},
+        schemaFingerprint: 'testfp',
       );
 
       // Regression: .urlQueryAllowed leaves & and = unencoded inside values;

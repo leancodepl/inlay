@@ -34,17 +34,19 @@ sed -i '' '/struct PageSettings/,/^}/ {
   s/^  var routeId/  public var routeId/
   s/^  var params/  public var params/
   s/^  var path/  public var path/
+  s/^  var schemaFingerprint/  public var schemaFingerprint/
   s/^  static func == /  public static func == /
   s/^  func hash(into/  public func hash(into/
 }' "$NAV"
 
-# Add public memberwise init for PageSettings (after the path property)
-sed -i '' '/^  public var path: String? = nil$/a\
+# Add public memberwise init for PageSettings (after the last property)
+sed -i '' '/^  public var schemaFingerprint: String? = nil$/a\
 \
-  public init(routeId: String, params: Any? = nil, path: String? = nil) {\
+  public init(routeId: String, params: Any? = nil, path: String? = nil, schemaFingerprint: String? = nil) {\
     self.routeId = routeId\
     self.params = params\
     self.path = path\
+    self.schemaFingerprint = schemaFingerprint\
   }' "$NAV"
 
 # --- KeyValueStorageApi.g.swift ---

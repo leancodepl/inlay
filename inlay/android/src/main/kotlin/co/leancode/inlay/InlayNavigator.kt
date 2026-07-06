@@ -85,9 +85,6 @@ object InlayNavigator {
     /** Per-engine setup hook invoked once for every engine used by inlay pages. */
     @Volatile
     private var onEngineCreated: ((FlutterEngine) -> Unit)? = null
-    /** Schema fingerprint of the generated code compiled into the host. */
-    @Volatile
-    private var schemaFingerprint: String? = null
     /** Whether [init] should prewarm a hidden engine. */
     private var isPrewarmEnabled: Boolean = true
     /** Hidden warm-up engine kept alive for app lifetime. */
@@ -129,24 +126,6 @@ object InlayNavigator {
     fun setOnEngineCreated(callback: ((FlutterEngine) -> Unit)?) {
         onEngineCreated = callback
         prewarmedEngine?.let { callback?.invoke(it) }
-    }
-
-    /**
-     * Register the fingerprint of the generated schema the host was built
-     * against (the generated `InlaySchema.FINGERPRINT` constant).
-     *
-     * Flutter engines compare it with the module's own fingerprint at
-     * startup (`InlayNavigator.instance.verifySchemaFingerprint` on the
-     * Dart side) and fail fast when the two binaries were generated from
-     * different schema revisions. When never set, the check is disabled.
-     *
-     * ```kotlin
-     * // In Application.onCreate:
-     * InlayNavigator.setSchemaFingerprint(InlaySchema.FINGERPRINT)
-     * ```
-     */
-    fun setSchemaFingerprint(fingerprint: String) {
-        schemaFingerprint = fingerprint
     }
 
     /**
@@ -219,9 +198,6 @@ object InlayNavigator {
                 override fun setNativePopGestureEnabled(enabled: Boolean) {}
                 override fun getInitialRouteData(): PageSettings? = null
                 override fun presentDialog(page: PageSettings) {}
-                // The prewarm engine runs the full Dart entrypoint, so the
-                // schema check must see the real fingerprint there too.
-                override fun getHostSchemaFingerprint(): String? = schemaFingerprint
             }
         )
         KeyValueStorageImpl.attachToEngine(engine)
@@ -418,10 +394,12 @@ object InlayNavigator {
     private const val EXTRA_ROUTE_ID = "inlay_route_id"
     private const val EXTRA_ROUTE_PATH = "inlay_route_path"
     private const val EXTRA_ROUTE_PARAMS = "inlay_route_params"
+    private const val EXTRA_ROUTE_FINGERPRINT = "inlay_route_fingerprint"
 
     private fun putRouteDataExtra(intent: Intent, page: PageSettings) {
         intent.putExtra(EXTRA_ROUTE_ID, page.routeId)
         page.path?.let { intent.putExtra(EXTRA_ROUTE_PATH, it) }
+        page.schemaFingerprint?.let { intent.putExtra(EXTRA_ROUTE_FINGERPRINT, it) }
         page.params?.let { params ->
             val buffer = StandardMessageCodec.INSTANCE.encodeMessage(params)
             if (buffer != null) {
@@ -433,11 +411,12 @@ object InlayNavigator {
     internal fun extractRouteDataFromIntent(intent: Intent): PageSettings? {
         val routeId = intent.getStringExtra(EXTRA_ROUTE_ID) ?: return null
         val path = intent.getStringExtra(EXTRA_ROUTE_PATH)
+        val fingerprint = intent.getStringExtra(EXTRA_ROUTE_FINGERPRINT)
         val paramsBytes = intent.getByteArrayExtra(EXTRA_ROUTE_PARAMS)
         val params = paramsBytes?.let {
             StandardMessageCodec.INSTANCE.decodeMessage(ByteBuffer.wrap(it))
         }
-        return PageSettings(routeId, params, path)
+        return PageSettings(routeId, params, path, fingerprint)
     }
 
     internal fun consumePendingRouteData(fragmentId: String?): PageSettings? {
@@ -486,9 +465,6 @@ object InlayNavigator {
             }
             override fun getInitialRouteData(): PageSettings? {
                 return routeData
-            }
-            override fun getHostSchemaFingerprint(): String? {
-                return schemaFingerprint
             }
             override fun presentDialog(page: PageSettings) {
                 val fragmentActivity = activity as? FragmentActivity ?: return

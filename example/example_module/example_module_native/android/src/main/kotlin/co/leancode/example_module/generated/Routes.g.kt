@@ -13,8 +13,8 @@ import co.leancode.inlay.navigator.PageSettings
 /**
  * Fingerprint of the schema this file was generated from.
  *
- * Register with `InlayNavigator.setSchemaFingerprint(InlaySchema.FINGERPRINT)`
- * so Flutter engines can detect a module built from a different schema revision.
+ * Embedded into every outgoing [PageSettings] and verified by the
+ * generated route handler, so host/module schema drift fails fast.
  */
 object InlaySchema {
     const val FINGERPRINT = "1597917a4f771129"
@@ -80,7 +80,7 @@ data class GreetingPage(
         return "$basePath?${query.joinToString("&")}"
     }
 
-    override fun toPageSettings(): PageSettings = PageSettings(ROUTE_NAME, toList(), toPath())
+    override fun toPageSettings(): PageSettings = PageSettings(ROUTE_NAME, toList(), toPath(), InlaySchema.FINGERPRINT)
 }
 
 data class CounterPage(
@@ -111,7 +111,7 @@ data class CounterPage(
         return "$basePath?${query.joinToString("&")}"
     }
 
-    override fun toPageSettings(): PageSettings = PageSettings(ROUTE_NAME, toList(), toPath())
+    override fun toPageSettings(): PageSettings = PageSettings(ROUTE_NAME, toList(), toPath(), InlaySchema.FINGERPRINT)
 }
 
 data class ProfilePage(
@@ -140,7 +140,7 @@ data class ProfilePage(
 
     fun toPath(): String = "/profile/${Uri.encode(userId)}"
 
-    override fun toPageSettings(): PageSettings = PageSettings(ROUTE_NAME, toList(), toPath())
+    override fun toPageSettings(): PageSettings = PageSettings(ROUTE_NAME, toList(), toPath(), InlaySchema.FINGERPRINT)
 }
 
 data class ConfirmActionDialog(
@@ -175,7 +175,7 @@ data class ConfirmActionDialog(
         return "$basePath?${query.joinToString("&")}"
     }
 
-    override fun toPageSettings(): PageSettings = PageSettings(ROUTE_NAME, toList(), toPath())
+    override fun toPageSettings(): PageSettings = PageSettings(ROUTE_NAME, toList(), toPath(), InlaySchema.FINGERPRINT)
 }
 
 data class ThemePickerDialog(
@@ -200,7 +200,7 @@ data class ThemePickerDialog(
 
     fun toPath(): String = "/theme-picker/${Uri.encode(userId)}"
 
-    override fun toPageSettings(): PageSettings = PageSettings(ROUTE_NAME, toList(), toPath())
+    override fun toPageSettings(): PageSettings = PageSettings(ROUTE_NAME, toList(), toPath(), InlaySchema.FINGERPRINT)
 }
 
 data class NativeSettingsPage(
@@ -238,6 +238,14 @@ data class NativeAboutPage(
 abstract class NativeRouteHandler : NativeRouteHandling {
 
     override fun handle(context: Context, route: PageSettings) {
+        route.schemaFingerprint?.let { remote ->
+            check(remote == InlaySchema.FINGERPRINT) {
+                "Inlay schema mismatch: the Flutter module sent a route generated " +
+                    "from schema $remote, but this host was built against schema " +
+                    "${InlaySchema.FINGERPRINT}. Re-run inlay_gen and rebuild both sides " +
+                    "from the same schema revision."
+            }
+        }
         when (route.routeId) {
             "nativeSettings" -> onNativeSettings(
                 NativeSettingsPage.fromList(route.params as List<Any?>),

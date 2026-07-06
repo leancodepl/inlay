@@ -102,7 +102,17 @@ data class PageSettings (
    * URL path derived from the typed route object (e.g. "/products/42").
    * When set, used as the `initialRoute` for router-based navigation.
    */
-  val path: String? = null
+  val path: String? = null,
+  /**
+   * Fingerprint of the generated schema on the sending side.
+   *
+   * Set automatically by generated `toPageSettings()` implementations and
+   * verified automatically by the generated decoders on the receiving
+   * side, so a host and module built from different schema revisions fail
+   * with a descriptive error instead of corrupting positional data.
+   * `null` when the sender predates fingerprinting (check skipped).
+   */
+  val schemaFingerprint: String? = null
 )
  {
   companion object {
@@ -110,7 +120,8 @@ data class PageSettings (
       val routeId = pigeonVar_list[0] as String
       val params = pigeonVar_list[1]
       val path = pigeonVar_list[2] as String?
-      return PageSettings(routeId, params, path)
+      val schemaFingerprint = pigeonVar_list[3] as String?
+      return PageSettings(routeId, params, path, schemaFingerprint)
     }
   }
   fun toList(): List<Any?> {
@@ -118,6 +129,7 @@ data class PageSettings (
       routeId,
       params,
       path,
+      schemaFingerprint,
     )
   }
   override fun equals(other: Any?): Boolean {
@@ -198,15 +210,6 @@ interface InlayNavigatorHostApi {
    * (barrier, animation, positioning) over the native screen underneath.
    */
   fun presentDialog(page: PageSettings)
-  /**
-   * Return the schema fingerprint the host registered via
-   * `InlayNavigator.setSchemaFingerprint`, or `null` when the host did
-   * not register one (check disabled).
-   *
-   * Flutter calls this at engine startup to detect a host built from a
-   * different generated schema revision than the module.
-   */
-  fun getHostSchemaFingerprint(): String?
 
   companion object {
     /** The codec used by InlayNavigatorHostApi. */
@@ -311,21 +314,6 @@ interface InlayNavigatorHostApi {
             val wrapped: List<Any?> = try {
               api.presentDialog(pageArg)
               listOf(null)
-            } catch (exception: Throwable) {
-              InlayNavigatorApiPigeonUtils.wrapError(exception)
-            }
-            reply.reply(wrapped)
-          }
-        } else {
-          channel.setMessageHandler(null)
-        }
-      }
-      run {
-        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.inlay.InlayNavigatorHostApi.getHostSchemaFingerprint$separatedMessageChannelSuffix", codec)
-        if (api != null) {
-          channel.setMessageHandler { _, reply ->
-            val wrapped: List<Any?> = try {
-              listOf(api.getHostSchemaFingerprint())
             } catch (exception: Throwable) {
               InlayNavigatorApiPigeonUtils.wrapError(exception)
             }

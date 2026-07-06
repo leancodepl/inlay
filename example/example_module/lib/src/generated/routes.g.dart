@@ -5,22 +5,35 @@ import 'package:inlay/inlay.dart';
 
 /// Fingerprint of the schema this file was generated from.
 ///
-/// Pass to `InlayNavigator.instance.verifySchemaFingerprint`
-/// at engine startup to detect a host built from a different
-/// schema revision.
+/// Embedded into every outgoing [PageSettings] and verified
+/// automatically by the decoders, so host/module schema drift
+/// fails fast instead of corrupting positional data.
 const String inlaySchemaFingerprint = '1597917a4f771129';
 
-enum GreetingStyle { casual, formal }
+enum GreetingStyle {
+  casual,
+  formal,
+}
 
-enum BadgeLevel { bronze, silver, gold }
+enum BadgeLevel {
+  bronze,
+  silver,
+  gold,
+}
 
 class UserBadge {
-  const UserBadge({required this.label, required this.level});
+  const UserBadge({
+    required this.label,
+    required this.level,
+  });
 
   final String label;
   final BadgeLevel level;
 
-  List<Object?> encode() => <Object?>[label, level.index];
+  List<Object?> encode() => <Object?>[
+    label,
+    level.index,
+  ];
 
   static UserBadge decode(List<Object?> list) {
     return UserBadge(
@@ -41,10 +54,16 @@ class UserBadge {
 /// ```
 sealed class FlutterRoute extends FlutterRouteBase {
   const FlutterRoute();
+
+  @override
+  String? get schemaFingerprint => inlaySchemaFingerprint;
 }
 
 class GreetingPage extends FlutterRoute {
-  const GreetingPage({required this.name, this.style});
+  const GreetingPage({
+    required this.name,
+    this.style,
+  });
 
   final String name;
   final GreetingStyle? style;
@@ -69,12 +88,7 @@ class GreetingPage extends FlutterRoute {
   static GreetingPage decode(List<Object?> list) {
     return GreetingPage(
       name: list[0] as String,
-      style: list[1] != null
-          ? (() {
-              final v = list[1];
-              return GreetingStyle.values[v as int];
-            })()
-          : null,
+      style: list[1] != null ? (() { final v = list[1]; return GreetingStyle.values[v as int]; })() : null,
     );
   }
 
@@ -93,12 +107,14 @@ class GreetingPage extends FlutterRoute {
 
   @override
   PageSettings toPageSettings() {
-    return PageSettings(routeId: routeId, params: params, path: toPath());
+    return PageSettings(routeId: routeId, params: params, path: toPath(), schemaFingerprint: inlaySchemaFingerprint);
   }
 }
 
 class CounterPage extends FlutterRoute {
-  const CounterPage({this.seed});
+  const CounterPage({
+    this.seed,
+  });
 
   final int? seed;
 
@@ -114,17 +130,19 @@ class CounterPage extends FlutterRoute {
     return '$basePath?${query.entries.map((e) => '${e.key}=${Uri.encodeComponent(e.value)}').join('&')}';
   }
 
-  List<Object?> encode() => <Object?>[seed != null ? seed! : null];
+  List<Object?> encode() => <Object?>[
+    seed != null ? seed! : null,
+  ];
 
   static CounterPage decode(List<Object?> list) {
-    return CounterPage(seed: list[0] as int?);
+    return CounterPage(
+      seed: list[0] as int?,
+    );
   }
 
   static CounterPage decodeFromMap(Map<Object?, Object?> map) {
     return CounterPage(
-      seed: map['seed'] != null
-          ? int.tryParse(map['seed'] as String? ?? '')
-          : null,
+      seed: map['seed'] != null ? int.tryParse(map['seed'] as String? ?? '') : null,
     );
   }
 
@@ -136,12 +154,15 @@ class CounterPage extends FlutterRoute {
 
   @override
   PageSettings toPageSettings() {
-    return PageSettings(routeId: routeId, params: params, path: toPath());
+    return PageSettings(routeId: routeId, params: params, path: toPath(), schemaFingerprint: inlaySchemaFingerprint);
   }
 }
 
 class ProfilePage extends FlutterRoute {
-  const ProfilePage({required this.userId, this.badges});
+  const ProfilePage({
+    required this.userId,
+    this.badges,
+  });
 
   final String userId;
   final List<UserBadge>? badges;
@@ -163,14 +184,7 @@ class ProfilePage extends FlutterRoute {
   static ProfilePage decode(List<Object?> list) {
     return ProfilePage(
       userId: list[0] as String,
-      badges: list[1] != null
-          ? (() {
-              final v = list[1];
-              return (v as List<Object?>)
-                  .map((e) => UserBadge.decode(e as List<Object?>))
-                  .toList();
-            })()
-          : null,
+      badges: list[1] != null ? (() { final v = list[1]; return (v as List<Object?>).map((e) => UserBadge.decode(e as List<Object?>)).toList(); })() : null,
     );
   }
 
@@ -189,7 +203,7 @@ class ProfilePage extends FlutterRoute {
 
   @override
   PageSettings toPageSettings() {
-    return PageSettings(routeId: routeId, params: params, path: toPath());
+    return PageSettings(routeId: routeId, params: params, path: toPath(), schemaFingerprint: inlaySchemaFingerprint);
   }
 }
 
@@ -204,10 +218,16 @@ class ProfilePage extends FlutterRoute {
 /// ```
 sealed class FlutterDialogRoute extends FlutterDialogRouteBase {
   const FlutterDialogRoute();
+
+  @override
+  String? get schemaFingerprint => inlaySchemaFingerprint;
 }
 
 class ConfirmActionDialog extends FlutterDialogRoute {
-  const ConfirmActionDialog({required this.action, this.message});
+  const ConfirmActionDialog({
+    required this.action,
+    this.message,
+  });
 
   final String action;
   final String? message;
@@ -251,12 +271,14 @@ class ConfirmActionDialog extends FlutterDialogRoute {
 
   @override
   PageSettings toPageSettings() {
-    return PageSettings(routeId: routeId, params: params, path: toPath());
+    return PageSettings(routeId: routeId, params: params, path: toPath(), schemaFingerprint: inlaySchemaFingerprint);
   }
 }
 
 class ThemePickerDialog extends FlutterDialogRoute {
-  const ThemePickerDialog({required this.userId});
+  const ThemePickerDialog({
+    required this.userId,
+  });
 
   final String userId;
 
@@ -269,14 +291,20 @@ class ThemePickerDialog extends FlutterDialogRoute {
     return basePath;
   }
 
-  List<Object?> encode() => <Object?>[userId];
+  List<Object?> encode() => <Object?>[
+    userId,
+  ];
 
   static ThemePickerDialog decode(List<Object?> list) {
-    return ThemePickerDialog(userId: list[0] as String);
+    return ThemePickerDialog(
+      userId: list[0] as String,
+    );
   }
 
   static ThemePickerDialog decodeFromMap(Map<Object?, Object?> map) {
-    return ThemePickerDialog(userId: map['userId'] as String? ?? '');
+    return ThemePickerDialog(
+      userId: map['userId'] as String? ?? '',
+    );
   }
 
   @override
@@ -287,42 +315,72 @@ class ThemePickerDialog extends FlutterDialogRoute {
 
   @override
   PageSettings toPageSettings() {
-    return PageSettings(routeId: routeId, params: params, path: toPath());
+    return PageSettings(routeId: routeId, params: params, path: toPath(), schemaFingerprint: inlaySchemaFingerprint);
   }
 }
 
 class NativeSettingsPage {
-  const NativeSettingsPage({this.source});
+  const NativeSettingsPage({
+    this.source,
+  });
 
   final String? source;
 
   static const String routeId = 'nativeSettings';
 
-  List<Object?> encode() => <Object?>[source != null ? source! : null];
+  List<Object?> encode() => <Object?>[
+    source != null ? source! : null,
+  ];
 
   static NativeSettingsPage decode(List<Object?> list) {
-    return NativeSettingsPage(source: list[0] as String?);
+    return NativeSettingsPage(
+      source: list[0] as String?,
+    );
   }
 
-  NativeRouteWrapper toNativeRoute() =>
-      NativeRouteWrapper(PageSettings(routeId: routeId, params: encode()));
+  NativeRouteWrapper toNativeRoute() => NativeRouteWrapper(
+    PageSettings(routeId: routeId, params: encode(), schemaFingerprint: inlaySchemaFingerprint),
+  );
 }
 
 class NativeAboutPage {
-  const NativeAboutPage({required this.appVersion});
+  const NativeAboutPage({
+    required this.appVersion,
+  });
 
   final String appVersion;
 
   static const String routeId = 'nativeAbout';
 
-  List<Object?> encode() => <Object?>[appVersion];
+  List<Object?> encode() => <Object?>[
+    appVersion,
+  ];
 
   static NativeAboutPage decode(List<Object?> list) {
-    return NativeAboutPage(appVersion: list[0] as String);
+    return NativeAboutPage(
+      appVersion: list[0] as String,
+    );
   }
 
-  NativeRouteWrapper toNativeRoute() =>
-      NativeRouteWrapper(PageSettings(routeId: routeId, params: encode()));
+  NativeRouteWrapper toNativeRoute() => NativeRouteWrapper(
+    PageSettings(routeId: routeId, params: encode(), schemaFingerprint: inlaySchemaFingerprint),
+  );
+}
+
+/// Throws when [settings] was produced by generated code from a
+/// different schema revision than this module.
+void _verifyInlaySchemaFingerprint(PageSettings settings) {
+  final remote = settings.schemaFingerprint;
+  if (remote == null || remote == inlaySchemaFingerprint) {
+    return;
+  }
+  throw InlaySchemaMismatchException(
+    'Inlay schema mismatch: the native host sent a route generated '
+    'from schema $remote, but this Flutter module was generated from '
+    'schema $inlaySchemaFingerprint. Routes and stores use positional '
+    'serialization, so decoding would corrupt data or crash. Re-run '
+    'inlay_gen and rebuild both sides from the same schema revision.',
+  );
 }
 
 /// Decodes [PageSettings] into a typed [FlutterRoute] subclass.
@@ -331,6 +389,7 @@ class NativeAboutPage {
 /// then use a `switch` expression for exhaustive route handling.
 FlutterRoute? decodeFlutterRouteData(PageSettings? settings) {
   if (settings == null) return null;
+  _verifyInlaySchemaFingerprint(settings);
   final params = settings.params;
   if (params is! List) return null;
   return switch (settings.routeId) {
@@ -344,15 +403,12 @@ FlutterRoute? decodeFlutterRouteData(PageSettings? settings) {
 /// Decodes [PageSettings] into a typed [FlutterDialogRoute] subclass.
 FlutterDialogRoute? decodeFlutterDialogRouteData(PageSettings? settings) {
   if (settings == null) return null;
+  _verifyInlaySchemaFingerprint(settings);
   final params = settings.params;
   if (params is! List) return null;
   return switch (settings.routeId) {
-    ConfirmActionDialog.routeName => ConfirmActionDialog.decode(
-      params.cast<Object?>(),
-    ),
-    ThemePickerDialog.routeName => ThemePickerDialog.decode(
-      params.cast<Object?>(),
-    ),
+    ConfirmActionDialog.routeName => ConfirmActionDialog.decode(params.cast<Object?>()),
+    ThemePickerDialog.routeName => ThemePickerDialog.decode(params.cast<Object?>()),
     _ => null,
   };
 }
@@ -362,6 +418,5 @@ FlutterDialogRoute? decodeFlutterDialogRouteData(PageSettings? settings) {
 /// Pass this to [InlayNavigator.fetchInitialRoute] as the decoder
 /// when you need a single entrypoint that handles both pages and dialogs.
 InlayRoute? decodeInlayRouteData(PageSettings? settings) {
-  return decodeFlutterRouteData(settings) ??
-      decodeFlutterDialogRouteData(settings);
+  return decodeFlutterRouteData(settings) ?? decodeFlutterDialogRouteData(settings);
 }

@@ -75,8 +75,6 @@ public final class InlayNavigator {
     private var nativeRouteHandler: NativeRouteHandling?
     /// Per-engine setup hook invoked once for every engine inlay creates.
     private var onEngineCreated: ((FlutterEngine) -> Void)?
-    /// Schema fingerprint of the generated code compiled into the host.
-    private(set) var schemaFingerprint: String?
     /// Whether `start()` should prewarm a hidden engine.
     private var isPrewarmEnabled = true
     /// Hidden warm-up engine kept alive for app lifetime.
@@ -111,22 +109,6 @@ public final class InlayNavigator {
         if let engine = prewarmedEngine {
             callback?(engine)
         }
-    }
-
-    /// Register the fingerprint of the generated schema the host was built
-    /// against (the generated `InlaySchema.fingerprint` constant).
-    ///
-    /// Flutter engines compare it with the module's own fingerprint at
-    /// startup (`InlayNavigator.instance.verifySchemaFingerprint` on the
-    /// Dart side) and fail fast when the two binaries were generated from
-    /// different schema revisions. When never set, the check is disabled.
-    ///
-    /// ```swift
-    /// // In AppDelegate.didFinishLaunching:
-    /// InlayNavigator.shared.setSchemaFingerprint(InlaySchema.fingerprint)
-    /// ```
-    public func setSchemaFingerprint(_ fingerprint: String) {
-        schemaFingerprint = fingerprint
     }
 
     /// Call once at app startup (e.g. `application(_:didFinishLaunchingWithOptions:)`).
@@ -558,10 +540,6 @@ private class InlayNavigatorHostApiImpl: InlayNavigatorHostApi {
         return routeData
     }
 
-    func getHostSchemaFingerprint() throws -> String? {
-        return navigator?.schemaFingerprint ?? InlayNavigator.shared.schemaFingerprint
-    }
-
     func presentDialog(page: PageSettings) throws {
         DispatchQueue.main.async { [weak self] in
             guard let self, let vc = self.viewController, let nav = self.navigator else { return }
@@ -578,9 +556,4 @@ private class InlayNavigatorPrewarmHostApi: InlayNavigatorHostApi {
     func setNativePopGestureEnabled(enabled: Bool) throws {}
     func getInitialRouteData() throws -> PageSettings? { nil }
     func presentDialog(page: PageSettings) throws {}
-    // The prewarm engine runs the full Dart entrypoint, so the schema
-    // check must see the real fingerprint there too.
-    func getHostSchemaFingerprint() throws -> String? {
-        InlayNavigator.shared.schemaFingerprint
-    }
 }

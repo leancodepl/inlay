@@ -19,7 +19,7 @@ String generateKotlinRoutes({
   required Schema schema,
   required Map<String, TypeDefinition> typeGraph,
   required String packageName,
-  String? schemaFingerprint,
+  required String schemaFingerprint,
 }) {
   final hasFlutterRoutes = schema.flutterRoutes.isNotEmpty;
   final hasDialogRoutes = schema.flutterDialogRoutes.isNotEmpty;
@@ -43,25 +43,21 @@ String generateKotlinRoutes({
       'import co.leancode.inlay.NativeRouteHandler as NativeRouteHandling',
     )
     ..writeln('import co.leancode.inlay.navigator.PageSettings')
+    ..writeln()
+    ..writeln('/**')
+    ..writeln(' * Fingerprint of the schema this file was generated from.')
+    ..writeln(' *')
+    ..writeln(
+      ' * Embedded into every outgoing [PageSettings] and verified by the',
+    )
+    ..writeln(
+      ' * generated route handler, so host/module schema drift fails fast.',
+    )
+    ..writeln(' */')
+    ..writeln('object InlaySchema {')
+    ..writeln('    const val FINGERPRINT = "$schemaFingerprint"')
+    ..writeln('}')
     ..writeln();
-
-  if (schemaFingerprint != null) {
-    buffer
-      ..writeln('/**')
-      ..writeln(' * Fingerprint of the schema this file was generated from.')
-      ..writeln(' *')
-      ..writeln(
-        ' * Register with `InlayNavigator.setSchemaFingerprint(InlaySchema.FINGERPRINT)`',
-      )
-      ..writeln(
-        ' * so Flutter engines can detect a module built from a different schema revision.',
-      )
-      ..writeln(' */')
-      ..writeln('object InlaySchema {')
-      ..writeln('    const val FINGERPRINT = "$schemaFingerprint"')
-      ..writeln('}')
-      ..writeln();
-  }
 
   // Generate enums.
   for (final enumDef in schema.enums) {
@@ -201,11 +197,11 @@ void _writeRouteDataClass(
     buffer.writeln();
     if (path != null) {
       buffer.writeln(
-        '    override fun toPageSettings(): PageSettings = PageSettings(ROUTE_NAME, toList(), toPath())',
+        '    override fun toPageSettings(): PageSettings = PageSettings(ROUTE_NAME, toList(), toPath(), InlaySchema.FINGERPRINT)',
       );
     } else {
       buffer.writeln(
-        '    override fun toPageSettings(): PageSettings = PageSettings(ROUTE_NAME, toList())',
+        '    override fun toPageSettings(): PageSettings = PageSettings(ROUTE_NAME, toList(), schemaFingerprint = InlaySchema.FINGERPRINT)',
       );
     }
   }
@@ -302,6 +298,20 @@ void _writeNativeRouteHandler(
     ..writeln(
       '    override fun handle(context: Context, route: PageSettings) {',
     )
+    ..writeln('        route.schemaFingerprint?.let { remote ->')
+    ..writeln('            check(remote == InlaySchema.FINGERPRINT) {')
+    ..writeln(
+      '                "Inlay schema mismatch: the Flutter module sent a route generated " +',
+    )
+    ..writeln(
+      r'                    "from schema $remote, but this host was built against schema " +',
+    )
+    ..writeln(
+      r'                    "${InlaySchema.FINGERPRINT}. Re-run inlay_gen and rebuild both sides " +',
+    )
+    ..writeln('                    "from the same schema revision."')
+    ..writeln('            }')
+    ..writeln('        }')
     ..writeln('        when (route.routeId) {');
 
   for (final route in routes) {

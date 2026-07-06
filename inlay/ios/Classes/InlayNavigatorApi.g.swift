@@ -147,11 +147,20 @@ public struct PageSettings: Hashable {
   /// URL path derived from the typed route object (e.g. "/products/42").
   /// When set, used as the `initialRoute` for router-based navigation.
   public var path: String? = nil
+  /// Fingerprint of the generated schema on the sending side.
+  ///
+  /// Set automatically by generated `toPageSettings()` implementations and
+  /// verified automatically by the generated decoders on the receiving
+  /// side, so a host and module built from different schema revisions fail
+  /// with a descriptive error instead of corrupting positional data.
+  /// `null` when the sender predates fingerprinting (check skipped).
+  public var schemaFingerprint: String? = nil
 
-  public init(routeId: String, params: Any? = nil, path: String? = nil) {
+  public init(routeId: String, params: Any? = nil, path: String? = nil, schemaFingerprint: String? = nil) {
     self.routeId = routeId
     self.params = params
     self.path = path
+    self.schemaFingerprint = schemaFingerprint
   }
 
 
@@ -160,11 +169,13 @@ public struct PageSettings: Hashable {
     let routeId = pigeonVar_list[0] as! String
     let params: Any? = pigeonVar_list[1]
     let path: String? = nilOrValue(pigeonVar_list[2])
+    let schemaFingerprint: String? = nilOrValue(pigeonVar_list[3])
 
     return PageSettings(
       routeId: routeId,
       params: params,
-      path: path
+      path: path,
+      schemaFingerprint: schemaFingerprint
     )
   }
   func toList() -> [Any?] {
@@ -172,6 +183,7 @@ public struct PageSettings: Hashable {
       routeId,
       params,
       path,
+      schemaFingerprint,
     ]
   }
   public static func == (lhs: PageSettings, rhs: PageSettings) -> Bool {
@@ -252,13 +264,6 @@ protocol InlayNavigatorHostApi {
   /// starts a new Flutter engine. Flutter renders the dialog content
   /// (barrier, animation, positioning) over the native screen underneath.
   func presentDialog(page: PageSettings) throws
-  /// Return the schema fingerprint the host registered via
-  /// `InlayNavigator.setSchemaFingerprint`, or `null` when the host did
-  /// not register one (check disabled).
-  ///
-  /// Flutter calls this at engine startup to detect a host built from a
-  /// different generated schema revision than the module.
-  func getHostSchemaFingerprint() throws -> String?
 }
 
 /// Generated setup class from Pigeon to handle messages through the `binaryMessenger`.
@@ -373,25 +378,6 @@ class InlayNavigatorHostApiSetup {
       }
     } else {
       presentDialogChannel.setMessageHandler(nil)
-    }
-    /// Return the schema fingerprint the host registered via
-    /// `InlayNavigator.setSchemaFingerprint`, or `null` when the host did
-    /// not register one (check disabled).
-    ///
-    /// Flutter calls this at engine startup to detect a host built from a
-    /// different generated schema revision than the module.
-    let getHostSchemaFingerprintChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.inlay.InlayNavigatorHostApi.getHostSchemaFingerprint\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
-    if let api = api {
-      getHostSchemaFingerprintChannel.setMessageHandler { _, reply in
-        do {
-          let result = try api.getHostSchemaFingerprint()
-          reply(wrapResult(result))
-        } catch {
-          reply(wrapError(error))
-        }
-      }
-    } else {
-      getHostSchemaFingerprintChannel.setMessageHandler(nil)
     }
   }
 }

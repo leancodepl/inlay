@@ -8,6 +8,21 @@ export 'inlay_navigator.g.dart' show PageSettings;
 /// Route target understood by [InlayNavigator].
 enum InlayRouteType { flutter, native, flutterDialog }
 
+/// Thrown by generated decoders when a route arrives from generated code
+/// built against a different schema revision.
+///
+/// Deliberately not swallowed by [InlayNavigator.fetchInitialRoute]: schema
+/// drift means every positional decode is unreliable, so the engine must
+/// fail loudly rather than fall back to a partially working screen.
+class InlaySchemaMismatchException implements Exception {
+  InlaySchemaMismatchException(this.message);
+
+  final String message;
+
+  @override
+  String toString() => 'InlaySchemaMismatchException: $message';
+}
+
 /// Common abstraction for all pushable destinations.
 abstract class InlayRoute {
   const InlayRoute();
@@ -65,13 +80,23 @@ abstract class FlutterRouteBase extends InlayRoute {
   /// Route parameters serialized as a list for StandardMessageCodec transport.
   Object? get params;
 
+  /// Fingerprint of the generated schema this route belongs to.
+  ///
+  /// Overridden by the generated sealed base class; travels inside
+  /// [PageSettings] so the receiving side can detect schema drift.
+  String? get schemaFingerprint => null;
+
   @override
   InlayRouteType get type => InlayRouteType.flutter;
 
   /// Convert to the Pigeon-generated [PageSettings].
   @override
   PageSettings toPageSettings() {
-    return PageSettings(routeId: routeId, params: params);
+    return PageSettings(
+      routeId: routeId,
+      params: params,
+      schemaFingerprint: schemaFingerprint,
+    );
   }
 }
 
@@ -91,12 +116,22 @@ abstract class FlutterDialogRouteBase extends InlayRoute {
   /// Route parameters serialized as a list for StandardMessageCodec transport.
   Object? get params;
 
+  /// Fingerprint of the generated schema this route belongs to.
+  ///
+  /// Overridden by the generated sealed base class; travels inside
+  /// [PageSettings] so the receiving side can detect schema drift.
+  String? get schemaFingerprint => null;
+
   @override
   InlayRouteType get type => InlayRouteType.flutterDialog;
 
   @override
   PageSettings toPageSettings() {
-    return PageSettings(routeId: routeId, params: params);
+    return PageSettings(
+      routeId: routeId,
+      params: params,
+      schemaFingerprint: schemaFingerprint,
+    );
   }
 }
 
@@ -201,50 +236,6 @@ class InlayNavigator {
   static final instance = InlayNavigator._();
 
   final _hostApi = InlayNavigatorHostApi();
-
-  // ── Schema verification ──────────────────────────────────────────────
-
-  /// Verifies that the host app was built from the same generated schema
-  /// as this Flutter module.
-  ///
-  /// The generated Dart code compiles into the module while the generated
-  /// Kotlin/Swift code compiles into the host, so the two binaries can
-  /// drift apart. Serialization is positional, which turns drift into
-  /// silent data corruption or crashes. Call this at engine startup with
-  /// the generated `inlaySchemaFingerprint` constant:
-  ///
-  /// ```dart
-  /// @pragma('vm:entry-point')
-  /// void inlayMain() async {
-  ///   WidgetsFlutterBinding.ensureInitialized();
-  ///   await KeyValueStorage.instance.init();
-  ///   await InlayNavigator.instance.verifySchemaFingerprint(
-  ///     inlaySchemaFingerprint,
-  ///   );
-  ///   // ...
-  /// }
-  /// ```
-  ///
-  /// The host registers its own copy via
-  /// `InlayNavigator.setSchemaFingerprint(InlaySchema.FINGERPRINT)` (Kotlin)
-  /// / `InlayNavigator.shared.setSchemaFingerprint(InlaySchema.fingerprint)`
-  /// (Swift). When the host never registers one, the check is skipped.
-  ///
-  /// Throws a [StateError] with a descriptive message on mismatch.
-  Future<void> verifySchemaFingerprint(String moduleFingerprint) async {
-    final hostFingerprint = await _hostApi.getHostSchemaFingerprint();
-    if (hostFingerprint == null || hostFingerprint == moduleFingerprint) {
-      return;
-    }
-    throw StateError(
-      'Inlay schema mismatch: this Flutter module was generated from '
-      'schema $moduleFingerprint but the native host was built against '
-      'schema $hostFingerprint. Routes and stores use positional '
-      'serialization, so navigating across this boundary would corrupt '
-      'data or crash. Re-run inlay_gen and rebuild both sides from the '
-      'same schema revision.',
-    );
-  }
 
   // ── Navigation ───────────────────────────────────────────────────────
 
@@ -421,6 +412,10 @@ class InlayNavigator {
     try {
       final raw = await InlayNavigatorHostApi().getInitialRouteData();
       return decoder(raw);
+    } on InlaySchemaMismatchException {
+      // Schema drift makes every positional decode unreliable - fail the
+      // engine loudly instead of falling back to a path-only render.
+      rethrow;
     } on PlatformException catch (e, st) {
       debugPrint('InlayNavigator.fetchInitialRoute failed: $e\n$st');
       return null;

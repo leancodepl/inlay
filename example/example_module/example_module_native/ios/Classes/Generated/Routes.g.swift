@@ -15,8 +15,8 @@ private func _inlayEncode(_ value: String) -> String {
 
 /// Fingerprint of the schema this file was generated from.
 ///
-/// Register with `InlayNavigator.shared.setSchemaFingerprint(InlaySchema.fingerprint)`
-/// so Flutter engines can detect a module built from a different schema revision.
+/// Embedded into every outgoing `PageSettings` and verified by the
+/// generated route handler, so host/module schema drift fails fast.
 enum InlaySchema {
     static let fingerprint = "1597917a4f771129"
 }
@@ -88,7 +88,7 @@ struct GreetingPage: FlutterRoute {
     }
 
     func toPageSettings() -> PageSettings {
-        PageSettings(routeId: Self.routeName, params: toList(), path: toPath())
+        PageSettings(routeId: Self.routeName, params: toList(), path: toPath(), schemaFingerprint: InlaySchema.fingerprint)
     }
 }
 
@@ -125,7 +125,7 @@ struct CounterPage: FlutterRoute {
     }
 
     func toPageSettings() -> PageSettings {
-        PageSettings(routeId: Self.routeName, params: toList(), path: toPath())
+        PageSettings(routeId: Self.routeName, params: toList(), path: toPath(), schemaFingerprint: InlaySchema.fingerprint)
     }
 }
 
@@ -161,7 +161,7 @@ struct ProfilePage: FlutterRoute {
     }
 
     func toPageSettings() -> PageSettings {
-        PageSettings(routeId: Self.routeName, params: toList(), path: toPath())
+        PageSettings(routeId: Self.routeName, params: toList(), path: toPath(), schemaFingerprint: InlaySchema.fingerprint)
     }
 }
 
@@ -202,7 +202,7 @@ struct ConfirmActionDialog: FlutterDialogRoute {
     }
 
     func toPageSettings() -> PageSettings {
-        PageSettings(routeId: Self.routeName, params: toList(), path: toPath())
+        PageSettings(routeId: Self.routeName, params: toList(), path: toPath(), schemaFingerprint: InlaySchema.fingerprint)
     }
 }
 
@@ -235,7 +235,7 @@ struct ThemePickerDialog: FlutterDialogRoute {
     }
 
     func toPageSettings() -> PageSettings {
-        PageSettings(routeId: Self.routeName, params: toList(), path: toPath())
+        PageSettings(routeId: Self.routeName, params: toList(), path: toPath(), schemaFingerprint: InlaySchema.fingerprint)
     }
 }
 
@@ -278,6 +278,14 @@ struct NativeAboutPage {
 class NativeRouteHandler: NativeRouteHandling {
 
     func handle(viewController: UIViewController, route: PageSettings) {
+        if let remote = route.schemaFingerprint, remote != InlaySchema.fingerprint {
+            fatalError(
+                "Inlay schema mismatch: the Flutter module sent a route generated "
+                    + "from schema \(remote), but this host was built against schema "
+                    + "\(InlaySchema.fingerprint). Re-run inlay_gen and rebuild both "
+                    + "sides from the same schema revision."
+            )
+        }
         switch route.routeId {
         case "nativeSettings":
             onNativeSettings(

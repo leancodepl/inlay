@@ -42,7 +42,12 @@ bool _deepEquals(Object? a, Object? b) {
 /// For Flutter pages pushed from native, [params] is a `Map<String, String>`
 /// (produced by URL-decoding the `initialRoute` string).
 class PageSettings {
-  PageSettings({required this.routeId, this.params, this.path});
+  PageSettings({
+    required this.routeId,
+    this.params,
+    this.path,
+    this.schemaFingerprint,
+  });
 
   /// Identifies which screen to show (e.g. "soundsNotifications").
   String routeId;
@@ -55,8 +60,17 @@ class PageSettings {
   /// When set, used as the `initialRoute` for router-based navigation.
   String? path;
 
+  /// Fingerprint of the generated schema on the sending side.
+  ///
+  /// Set automatically by generated `toPageSettings()` implementations and
+  /// verified automatically by the generated decoders on the receiving
+  /// side, so a host and module built from different schema revisions fail
+  /// with a descriptive error instead of corrupting positional data.
+  /// `null` when the sender predates fingerprinting (check skipped).
+  String? schemaFingerprint;
+
   List<Object?> _toList() {
-    return <Object?>[routeId, params, path];
+    return <Object?>[routeId, params, path, schemaFingerprint];
   }
 
   Object encode() {
@@ -69,6 +83,7 @@ class PageSettings {
       routeId: result[0]! as String,
       params: result[1],
       path: result[2] as String?,
+      schemaFingerprint: result[3] as String?,
     );
   }
 
@@ -301,35 +316,6 @@ class InlayNavigatorHostApi {
       );
     } else {
       return;
-    }
-  }
-
-  /// Return the schema fingerprint the host registered via
-  /// `InlayNavigator.setSchemaFingerprint`, or `null` when the host did
-  /// not register one (check disabled).
-  ///
-  /// Flutter calls this at engine startup to detect a host built from a
-  /// different generated schema revision than the module.
-  Future<String?> getHostSchemaFingerprint() async {
-    final pigeonVar_channelName =
-        'dev.flutter.pigeon.inlay.InlayNavigatorHostApi.getHostSchemaFingerprint$pigeonVar_messageChannelSuffix';
-    final pigeonVar_channel = BasicMessageChannel<Object?>(
-      pigeonVar_channelName,
-      pigeonChannelCodec,
-      binaryMessenger: pigeonVar_binaryMessenger,
-    );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(null);
-    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
-    if (pigeonVar_replyList == null) {
-      throw _createConnectionError(pigeonVar_channelName);
-    } else if (pigeonVar_replyList.length > 1) {
-      throw PlatformException(
-        code: pigeonVar_replyList[0]! as String,
-        message: pigeonVar_replyList[1] as String?,
-        details: pigeonVar_replyList[2],
-      );
-    } else {
-      return (pigeonVar_replyList[0] as String?);
     }
   }
 }

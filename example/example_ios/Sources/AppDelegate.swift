@@ -17,9 +17,6 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
         InlayNavigator.shared.setOnEngineCreated { engine in
             GeneratedPluginRegistrant.register(with: engine)
         }
-        // Lets Flutter engines detect a module built from a different schema
-        // revision than this host.
-        InlayNavigator.shared.setSchemaFingerprint(InlaySchema.fingerprint)
         InlayNavigator.shared.start()
         InlayNavigator.shared.setNativeRouteHandler(ExampleNativeRouteHandler())
 
