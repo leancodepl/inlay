@@ -12,6 +12,7 @@ import 'package:inlay_gen/src/parser/type_resolver.dart';
 String generateSwiftStores({
   required Schema schema,
   required Map<String, TypeDefinition> typeGraph,
+  String? schemaFingerprint,
 }) {
   final buffer = StringBuffer()
     ..writeln('// GENERATED CODE — DO NOT MODIFY BY HAND')
@@ -20,6 +21,22 @@ String generateSwiftStores({
     ..writeln('import Foundation')
     ..writeln('import inlay')
     ..writeln();
+
+  if (schemaFingerprint != null) {
+    buffer
+      ..writeln('/// Fingerprint of the schema this file was generated from.')
+      ..writeln('///')
+      ..writeln(
+        '/// Register with `InlayNavigator.shared.setSchemaFingerprint(InlaySchema.fingerprint)`',
+      )
+      ..writeln(
+        '/// so Flutter engines can detect a module built from a different schema revision.',
+      )
+      ..writeln('enum InlaySchema {')
+      ..writeln('    static let fingerprint = "$schemaFingerprint"')
+      ..writeln('}')
+      ..writeln();
+  }
 
   // Generate store-only enums.
   for (final enumDef in schema.enums) {

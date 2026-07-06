@@ -10,6 +10,7 @@ import 'package:inlay_gen/src/generators/swift/swift_store_generator.dart';
 import 'package:inlay_gen/src/models/schema.dart';
 import 'package:inlay_gen/src/parser/annotation_parser.dart';
 import 'package:inlay_gen/src/parser/type_resolver.dart';
+import 'package:inlay_gen/src/utils/schema_fingerprint.dart';
 import 'package:path/path.dart' as p;
 
 class CodeGenerator {
@@ -87,20 +88,36 @@ class CodeGenerator {
         types.routeEnums.isNotEmpty;
     final hasStores = schema.stores.isNotEmpty;
 
+    // The fingerprint covers the full schema (routes + stores) and is
+    // emitted once per language - into the routes file, or the stores file
+    // for modules that only define stores.
+    final fingerprint = computeSchemaFingerprint(schema);
+    final routesFingerprint = hasRoutes ? fingerprint : null;
+    final storesFingerprint = hasRoutes ? null : fingerprint;
+
     return GenerationResult(
       schema: schema,
       typeGraph: typeGraph,
       dartRoutesCode: hasRoutes
-          ? generateDartRoutes(schema: routeSchema, typeGraph: typeGraph)
+          ? generateDartRoutes(
+              schema: routeSchema,
+              typeGraph: typeGraph,
+              schemaFingerprint: routesFingerprint,
+            )
           : null,
       dartStoresCode: hasStores
-          ? generateDartStores(schema: storeSchema, typeGraph: typeGraph)
+          ? generateDartStores(
+              schema: storeSchema,
+              typeGraph: typeGraph,
+              schemaFingerprint: storesFingerprint,
+            )
           : null,
       kotlinRoutesCode: hasRoutes && kotlinPackage != null
           ? generateKotlinRoutes(
               schema: routeSchema,
               typeGraph: typeGraph,
               packageName: kotlinPackage,
+              schemaFingerprint: routesFingerprint,
             )
           : null,
       kotlinStoresCode: hasStores && kotlinPackage != null
@@ -108,13 +125,22 @@ class CodeGenerator {
               schema: storeSchema,
               typeGraph: typeGraph,
               packageName: kotlinPackage,
+              schemaFingerprint: storesFingerprint,
             )
           : null,
       swiftRoutesCode: hasRoutes
-          ? generateSwiftRoutes(schema: routeSchema, typeGraph: typeGraph)
+          ? generateSwiftRoutes(
+              schema: routeSchema,
+              typeGraph: typeGraph,
+              schemaFingerprint: routesFingerprint,
+            )
           : null,
       swiftStoresCode: hasStores
-          ? generateSwiftStores(schema: storeSchema, typeGraph: typeGraph)
+          ? generateSwiftStores(
+              schema: storeSchema,
+              typeGraph: typeGraph,
+              schemaFingerprint: storesFingerprint,
+            )
           : null,
     );
   }

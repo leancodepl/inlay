@@ -202,6 +202,50 @@ class InlayNavigator {
 
   final _hostApi = InlayNavigatorHostApi();
 
+  // ── Schema verification ──────────────────────────────────────────────
+
+  /// Verifies that the host app was built from the same generated schema
+  /// as this Flutter module.
+  ///
+  /// The generated Dart code compiles into the module while the generated
+  /// Kotlin/Swift code compiles into the host, so the two binaries can
+  /// drift apart. Serialization is positional, which turns drift into
+  /// silent data corruption or crashes. Call this at engine startup with
+  /// the generated `inlaySchemaFingerprint` constant:
+  ///
+  /// ```dart
+  /// @pragma('vm:entry-point')
+  /// void inlayMain() async {
+  ///   WidgetsFlutterBinding.ensureInitialized();
+  ///   await KeyValueStorage.instance.init();
+  ///   await InlayNavigator.instance.verifySchemaFingerprint(
+  ///     inlaySchemaFingerprint,
+  ///   );
+  ///   // ...
+  /// }
+  /// ```
+  ///
+  /// The host registers its own copy via
+  /// `InlayNavigator.setSchemaFingerprint(InlaySchema.FINGERPRINT)` (Kotlin)
+  /// / `InlayNavigator.shared.setSchemaFingerprint(InlaySchema.fingerprint)`
+  /// (Swift). When the host never registers one, the check is skipped.
+  ///
+  /// Throws a [StateError] with a descriptive message on mismatch.
+  Future<void> verifySchemaFingerprint(String moduleFingerprint) async {
+    final hostFingerprint = await _hostApi.getHostSchemaFingerprint();
+    if (hostFingerprint == null || hostFingerprint == moduleFingerprint) {
+      return;
+    }
+    throw StateError(
+      'Inlay schema mismatch: this Flutter module was generated from '
+      'schema $moduleFingerprint but the native host was built against '
+      'schema $hostFingerprint. Routes and stores use positional '
+      'serialization, so navigating across this boundary would corrupt '
+      'data or crash. Re-run inlay_gen and rebuild both sides from the '
+      'same schema revision.',
+    );
+  }
+
   // ── Navigation ───────────────────────────────────────────────────────
 
   /// Pushes a route, creating a new native Activity/ViewController.

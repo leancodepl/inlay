@@ -13,6 +13,14 @@ private func _inlayEncode(_ value: String) -> String {
     value.addingPercentEncoding(withAllowedCharacters: _inlayRouteAllowedCharacters) ?? value
 }
 
+/// Fingerprint of the schema this file was generated from.
+///
+/// Register with `InlayNavigator.shared.setSchemaFingerprint(InlaySchema.fingerprint)`
+/// so Flutter engines can detect a module built from a different schema revision.
+enum InlaySchema {
+    static let fingerprint = "1597917a4f771129"
+}
+
 enum GreetingStyle: Int {
     case casual = 0
     case formal = 1

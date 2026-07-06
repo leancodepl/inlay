@@ -10,6 +10,16 @@ import co.leancode.inlay.FlutterDialogRoute
 import co.leancode.inlay.NativeRouteHandler as NativeRouteHandling
 import co.leancode.inlay.navigator.PageSettings
 
+/**
+ * Fingerprint of the schema this file was generated from.
+ *
+ * Register with `InlayNavigator.setSchemaFingerprint(InlaySchema.FINGERPRINT)`
+ * so Flutter engines can detect a module built from a different schema revision.
+ */
+object InlaySchema {
+    const val FINGERPRINT = "1597917a4f771129"
+}
+
 enum class GreetingStyle {
     casual,
     formal

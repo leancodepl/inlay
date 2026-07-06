@@ -606,6 +606,28 @@ once per engine (including the hidden prewarmed engine), right after the engine 
 - `GeneratedPluginRegistrant` on iOS lives in the `FlutterPluginRegistrant` pod (source
   integration via `podhelper.rb`) - `import FlutterPluginRegistrant` in the AppDelegate.
 
+### Schema Fingerprint (`setSchemaFingerprint` / `verifySchemaFingerprint`)
+
+The generated Dart compiles into the module and the generated Kotlin/Swift compile into the
+hosts, so the two binaries can be built from different schema revisions. Serialization is
+positional, which turns such drift into silent corruption or crashes. `inlay_gen` therefore
+emits a stable **schema fingerprint** into every language's output:
+
+- Dart: `const inlaySchemaFingerprint` (in `routes.g.dart`, or `stores.g.dart` for
+  store-only modules)
+- Kotlin: `InlaySchema.FINGERPRINT`
+- Swift: `InlaySchema.fingerprint`
+
+The host registers its copy at startup (`InlayNavigator.setSchemaFingerprint(...)`, before
+`start()`/`init()`), and the Dart entrypoint verifies:
+
+```dart
+await InlayNavigator.instance.verifySchemaFingerprint(inlaySchemaFingerprint);
+```
+
+On mismatch this throws a `StateError` naming both fingerprints. If the host never registers
+a fingerprint, the check is skipped.
+
 ### Engine Prewarming
 
 By default the framework keeps a hidden prewarmed engine so the first Flutter navigation feels instant. You can control this:

@@ -17,6 +17,7 @@ import 'package:inlay_gen/src/parser/type_resolver.dart';
 String generateDartRoutes({
   required Schema schema,
   required Map<String, TypeDefinition> typeGraph,
+  String? schemaFingerprint,
 }) {
   final buffer = StringBuffer()
     // Header.
@@ -25,6 +26,17 @@ String generateDartRoutes({
     ..writeln()
     ..writeln("import 'package:inlay/inlay.dart';")
     ..writeln();
+
+  if (schemaFingerprint != null) {
+    buffer
+      ..writeln('/// Fingerprint of the schema this file was generated from.')
+      ..writeln('///')
+      ..writeln('/// Pass to `InlayNavigator.instance.verifySchemaFingerprint`')
+      ..writeln('/// at engine startup to detect a host built from a different')
+      ..writeln('/// schema revision.')
+      ..writeln("const String inlaySchemaFingerprint = '$schemaFingerprint';")
+      ..writeln();
+  }
 
   // Generate enums first (they might be referenced by other types).
   for (final enumDef in schema.enums) {

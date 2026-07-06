@@ -19,6 +19,7 @@ String generateKotlinRoutes({
   required Schema schema,
   required Map<String, TypeDefinition> typeGraph,
   required String packageName,
+  String? schemaFingerprint,
 }) {
   final hasFlutterRoutes = schema.flutterRoutes.isNotEmpty;
   final hasDialogRoutes = schema.flutterDialogRoutes.isNotEmpty;
@@ -43,6 +44,24 @@ String generateKotlinRoutes({
     )
     ..writeln('import co.leancode.inlay.navigator.PageSettings')
     ..writeln();
+
+  if (schemaFingerprint != null) {
+    buffer
+      ..writeln('/**')
+      ..writeln(' * Fingerprint of the schema this file was generated from.')
+      ..writeln(' *')
+      ..writeln(
+        ' * Register with `InlayNavigator.setSchemaFingerprint(InlaySchema.FINGERPRINT)`',
+      )
+      ..writeln(
+        ' * so Flutter engines can detect a module built from a different schema revision.',
+      )
+      ..writeln(' */')
+      ..writeln('object InlaySchema {')
+      ..writeln('    const val FINGERPRINT = "$schemaFingerprint"')
+      ..writeln('}')
+      ..writeln();
+  }
 
   // Generate enums.
   for (final enumDef in schema.enums) {

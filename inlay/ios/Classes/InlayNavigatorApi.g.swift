@@ -252,6 +252,13 @@ protocol InlayNavigatorHostApi {
   /// starts a new Flutter engine. Flutter renders the dialog content
   /// (barrier, animation, positioning) over the native screen underneath.
   func presentDialog(page: PageSettings) throws
+  /// Return the schema fingerprint the host registered via
+  /// `InlayNavigator.setSchemaFingerprint`, or `null` when the host did
+  /// not register one (check disabled).
+  ///
+  /// Flutter calls this at engine startup to detect a host built from a
+  /// different generated schema revision than the module.
+  func getHostSchemaFingerprint() throws -> String?
 }
 
 /// Generated setup class from Pigeon to handle messages through the `binaryMessenger`.
@@ -366,6 +373,25 @@ class InlayNavigatorHostApiSetup {
       }
     } else {
       presentDialogChannel.setMessageHandler(nil)
+    }
+    /// Return the schema fingerprint the host registered via
+    /// `InlayNavigator.setSchemaFingerprint`, or `null` when the host did
+    /// not register one (check disabled).
+    ///
+    /// Flutter calls this at engine startup to detect a host built from a
+    /// different generated schema revision than the module.
+    let getHostSchemaFingerprintChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.inlay.InlayNavigatorHostApi.getHostSchemaFingerprint\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      getHostSchemaFingerprintChannel.setMessageHandler { _, reply in
+        do {
+          let result = try api.getHostSchemaFingerprint()
+          reply(wrapResult(result))
+        } catch {
+          reply(wrapError(error))
+        }
+      }
+    } else {
+      getHostSchemaFingerprintChannel.setMessageHandler(nil)
     }
   }
 }

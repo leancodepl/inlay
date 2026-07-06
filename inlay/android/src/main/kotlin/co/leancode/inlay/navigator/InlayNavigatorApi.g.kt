@@ -198,6 +198,15 @@ interface InlayNavigatorHostApi {
    * (barrier, animation, positioning) over the native screen underneath.
    */
   fun presentDialog(page: PageSettings)
+  /**
+   * Return the schema fingerprint the host registered via
+   * `InlayNavigator.setSchemaFingerprint`, or `null` when the host did
+   * not register one (check disabled).
+   *
+   * Flutter calls this at engine startup to detect a host built from a
+   * different generated schema revision than the module.
+   */
+  fun getHostSchemaFingerprint(): String?
 
   companion object {
     /** The codec used by InlayNavigatorHostApi. */
@@ -302,6 +311,21 @@ interface InlayNavigatorHostApi {
             val wrapped: List<Any?> = try {
               api.presentDialog(pageArg)
               listOf(null)
+            } catch (exception: Throwable) {
+              InlayNavigatorApiPigeonUtils.wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.inlay.InlayNavigatorHostApi.getHostSchemaFingerprint$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            val wrapped: List<Any?> = try {
+              listOf(api.getHostSchemaFingerprint())
             } catch (exception: Throwable) {
               InlayNavigatorApiPigeonUtils.wrapError(exception)
             }

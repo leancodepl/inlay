@@ -76,4 +76,12 @@ abstract class InlayNavigatorHostApi {
   /// starts a new Flutter engine. Flutter renders the dialog content
   /// (barrier, animation, positioning) over the native screen underneath.
   void presentDialog(PageSettings page);
+
+  /// Return the schema fingerprint the host registered via
+  /// `InlayNavigator.setSchemaFingerprint`, or `null` when the host did
+  /// not register one (check disabled).
+  ///
+  /// Flutter calls this at engine startup to detect a host built from a
+  /// different generated schema revision than the module.
+  String? getHostSchemaFingerprint();
 }

@@ -13,6 +13,7 @@ String generateKotlinStores({
   required Schema schema,
   required Map<String, TypeDefinition> typeGraph,
   required String packageName,
+  String? schemaFingerprint,
 }) {
   final needsJson = _storesRequireJson(schema, typeGraph);
   final buffer = StringBuffer()
@@ -32,6 +33,24 @@ String generateKotlinStores({
   }
 
   buffer.writeln();
+
+  if (schemaFingerprint != null) {
+    buffer
+      ..writeln('/**')
+      ..writeln(' * Fingerprint of the schema this file was generated from.')
+      ..writeln(' *')
+      ..writeln(
+        ' * Register with `InlayNavigator.setSchemaFingerprint(InlaySchema.FINGERPRINT)`',
+      )
+      ..writeln(
+        ' * so Flutter engines can detect a module built from a different schema revision.',
+      )
+      ..writeln(' */')
+      ..writeln('object InlaySchema {')
+      ..writeln('    const val FINGERPRINT = "$schemaFingerprint"')
+      ..writeln('}')
+      ..writeln();
+  }
 
   if (needsJson) {
     _writeJsonToKotlinHelper(buffer);

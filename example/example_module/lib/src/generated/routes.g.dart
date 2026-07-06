@@ -3,6 +3,13 @@
 
 import 'package:inlay/inlay.dart';
 
+/// Fingerprint of the schema this file was generated from.
+///
+/// Pass to `InlayNavigator.instance.verifySchemaFingerprint`
+/// at engine startup to detect a host built from a different
+/// schema revision.
+const String inlaySchemaFingerprint = '1597917a4f771129';
+
 enum GreetingStyle { casual, formal }
 
 enum BadgeLevel { bronze, silver, gold }

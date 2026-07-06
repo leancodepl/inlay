@@ -14,20 +14,24 @@ PlatformException _createConnectionError(String channelName) {
     message: 'Unable to establish connection on channel: "$channelName".',
   );
 }
+
 bool _deepEquals(Object? a, Object? b) {
   if (a is List && b is List) {
     return a.length == b.length &&
-        a.indexed
-        .every(((int, dynamic) item) => _deepEquals(item.$2, b[item.$1]));
+        a.indexed.every(
+          ((int, dynamic) item) => _deepEquals(item.$2, b[item.$1]),
+        );
   }
   if (a is Map && b is Map) {
-    return a.length == b.length && a.entries.every((MapEntry<Object?, Object?> entry) =>
-        (b as Map<Object?, Object?>).containsKey(entry.key) &&
-        _deepEquals(entry.value, b[entry.key]));
+    return a.length == b.length &&
+        a.entries.every(
+          (MapEntry<Object?, Object?> entry) =>
+              (b as Map<Object?, Object?>).containsKey(entry.key) &&
+              _deepEquals(entry.value, b[entry.key]),
+        );
   }
   return a == b;
 }
-
 
 /// Describes a page to navigate to (Flutter or native).
 ///
@@ -38,11 +42,7 @@ bool _deepEquals(Object? a, Object? b) {
 /// For Flutter pages pushed from native, [params] is a `Map<String, String>`
 /// (produced by URL-decoding the `initialRoute` string).
 class PageSettings {
-  PageSettings({
-    required this.routeId,
-    this.params,
-    this.path,
-  });
+  PageSettings({required this.routeId, this.params, this.path});
 
   /// Identifies which screen to show (e.g. "soundsNotifications").
   String routeId;
@@ -56,15 +56,12 @@ class PageSettings {
   String? path;
 
   List<Object?> _toList() {
-    return <Object?>[
-      routeId,
-      params,
-      path,
-    ];
+    return <Object?>[routeId, params, path];
   }
 
   Object encode() {
-    return _toList();  }
+    return _toList();
+  }
 
   static PageSettings decode(Object result) {
     result as List<Object?>;
@@ -89,10 +86,8 @@ class PageSettings {
 
   @override
   // ignore: avoid_equals_and_hash_code_on_mutable_classes
-  int get hashCode => Object.hashAll(_toList())
-;
+  int get hashCode => Object.hashAll(_toList());
 }
-
 
 class _PigeonCodec extends StandardMessageCodec {
   const _PigeonCodec();
@@ -101,7 +96,7 @@ class _PigeonCodec extends StandardMessageCodec {
     if (value is int) {
       buffer.putUint8(4);
       buffer.putInt64(value);
-    }    else if (value is PageSettings) {
+    } else if (value is PageSettings) {
       buffer.putUint8(129);
       writeValue(buffer, value.encode());
     } else {
@@ -112,7 +107,7 @@ class _PigeonCodec extends StandardMessageCodec {
   @override
   Object? readValueOfType(int type, ReadBuffer buffer) {
     switch (type) {
-      case 129: 
+      case 129:
         return PageSettings.decode(readValue(buffer)!);
       default:
         return super.readValueOfType(type, buffer);
@@ -129,9 +124,13 @@ class InlayNavigatorHostApi {
   /// Constructor for [InlayNavigatorHostApi].  The [binaryMessenger] named argument is
   /// available for dependency injection.  If it is left null, the default
   /// BinaryMessenger will be used which routes to the host platform.
-  InlayNavigatorHostApi({BinaryMessenger? binaryMessenger, String messageChannelSuffix = ''})
-      : pigeonVar_binaryMessenger = binaryMessenger,
-        pigeonVar_messageChannelSuffix = messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
+  InlayNavigatorHostApi({
+    BinaryMessenger? binaryMessenger,
+    String messageChannelSuffix = '',
+  }) : pigeonVar_binaryMessenger = binaryMessenger,
+       pigeonVar_messageChannelSuffix = messageChannelSuffix.isNotEmpty
+           ? '.$messageChannelSuffix'
+           : '';
   final BinaryMessenger? pigeonVar_binaryMessenger;
 
   static const MessageCodec<Object?> pigeonChannelCodec = _PigeonCodec();
@@ -140,13 +139,16 @@ class InlayNavigatorHostApi {
 
   /// Push a new Flutter Activity/ViewController for the given page.
   Future<void> push(PageSettings page) async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.inlay.InlayNavigatorHostApi.push$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.inlay.InlayNavigatorHostApi.push$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[page]);
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(
+      <Object?>[page],
+    );
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
       throw _createConnectionError(pigeonVar_channelName);
@@ -163,7 +165,8 @@ class InlayNavigatorHostApi {
 
   /// Pop the current Flutter Activity/ViewController.
   Future<void> pop() async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.inlay.InlayNavigatorHostApi.pop$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.inlay.InlayNavigatorHostApi.pop$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
@@ -189,13 +192,16 @@ class InlayNavigatorHostApi {
   /// Used by Flutter to disable container-level swipe-back while the in-Flutter
   /// navigator can handle pop, preventing double-pop.
   Future<void> setNativePopGestureEnabled(bool enabled) async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.inlay.InlayNavigatorHostApi.setNativePopGestureEnabled$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.inlay.InlayNavigatorHostApi.setNativePopGestureEnabled$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[enabled]);
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(
+      <Object?>[enabled],
+    );
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
       throw _createConnectionError(pigeonVar_channelName);
@@ -216,13 +222,16 @@ class InlayNavigatorHostApi {
   /// If no handler is registered for the given `routeId`, this is a no-op
   /// (or throws, depending on platform configuration).
   Future<void> pushNativeRoute(PageSettings route) async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.inlay.InlayNavigatorHostApi.pushNativeRoute$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.inlay.InlayNavigatorHostApi.pushNativeRoute$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[route]);
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(
+      <Object?>[route],
+    );
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
       throw _createConnectionError(pigeonVar_channelName);
@@ -243,7 +252,8 @@ class InlayNavigatorHostApi {
   /// (with all fields, including complex nested objects). Returns `null`
   /// for the prewarm engine or when no data was set.
   Future<PageSettings?> getInitialRouteData() async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.inlay.InlayNavigatorHostApi.getInitialRouteData$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.inlay.InlayNavigatorHostApi.getInitialRouteData$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
@@ -270,13 +280,16 @@ class InlayNavigatorHostApi {
   /// starts a new Flutter engine. Flutter renders the dialog content
   /// (barrier, animation, positioning) over the native screen underneath.
   Future<void> presentDialog(PageSettings page) async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.inlay.InlayNavigatorHostApi.presentDialog$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.inlay.InlayNavigatorHostApi.presentDialog$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[page]);
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(
+      <Object?>[page],
+    );
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
       throw _createConnectionError(pigeonVar_channelName);
@@ -288,6 +301,35 @@ class InlayNavigatorHostApi {
       );
     } else {
       return;
+    }
+  }
+
+  /// Return the schema fingerprint the host registered via
+  /// `InlayNavigator.setSchemaFingerprint`, or `null` when the host did
+  /// not register one (check disabled).
+  ///
+  /// Flutter calls this at engine startup to detect a host built from a
+  /// different generated schema revision than the module.
+  Future<String?> getHostSchemaFingerprint() async {
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.inlay.InlayNavigatorHostApi.getHostSchemaFingerprint$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(null);
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+    if (pigeonVar_replyList == null) {
+      throw _createConnectionError(pigeonVar_channelName);
+    } else if (pigeonVar_replyList.length > 1) {
+      throw PlatformException(
+        code: pigeonVar_replyList[0]! as String,
+        message: pigeonVar_replyList[1] as String?,
+        details: pigeonVar_replyList[2],
+      );
+    } else {
+      return (pigeonVar_replyList[0] as String?);
     }
   }
 }

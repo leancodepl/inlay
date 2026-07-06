@@ -14,6 +14,7 @@ import 'package:inlay_gen/src/parser/type_resolver.dart';
 String generateDartStores({
   required Schema schema,
   required Map<String, TypeDefinition> typeGraph,
+  String? schemaFingerprint,
 }) {
   final needsRoutesImport = _storesRequireRoutesImport(schema, typeGraph);
   final needsJsonConvert = _storesRequireJsonConvert(schema, typeGraph);
@@ -36,6 +37,17 @@ String generateDartStores({
   if (needsRoutesImport) {
     buffer
       ..writeln("import 'routes.g.dart';")
+      ..writeln();
+  }
+
+  if (schemaFingerprint != null) {
+    buffer
+      ..writeln('/// Fingerprint of the schema this file was generated from.')
+      ..writeln('///')
+      ..writeln('/// Pass to `InlayNavigator.instance.verifySchemaFingerprint`')
+      ..writeln('/// at engine startup to detect a host built from a different')
+      ..writeln('/// schema revision.')
+      ..writeln("const String inlaySchemaFingerprint = '$schemaFingerprint';")
       ..writeln();
   }
 

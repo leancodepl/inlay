@@ -18,6 +18,7 @@ import 'package:inlay_gen/src/utils/naming.dart';
 String generateSwiftRoutes({
   required Schema schema,
   required Map<String, TypeDefinition> typeGraph,
+  String? schemaFingerprint,
 }) {
   final buffer = StringBuffer()
     // Header.
@@ -44,6 +45,22 @@ String generateSwiftRoutes({
     )
     ..writeln('}')
     ..writeln();
+
+  if (schemaFingerprint != null) {
+    buffer
+      ..writeln('/// Fingerprint of the schema this file was generated from.')
+      ..writeln('///')
+      ..writeln(
+        '/// Register with `InlayNavigator.shared.setSchemaFingerprint(InlaySchema.fingerprint)`',
+      )
+      ..writeln(
+        '/// so Flutter engines can detect a module built from a different schema revision.',
+      )
+      ..writeln('enum InlaySchema {')
+      ..writeln('    static let fingerprint = "$schemaFingerprint"')
+      ..writeln('}')
+      ..writeln();
+  }
 
   // Generate enums.
   for (final enumDef in schema.enums) {
