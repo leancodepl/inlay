@@ -40,7 +40,15 @@ In-memory map with the real storage's semantics:
 ## Reference tests
 
 `example/example_module/test/` contains widget tests using both fakes
-(`greeting_screen_test.dart`, `profile_screen_test.dart`), and the iOS host has an
-XCUITest (`example_ios/UITests/`) that crosses the boundary for real - it pushes a
-Flutter screen from native and asserts on plugin-fetched content through the
-accessibility tree.
+(`greeting_screen_test.dart`, `profile_screen_test.dart`). Both hosts also have UI
+tests that cross the boundary for real, asserting on Flutter-rendered content through
+the accessibility tree:
+
+- **iOS** - XCUITests in `example_ios/UITests/`: plugin registration on a pushed
+  engine, and a dialog's typed `Bool` result delivered back to native.
+- **Android** - UiAutomator instrumentation tests in
+  `example_android/app/src/androidTest/`: the same two flows plus `InlayAppearance`
+  locale propagation into a newly created engine. Run with
+  `./gradlew connectedDebugAndroidTest` (needs a connected device/emulator). Flutter
+  exposes its semantics as content descriptions, so the shared `waitForAny` helper
+  matches `text` and `desc` selectors alike.
