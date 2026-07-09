@@ -4,19 +4,25 @@ description: >
   plugin when you want to embed inlay Flutter screens directly into Compose
   navigation graphs. Android-only; the core `inlay` plugin has no Compose
   dependency.
-publish_to: none
-resolution: workspace
-
 version: 0.1.0
+repository: https://github.com/leancodepl/inlay
+issue_tracker: https://github.com/leancodepl/inlay/issues
+topics:
+  - add-to-app
+  - navigation
+  - flutter-module
+  - codegen
+  - state
+resolution: workspace
 
 environment:
   sdk: ^3.11.0
+  flutter: '>=3.41.0'
 
 dependencies:
   flutter:
     sdk: flutter
-  inlay:
-    path: ../inlay
+  inlay: ^0.1.0
 
 dev_dependencies:
   flutter_test:

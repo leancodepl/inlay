@@ -33,10 +33,10 @@ EXTERNAL SOURCES:
     :path: "../example_module/.ios/.symlinks/plugins/package_info_plus/ios"
 
 SPEC CHECKSUMS:
-  example_module_native: a29e0f96f98f8b9d8a590e57b9a26014df01a443
+  example_module_native: 07aac96d03ece2aa5bfa739c59b4085974222a90
   Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
   FlutterPluginRegistrant: fa3d75d77ca7af65bba0b58ed6b023391bdb9519
-  inlay: ce784e1423e69c646541a17c82857a80fc25f9d6
+  inlay: cd4bd5023eee14900b4c8fa7d5d0212ca105604c
   package_info_plus: af8e2ca6888548050f16fa2f1938db7b5a5df499
 
 PODFILE CHECKSUM: 8df05b4110b504a9fbd0f28fdb3cafb419c22ad9

@@ -3,13 +3,20 @@ description: >
   A cross-platform framework for embedding Flutter in native apps. Provides
   navigation (push/pop via FlutterEngineGroup) and shared key-value storage
   with real-time synchronization across multiple Flutter isolates and native code.
-publish_to: none
-resolution: workspace
-
 version: 0.1.0
+repository: https://github.com/leancodepl/inlay
+issue_tracker: https://github.com/leancodepl/inlay/issues
+topics:
+  - add-to-app
+  - navigation
+  - flutter-module
+  - codegen
+  - state
+resolution: workspace
 
 environment:
   sdk: ^3.11.0
+  flutter: '>=3.41.0'
 
 dependencies:
   bloc: ^9.0.0

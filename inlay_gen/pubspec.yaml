@@ -1,7 +1,17 @@
 name: inlay_gen
-description: Code generator for inlay routes and stores. Supports both CLI and build_runner.
-version: 1.0.0
-publish_to: none
+description: >
+  Code generator for the inlay add-to-app framework - produces type-safe
+  route and store classes for Dart, Kotlin, and Swift from annotated schemas.
+  Supports both CLI and build_runner.
+version: 0.1.0
+repository: https://github.com/leancodepl/inlay
+issue_tracker: https://github.com/leancodepl/inlay/issues
+topics:
+  - add-to-app
+  - navigation
+  - flutter-module
+  - codegen
+  - state
 resolution: workspace
 
 environment:

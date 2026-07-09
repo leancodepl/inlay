@@ -7,7 +7,7 @@ A cross-platform framework for embedding Flutter in native apps. Provides
 navigation (push/pop via FlutterEngineGroup) and shared key-value storage
 with real-time synchronization across multiple Flutter isolates and native code.
                        DESC
-  s.homepage         = 'https://github.com/nicepage/inlay'
+  s.homepage         = 'https://github.com/leancodepl/inlay'
   s.license          = { :file => '../LICENSE' }
   s.author           = { 'LeanCode' => 'info@leancode.co' }
   s.source           = { :path => '.' }

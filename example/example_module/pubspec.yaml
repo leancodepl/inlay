@@ -3,7 +3,7 @@ description: "Example Flutter module for inlay framework demo."
 publish_to: none
 resolution: workspace
 
-version: 1.0.0+1
+version: 0.1.0
 
 environment:
   sdk: ^3.11.0

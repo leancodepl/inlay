@@ -6,7 +6,7 @@ Pod::Spec.new do |s|
 Companion plugin for example_module. Holds generated native code (Routes, Stores)
 so that flutter build aar bundles them into binary artifacts.
                        DESC
-  s.homepage         = 'https://github.com/nicepage/inlay'
+  s.homepage         = 'https://github.com/leancodepl/inlay'
   s.license          = { :file => '../LICENSE' }
   s.author           = { 'LeanCode' => 'info@leancode.co' }
   s.source           = { :path => '.' }
