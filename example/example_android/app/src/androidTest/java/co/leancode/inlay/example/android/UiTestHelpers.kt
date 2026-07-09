@@ -44,24 +44,34 @@ internal fun UiDevice.waitForAny(timeoutMs: Long, vararg selectors: BySelector):
 }
 
 /**
- * Clicks a native button by its (exact) text. Re-finds and retries on
- * [StaleObjectException] - Compose recomposition can invalidate a node
- * between find and click.
+ * Clicks a native button by its (exact) text.
+ *
+ * Clicks only once two consecutive finds return identical bounds - right
+ * after a scroll the click coordinates would otherwise be computed from
+ * pre-settle bounds and land on a neighboring view. Also re-finds and
+ * retries on [StaleObjectException] (Compose recomposition can invalidate
+ * a node between find and click).
  */
 internal fun UiDevice.clickButton(text: String, timeoutMs: Long = 15_000): UiObject2 {
   val deadline = SystemClock.uptimeMillis() + timeoutMs
   var lastError: Throwable? = null
+  var lastBounds: android.graphics.Rect? = null
   while (SystemClock.uptimeMillis() < deadline) {
     val button = findObject(By.text(text))
     if (button != null) {
       try {
-        button.click()
-        return button
+        val bounds = button.visibleBounds
+        if (bounds == lastBounds) {
+          button.click()
+          return button
+        }
+        lastBounds = bounds
       } catch (e: StaleObjectException) {
         lastError = e
+        lastBounds = null
       }
     }
     SystemClock.sleep(250)
   }
-  throw AssertionError("Button '$text' never appeared or stayed stale", lastError)
+  throw AssertionError("Button '$text' never appeared or stayed stable", lastError)
 }

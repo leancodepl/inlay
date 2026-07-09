@@ -6,7 +6,9 @@ package co.leancode.example_module.generated
 import android.content.Context
 import android.net.Uri
 import co.leancode.inlay.FlutterRoute
+import co.leancode.inlay.FlutterRouteWithResult
 import co.leancode.inlay.FlutterDialogRoute
+import co.leancode.inlay.FlutterDialogRouteWithResult
 import co.leancode.inlay.NativeRouteHandler as NativeRouteHandling
 import co.leancode.inlay.navigator.PageSettings
 
@@ -85,7 +87,7 @@ data class GreetingPage(
 
 data class CounterPage(
     val seed: Long?
-) : FlutterRoute {
+) : FlutterRouteWithResult<Long> {
     companion object {
         const val ROUTE_NAME = "/counter"
         const val PATH_TEMPLATE = "/counter"
@@ -99,6 +101,8 @@ data class CounterPage(
         fun decodeResult(raw: Any?): Long? =
             if (raw == null) null else (raw as Number).toLong()
     }
+
+    override fun decodeResult(raw: Any?): Long? = Companion.decodeResult(raw)
 
     fun toList(): List<Any?> = listOf(
         seed?.let { it },
@@ -151,7 +155,7 @@ data class ProfilePage(
 data class ConfirmActionDialog(
     val action: String,
     val message: String?
-) : FlutterDialogRoute {
+) : FlutterDialogRouteWithResult<Boolean> {
     companion object {
         const val ROUTE_NAME = "confirmActionDialog"
         const val PATH_TEMPLATE = "/confirm-action/:action"
@@ -166,6 +170,8 @@ data class ConfirmActionDialog(
         fun decodeResult(raw: Any?): Boolean? =
             if (raw == null) null else raw as Boolean
     }
+
+    override fun decodeResult(raw: Any?): Boolean? = Companion.decodeResult(raw)
 
     fun toList(): List<Any?> = listOf(
         action,

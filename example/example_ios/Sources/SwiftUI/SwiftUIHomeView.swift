@@ -51,8 +51,8 @@ struct SwiftUIHomeView: View {
         .inlayDialog(
             isPresented: $showConfirmDialog,
             route: ConfirmActionDialog(action: "delete", message: "Are you sure?"),
-            onResult: { raw in
-                let confirmed = ConfirmActionDialog.decodeResult(raw)
+            onResult: { confirmed in
+                // confirmed: Bool?
                 lastDialogResult = confirmed.map(String.init) ?? "dismissed"
             }
         )

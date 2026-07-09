@@ -26,10 +26,11 @@ class CrossBoundaryStateTest {
       .scrollTextIntoView("Open Flutter Profile")
     device.clickButton("Open Flutter Profile")
 
+    // First Flutter frame can be slow on a cold emulator - wait generously.
     assertNotNull(
       "The Flutter profile never showed the natively written display name.",
       device.waitForAny(
-        30_000,
+        45_000,
         By.textContains("Display name: Native User"),
         By.descContains("Display name: Native User"),
       ),

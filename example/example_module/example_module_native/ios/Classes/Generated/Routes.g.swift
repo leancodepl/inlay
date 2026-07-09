@@ -92,7 +92,7 @@ struct GreetingPage: FlutterRoute {
     }
 }
 
-struct CounterPage: FlutterRoute {
+struct CounterPage: FlutterRouteWithResult {
     let seed: Int64?
 
     static let routeName = "/counter"
@@ -174,7 +174,7 @@ struct ProfilePage: FlutterRoute {
     }
 }
 
-struct ConfirmActionDialog: FlutterDialogRoute {
+struct ConfirmActionDialog: FlutterDialogRouteWithResult {
     let action: String
     let message: String?
 

@@ -58,8 +58,8 @@ final class HomeViewController: UIViewController {
             InlayNavigator.shared.presentDialog(
                 from: self,
                 route: ConfirmActionDialog(action: "delete", message: "Are you sure?"),
-                onResult: { [weak self] raw in
-                    let confirmed = ConfirmActionDialog.decodeResult(raw)
+                onResult: { [weak self] confirmed in
+                    // confirmed: Bool?
                     self?.showResult("Confirm dialog", value: confirmed.map(String.init) ?? "dismissed")
                 }
             )
@@ -70,8 +70,8 @@ final class HomeViewController: UIViewController {
             InlayNavigator.shared.push(
                 from: self,
                 route: CounterPage(seed: nil),
-                onResult: { [weak self] raw in
-                    let count = CounterPage.decodeResult(raw)
+                onResult: { [weak self] count in
+                    // count: Int64?
                     self?.showResult("Counter", value: count.map(String.init) ?? "dismissed")
                 }
             )

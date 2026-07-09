@@ -235,14 +235,14 @@ var body: some View {
         .inlayDialog(
             isPresented: $showDialog,
             route: ConfirmDeleteDialog(itemId: "42"),
-            onResult: { raw in
-                let confirmed = ConfirmDeleteDialog.decodeResult(raw)
+            onResult: { confirmed in
+                // confirmed: Bool? - already decoded
             }
         )
 }
 ```
 
-The `.inlayDialog` modifier uses UIKit's `.overFullScreen` presentation under the hood, so the background stays visible. `onResult` is optional and invoked exactly once - with the popped result, or `nil` on dismissal without one.
+The `.inlayDialog` modifier uses UIKit's `.overFullScreen` presentation under the hood, so the background stays visible. For dialog routes declaring `result:`, `onResult` is invoked exactly once - with the decoded result, or `nil` on dismissal without one.
 
 #### From Android (Kotlin)
 
@@ -266,13 +266,13 @@ InlayFlutterDialog(
     isPresented = showDialog,
     route = ConfirmDeleteDialog(itemId = "42"),
     onDismissRequest = { showDialog = false },
-    onResult = { raw ->
-        val confirmed = ConfirmDeleteDialog.decodeResult(raw)
+    onResult = { confirmed ->
+        // confirmed: Boolean? - already decoded
     },
 )
 ```
 
-While `isPresented` is `true` the framework's transparent `InlayFlutterDialogFragment` is shown over the Activity. Do **not** wrap it in a Compose `Dialog` or a Compose Navigation `dialog()` destination - a `FragmentManager` cannot attach fragments inside a Compose dialog window, and the fragment manages its own window anyway. `onDismissRequest` fires when the dialog goes away for any reason (Flutter pop, barrier tap, back); `onResult` is optional and invoked exactly once - with the popped result, or `null` on dismissal without one. `InlayFlutterScreen` and `InlayNavigator.createFragment` take the same `onResult` parameter for full-screen embeds.
+While `isPresented` is `true` the framework's transparent `InlayFlutterDialogFragment` is shown over the Activity. Do **not** wrap it in a Compose `Dialog` or a Compose Navigation `dialog()` destination - a `FragmentManager` cannot attach fragments inside a Compose dialog window, and the fragment manages its own window anyway. `onDismissRequest` fires when the dialog goes away for any reason (Flutter pop, barrier tap, back); for dialog routes declaring `result:`, `onResult` is invoked exactly once - with the decoded result, or `null` on dismissal without one. `InlayFlutterScreen` and `InlayNavigator.createFragment` take the same typed `onResult` parameter for full-screen embeds.
 
 ## Handling Native Routes (Flutter → Native)
 
@@ -643,10 +643,15 @@ The result type joins the schema fingerprint. Dismissal without an explicit resu
 
 **Native → Flutter** (native awaits): `push`/`presentDialog` take an `onResult` callback;
 so do the declarative wrappers - SwiftUI's `.inlayDialog(onResult:)` and Compose's
-`InlayFlutterScreen`/`InlayFlutterDialog` (`onResult =`). Decode with the generated
-`Route.decodeResult(raw)`. The Flutter screen returns via `Route.popWithResult(value)`
-(full screen) or an `InlayDialogPage`/`InlayBottomSheetPage`'s `encodeResult:` +
-`Navigator.pop(context, value)` (dialog/sheet).
+`InlayFlutterScreen`/`InlayFlutterDialog` (`onResult =`). The callbacks are **typed**:
+routes declaring `result:` generate classes implementing `FlutterRouteWithResult<R>` /
+`FlutterDialogRouteWithResult<R>` (Kotlin) or conforming to `FlutterRouteWithResult` /
+`FlutterDialogRouteWithResult` (Swift, `ResultValue` associated type), and the generic
+overloads deliver an already-decoded `R?` - no casts, no `decodeResult` at call sites
+(the raw `decodeResult`/`encodeResult` codecs remain for the low-level `PageSettings`
+APIs). The Flutter screen returns via `Route.popWithResult(value)` (full screen) or an
+`InlayDialogPage`/`InlayBottomSheetPage`'s `encodeResult:` + `Navigator.pop(context, value)`
+(dialog/sheet).
 
 **Flutter → native / Flutter → Flutter** (Flutter awaits): the generated route class exposes
 `Future<R?> pushForResult()`. On the native side, the generated `NativeRouteHandler` method for

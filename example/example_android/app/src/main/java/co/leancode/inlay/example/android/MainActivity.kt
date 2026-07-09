@@ -28,9 +28,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     findViewById<Button>(R.id.btnCounter).setOnClickListener {
-      // Native -> Flutter -> typed result back.
-      InlayNavigator.push(this, CounterPage(seed = null)) { raw ->
-        val count = CounterPage.decodeResult(raw)
+      // Native -> Flutter -> typed result back (count: Long?).
+      InlayNavigator.push(this, CounterPage(seed = null)) { count ->
         showResult("Counter", count?.toString() ?: "dismissed")
       }
     }
@@ -58,12 +57,11 @@ class MainActivity : AppCompatActivity() {
     }
 
     findViewById<Button>(R.id.btnConfirmDialog).setOnClickListener {
-      // Native -> Flutter dialog -> typed result back.
+      // Native -> Flutter dialog -> typed result back (confirmed: Boolean?).
       InlayNavigator.presentDialog(
         this,
         ConfirmActionDialog(action = "delete", message = "Are you sure?"),
-      ) { raw ->
-        val confirmed = ConfirmActionDialog.decodeResult(raw)
+      ) { confirmed ->
         showResult("Confirm dialog", confirmed?.toString() ?: "dismissed")
       }
     }

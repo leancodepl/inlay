@@ -128,8 +128,7 @@ private fun ComposeHost() {
         isPresented = showConfirmDialog,
         route = ConfirmActionDialog(action = "delete", message = "Are you sure?"),
         onDismissRequest = { showConfirmDialog = false },
-        onResult = { raw ->
-          val confirmed = ConfirmActionDialog.decodeResult(raw)
+        onResult = { confirmed ->
           lastDialogResult = confirmed?.toString() ?: "dismissed"
         },
       )
