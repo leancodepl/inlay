@@ -8,13 +8,15 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Workspace Structure
 
-Dart workspace (SDK ^3.11.0) with three packages:
+Dart workspace (SDK ^3.11.0) with five packages:
 
-| Package                   | Role                                                                                                |
-| ------------------------- | --------------------------------------------------------------------------------------------------- |
-| `inlay/`                  | Core framework plugin (Dart + Swift + Kotlin). Navigation, storage, platform channels via Pigeon.   |
-| `inlay_gen/`              | Code generator — produces typed route/store classes for Dart, Kotlin, Swift from annotated schemas. |
-| `example/example_module/` | Standalone example Flutter module with go_router, auto_route, and sealed-class routing demos.       |
+| Package                                          | Role                                                                                                |
+| ------------------------------------------------ | --------------------------------------------------------------------------------------------------- |
+| `inlay/`                                         | Core framework plugin (Dart + Swift + Kotlin). Navigation, storage, platform channels via Pigeon.   |
+| `inlay_compose/`                                 | Optional Jetpack Compose integration (Android-only) for embedding inlay screens in Compose hosts.   |
+| `inlay_gen/`                                     | Code generator — produces typed route/store classes for Dart, Kotlin, Swift from annotated schemas. |
+| `example/example_module/`                        | Standalone example Flutter module with go_router, auto_route, and sealed-class routing demos.       |
+| `example/example_module/example_module_native/`  | Companion plugin holding the module's generated native code so `flutter build aar` bundles it.      |
 
 Non-workspace directories: `example/example_android/`, `example/example_ios/` (native host apps), `docs_app/` (fumadocs documentation site, Next.js), `docs_internal/` (internal library docs in Markdown).
 

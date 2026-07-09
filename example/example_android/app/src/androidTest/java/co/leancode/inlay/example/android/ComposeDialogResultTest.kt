@@ -8,7 +8,7 @@ import org.junit.runner.RunWith
 
 /**
  * End-to-end test for the `onResult` parameter of the Compose
- * `InlayFlutterDialogScreen` wrapper: the Flutter dialog's typed `Boolean`
+ * `InlayFlutterDialog` wrapper: the Flutter dialog's typed `Boolean`
  * result must reach the Compose host through the fragment result plumbing.
  */
 @RunWith(AndroidJUnit4::class)

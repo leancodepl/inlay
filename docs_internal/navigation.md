@@ -287,10 +287,10 @@ InlayNavigator.shared.setNativeRouteHandler(MyNativeRouteHandler())
 // Implement the generated handler
 class MyNativeRouteHandler: NativeRouteHandler {
   override func onNativeEditProfile(
-    from viewController: UIViewController,
-    contactId: String
+    page: NativeEditProfilePage,
+    viewController: UIViewController
   ) {
-    let vc = EditProfileViewController(contactId: contactId)
+    let vc = EditProfileViewController(contactId: page.contactId)
     viewController.navigationController?.pushViewController(vc, animated: true)
   }
 }
@@ -301,10 +301,10 @@ class MyNativeRouteHandler: NativeRouteHandler {
 ```kotlin
 // Register once (e.g. in Application.onCreate)
 InlayNavigator.setNativeRouteHandler(object : NativeRouteHandler() {
-  override fun onNativeEditProfile(context: Context, contactId: String) {
+  override fun onNativeEditProfile(page: NativeEditProfilePage, context: Context) {
     context.startActivity(
       Intent(context, EditProfileActivity::class.java)
-        .putExtra("contactId", contactId)
+        .putExtra("contactId", page.contactId)
     )
   }
 })

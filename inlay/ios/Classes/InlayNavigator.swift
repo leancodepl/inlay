@@ -321,7 +321,7 @@ public final class InlayNavigator {
 
     /// Present a Flutter dialog in a transparent native container.
     ///
-    /// The dialog VC is presented modally with `.overCurrentContext` style,
+    /// The dialog VC is presented modally with `.overFullScreen` style,
     /// so the underlying screen remains visible. Flutter renders the dialog
     /// content (barrier, animation, positioning).
     public func presentDialog(
