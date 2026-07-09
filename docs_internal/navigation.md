@@ -234,12 +234,15 @@ var body: some View {
     Button("Delete") { showDialog = true }
         .inlayDialog(
             isPresented: $showDialog,
-            route: ConfirmDeleteDialog(itemId: "42")
+            route: ConfirmDeleteDialog(itemId: "42"),
+            onResult: { raw in
+                let confirmed = ConfirmDeleteDialog.decodeResult(raw)
+            }
         )
 }
 ```
 
-The `.inlayDialog` modifier uses UIKit's `.overFullScreen` presentation under the hood, so the background stays visible.
+The `.inlayDialog` modifier uses UIKit's `.overFullScreen` presentation under the hood, so the background stays visible. `onResult` is optional and invoked exactly once - with the popped result, or `nil` on dismissal without one.
 
 #### From Android (Kotlin)
 
@@ -251,21 +254,25 @@ InlayNavigator.presentDialog(activity, ConfirmDeleteDialog(itemId = "42"))
 
 This shows an `InlayFlutterDialogFragment` - a `DialogFragment` with a transparent fullscreen window.
 
-**Jetpack Compose** - add the `inlay_compose` plugin (see above) and use a Compose Navigation `dialog()` destination:
+**Jetpack Compose** - add the `inlay_compose` plugin (see above) and drive `InlayFlutterDialog` from state, the same shape as SwiftUI's `.inlayDialog`:
 
 ```kotlin
-import co.leancode.inlay.compose.InlayFlutterDialogScreen
+import co.leancode.inlay.compose.InlayFlutterDialog
 
-NavHost(navController, startDestination = "home") {
-    composable("home") { HomeScreen() }
-    dialog("confirm-delete/{itemId}") { entry ->
-        InlayFlutterDialogScreen(
-            route = ConfirmDeleteDialog(itemId = entry.arguments!!.getString("itemId")!!),
-            modifier = Modifier.fillMaxSize(),
-        )
-    }
-}
+var showDialog by remember { mutableStateOf(false) }
+
+Button(onClick = { showDialog = true }) { Text("Delete") }
+InlayFlutterDialog(
+    isPresented = showDialog,
+    route = ConfirmDeleteDialog(itemId = "42"),
+    onDismissRequest = { showDialog = false },
+    onResult = { raw ->
+        val confirmed = ConfirmDeleteDialog.decodeResult(raw)
+    },
+)
 ```
+
+While `isPresented` is `true` the framework's transparent `InlayFlutterDialogFragment` is shown over the Activity. Do **not** wrap it in a Compose `Dialog` or a Compose Navigation `dialog()` destination - a `FragmentManager` cannot attach fragments inside a Compose dialog window, and the fragment manages its own window anyway. `onDismissRequest` fires when the dialog goes away for any reason (Flutter pop, barrier tap, back); `onResult` is optional and invoked exactly once - with the popped result, or `null` on dismissal without one. `InlayFlutterScreen` and `InlayNavigator.createFragment` take the same `onResult` parameter for full-screen embeds.
 
 ## Handling Native Routes (Flutter → Native)
 
@@ -428,6 +435,7 @@ void inlayMain() async {
 - `InlayBottomSheetPage` shows a modal bottom sheet. Parameters like `isScrollControlled`, `isDismissible`, `enableDrag`, and `showDragHandle` are configurable.
 - Both pages automatically call `InlayNavigator.instance.pop()` when the dialog/sheet is dismissed, closing the native transparent container
 - The `MaterialApp` theme must set `scaffoldBackgroundColor: Colors.transparent` for dialog engines so the native screen shows through
+- Routers that manage their own page types (e.g. auto_route) can't host these `Page`s - use the underlying `InlayDialogLauncher` / `InlayBottomSheetLauncher` widgets inside a transparent zero-transition route instead (see the auto_route example below). Same options, same auto-pop behavior.
 
 #### auto_route example
 
@@ -447,6 +455,20 @@ RootStackRouter createRouter() {
         path: '/contact-details/:contactId',
         builder: (_, data) => ContactDetailsScreen(
           contactId: data.params.getString('contactId'),
+        ),
+      ),
+      // Dialog routes: auto_route manages its own page types, so
+      // InlayDialogPage can't be returned from a builder. Use the
+      // launcher widgets inside a transparent zero-transition route.
+      NamedRouteDef(
+        name: 'ConfirmDeleteDialogRoute',
+        path: '/confirm-delete/:itemId',
+        type: const RouteType.custom(opaque: false, duration: Duration.zero),
+        builder: (_, data) => InlayDialogLauncher<bool>(
+          encodeResult: ConfirmDeleteDialog.encodeResult,
+          builder: (_) => ConfirmDeleteContent(
+            itemId: data.params.getString('itemId'),
+          ),
         ),
       ),
     ],
@@ -620,9 +642,11 @@ The result type joins the schema fingerprint. Dismissal without an explicit resu
 `null`, exactly once.
 
 **Native → Flutter** (native awaits): `push`/`presentDialog` take an `onResult` callback;
-decode with the generated `Route.decodeResult(raw)`. The Flutter screen returns via
-`Route.popWithResult(value)` (full screen) or an `InlayDialogPage`/`InlayBottomSheetPage`'s
-`encodeResult:` + `Navigator.pop(context, value)` (dialog/sheet).
+so do the declarative wrappers - SwiftUI's `.inlayDialog(onResult:)` and Compose's
+`InlayFlutterScreen`/`InlayFlutterDialog` (`onResult =`). Decode with the generated
+`Route.decodeResult(raw)`. The Flutter screen returns via `Route.popWithResult(value)`
+(full screen) or an `InlayDialogPage`/`InlayBottomSheetPage`'s `encodeResult:` +
+`Navigator.pop(context, value)` (dialog/sheet).
 
 **Flutter → native / Flutter → Flutter** (Flutter awaits): the generated route class exposes
 `Future<R?> pushForResult()`. On the native side, the generated `NativeRouteHandler` method for
@@ -664,20 +688,38 @@ By default the framework keeps a hidden prewarmed engine so the first Flutter na
 // iOS
 InlayNavigator.shared.setPrewarmEnabled(false)
 InlayNavigator.shared.destroyPrewarmedEngine()
+InlayNavigator.shared.isPrewarmEnabled // read current state
 ```
 
 ```kotlin
 // Android
 InlayNavigator.setPrewarmEnabled(false)
 InlayNavigator.destroyPrewarmedEngine()
+InlayNavigator.isPrewarmEnabled // read current state
 ```
+
+### Dart Entrypoint
+
+Every engine runs a single Dart entrypoint, `inlayMain` by default. It can be changed - e.g. to switch between routing integrations, or to point inlay at a dedicated entrypoint in a module that also runs standalone:
+
+```swift
+// iOS
+InlayNavigator.shared.setDartEntrypoint("inlayAutoRouteMain")
+```
+
+```kotlin
+// Android
+InlayNavigator.setDartEntrypoint("inlayAutoRouteMain")
+```
+
+The entrypoint must be a top-level function in the Flutter module annotated with `@pragma('vm:entry-point')`. Engines that are already running keep their entrypoint; the hidden prewarmed engine is recreated so the next navigation uses the new one. The example app exposes this on its native settings screens to switch between the go_router, auto_route, and imperative routing demos at runtime.
 
 ## How It Works Under the Hood
 
 1. **Native init** - `start()` / `init()` creates a `FlutterEngineGroup` and optionally prewarms one engine.
 2. **Push** - When a route is pushed, the framework encodes `PageSettings` into a URL string, creates a new engine from the group, and presents it in a native container (Activity / ViewController).
 3. **Present dialog** - For dialog routes, the native side creates a transparent container (`DialogFragment` on Android, `.overFullScreen` modal on iOS) instead of an opaque one. The engine starts the same way, but Flutter renders over the visible native screen underneath.
-4. **Dart entrypoint** - Every engine runs the same Dart entrypoint (`inlayMain`). A routing library reads the initial path to render the correct screen, or the imperative approach decodes `PageSettings` into a sealed `FlutterRoute` / `FlutterDialogRoute` for pattern matching.
+4. **Dart entrypoint** - Every engine runs the same Dart entrypoint (`inlayMain` by default, configurable via `setDartEntrypoint`). A routing library reads the initial path to render the correct screen, or the imperative approach decodes `PageSettings` into a sealed `FlutterRoute` / `FlutterDialogRoute` for pattern matching.
 5. **Pop** - Dismissing the native container destroys the engine and cleans up platform channel registrations. For dialogs, Flutter's `InlayNavigator.instance.pop()` is called automatically when the dialog/sheet is dismissed.
 
 Routes are serialized as:

@@ -80,8 +80,10 @@ object InlayNavigator {
     private const val ENGINE_GROUP_ID = "inlay_engine_group"
     private const val PREWARM_ROUTE_ID = "__inlay_prewarm__"
 
-    /** The single Dart entrypoint used by all inlay pages. */
-    private const val DART_ENTRYPOINT = "inlayMain"
+    /** The Dart entrypoint used by all inlay pages. Defaults to `inlayMain`. */
+    @Volatile
+    var dartEntrypoint: String = "inlayMain"
+        private set
 
     private lateinit var appContext: Context
 
@@ -91,7 +93,8 @@ object InlayNavigator {
     @Volatile
     private var onEngineCreated: ((FlutterEngine) -> Unit)? = null
     /** Whether [init] should prewarm a hidden engine. */
-    private var isPrewarmEnabled: Boolean = true
+    var isPrewarmEnabled: Boolean = true
+        private set
     /** Hidden warm-up engine kept alive for app lifetime. */
     private var prewarmedEngine: FlutterEngine? = null
     /** Route data for fragments, keyed by fragment ID (consumed once on configureEngine). */
@@ -131,6 +134,26 @@ object InlayNavigator {
     fun setOnEngineCreated(callback: ((FlutterEngine) -> Unit)?) {
         onEngineCreated = callback
         prewarmedEngine?.let { callback?.invoke(it) }
+    }
+
+    /**
+     * Change the Dart entrypoint used for every engine inlay creates.
+     *
+     * The entrypoint must be a top-level function in the Flutter module
+     * annotated with `@pragma('vm:entry-point')`. Engines that are already
+     * running keep their entrypoint; the hidden prewarmed engine is
+     * recreated so the next navigation uses the new one.
+     */
+    @Synchronized
+    fun setDartEntrypoint(entrypoint: String) {
+        if (entrypoint == dartEntrypoint) return
+        dartEntrypoint = entrypoint
+        if (prewarmedEngine != null) {
+            destroyPrewarmedEngine()
+            if (isPrewarmEnabled && ::appContext.isInitialized) {
+                prewarmEngineIfNeeded()
+            }
+        }
     }
 
     /**
@@ -190,7 +213,7 @@ object InlayNavigator {
 
         val engineGroup = FlutterEngineGroupCache.getInstance().get(ENGINE_GROUP_ID) ?: return
         val bundlePath = FlutterInjector.instance().flutterLoader().findAppBundlePath()
-        val entrypoint = DartExecutor.DartEntrypoint(bundlePath, DART_ENTRYPOINT)
+        val entrypoint = DartExecutor.DartEntrypoint(bundlePath, dartEntrypoint)
         val engine = engineGroup.createAndRunEngine(appContext, entrypoint, PREWARM_ROUTE_ID)
         onEngineCreated?.invoke(engine)
 
@@ -320,9 +343,25 @@ object InlayNavigator {
 
     /**
      * Create a [InlayFlutterDialogFragment] configured for the given page.
+     *
+     * [onResult] is invoked exactly once - with the popped result, or
+     * `null` when the dialog is dismissed without one (barrier tap, back).
      */
-    fun createDialogFragment(context: Context, route: FlutterDialogRoute): InlayFlutterDialogFragment {
-        return createDialogFragment(context, route.toPageSettings())
+    @JvmOverloads
+    fun createDialogFragment(
+        context: Context,
+        route: FlutterDialogRoute,
+        onResult: ((Any?) -> Unit)? = null,
+    ): InlayFlutterDialogFragment {
+        val dialogFragment = createDialogFragment(context, route.toPageSettings())
+        if (onResult != null) {
+            val dialogId = dialogFragment.arguments
+                ?.getString(InlayFlutterDialogFragment.EXTRA_DIALOG_ROUTE_ID)
+            if (dialogId != null) {
+                registerResultCallback(dialogId, onResult)
+            }
+        }
+        return dialogFragment
     }
 
     internal fun createDialogFragment(context: Context, page: PageSettings): InlayFlutterDialogFragment {
@@ -349,7 +388,7 @@ object InlayNavigator {
             InlayFlutterFragment::class.java,
             ENGINE_GROUP_ID
         )
-            .dartEntrypoint(DART_ENTRYPOINT)
+            .dartEntrypoint(dartEntrypoint)
             .initialRoute(initialRoute)
             .transparencyMode(TransparencyMode.transparent)
             .build<InlayFlutterFragment>()
@@ -421,19 +460,28 @@ object InlayNavigator {
      *
      * Engine configuration (Pigeon APIs, storage) is set up automatically
      * when the fragment attaches — no manual wiring needed.
+     *
+     * [onResult] is invoked exactly once — with the result the Flutter page
+     * pops with, or `null` when the fragment is destroyed without one.
+     * Like Activity result callbacks, it lives in process memory and is not
+     * restored across process death.
      */
+    @JvmOverloads
     fun createFragment(
         context: Context,
         route: FlutterRoute,
         useBackDispatcher: Boolean = false,
+        onResult: ((Any?) -> Unit)? = null,
     ): InlayFlutterFragment {
-        return createFragment(context, route.toPageSettings(), useBackDispatcher)
+        return createFragment(context, route.toPageSettings(), useBackDispatcher, onResult)
     }
 
+    @JvmOverloads
     fun createFragment(
         context: Context,
         page: PageSettings,
         useBackDispatcher: Boolean = false,
+        onResult: ((Any?) -> Unit)? = null,
     ): InlayFlutterFragment {
         init(context, prewarm = isPrewarmEnabled)
         val initialRoute = encodePageSettings(page)
@@ -443,13 +491,16 @@ object InlayNavigator {
             InlayFlutterFragment::class.java,
             ENGINE_GROUP_ID
         )
-            .dartEntrypoint(DART_ENTRYPOINT)
+            .dartEntrypoint(dartEntrypoint)
             .initialRoute(initialRoute)
             .build<InlayFlutterFragment>()
         val args = fragment.arguments ?: android.os.Bundle().also { fragment.arguments = it }
         args.putString(EXTRA_FRAGMENT_ROUTE_ID, fragmentId)
         if (useBackDispatcher) {
             args.putBoolean(InlayFlutterFragment.ARG_USE_BACK_DISPATCHER, true)
+        }
+        if (onResult != null) {
+            args.putString(EXTRA_RESULT_ID, registerResultCallback(onResult))
         }
         return fragment
     }
@@ -463,7 +514,7 @@ object InlayNavigator {
             InlayFlutterActivity::class.java,
             ENGINE_GROUP_ID
         )
-            .dartEntrypoint(DART_ENTRYPOINT)
+            .dartEntrypoint(dartEntrypoint)
             .initialRoute(initialRoute)
             .build(context)
         putRouteDataExtra(intent, page)

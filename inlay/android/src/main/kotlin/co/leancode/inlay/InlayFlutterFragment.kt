@@ -64,6 +64,18 @@ class InlayFlutterFragment : FlutterFragment() {
         InlayNavigator.cleanUpEngine(flutterEngine)
     }
 
+    override fun onDestroy() {
+        // Removed without an explicit result (host disposed the fragment,
+        // e.g. a Compose destination left the composition) - the caller
+        // still gets its callback, with null. deliverResult is exactly-once,
+        // so this is a no-op after pop(result).
+        InlayNavigator.deliverResult(
+            arguments?.getString(InlayNavigator.EXTRA_RESULT_ID),
+            null,
+        )
+        super.onDestroy()
+    }
+
     companion object {
         /**
          * Bundle key that switches the fragment to *back-dispatcher* mode.

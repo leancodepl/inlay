@@ -1,9 +1,13 @@
 package co.leancode.inlay.compose
 
+import android.content.Context
+import android.content.ContextWrapper
 import android.view.View
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
@@ -73,21 +77,34 @@ import co.leancode.inlay.navigator.PageSettings
 fun InlayFlutterScreen(
     route: FlutterRoute,
     modifier: Modifier = Modifier,
+    onResult: ((Any?) -> Unit)? = null,
 ) {
-    InlayFlutterScreen(route = route.toPageSettings(), modifier = modifier)
+    InlayFlutterScreen(route = route.toPageSettings(), modifier = modifier, onResult = onResult)
 }
 
+/**
+ * [onResult] is invoked exactly once — with the result the Flutter page
+ * pops with, or `null` when the composable leaves the composition without
+ * one. Decode raw values with the generated `decodeResult`.
+ */
 @Composable
 fun InlayFlutterScreen(
     route: PageSettings,
     modifier: Modifier = Modifier,
+    onResult: ((Any?) -> Unit)? = null,
 ) {
     val context = LocalContext.current
-    val activity = context as FragmentActivity
+    // Inside dialog windows (e.g. a Compose Navigation dialog() destination)
+    // LocalContext is a ContextThemeWrapper, not the Activity - unwrap it.
+    val activity = context.findFragmentActivity()
+        ?: error("InlayFlutterScreen must be hosted in a FragmentActivity")
     val fragmentManager = activity.supportFragmentManager
 
     val containerId = remember { View.generateViewId() }
     val fragmentTag = remember { "inlay_flutter_$containerId" }
+    // The callback is registered once when the fragment is created; route
+    // pop(result) to whatever onResult the caller passed most recently.
+    val currentOnResult by rememberUpdatedState(onResult)
 
     // 1. Create the container view for the fragment.
     AndroidView(
@@ -102,9 +119,10 @@ fun InlayFlutterScreen(
     //    paired correctly.
     DisposableEffect(containerId, fragmentTag) {
         val fragment = InlayNavigator.createFragment(
-            context = context,
+            context = activity,
             page = route,
             useBackDispatcher = true,
+            onResult = { result -> currentOnResult?.invoke(result) },
         )
 
         fragmentManager.beginTransaction()
@@ -130,4 +148,10 @@ fun InlayFlutterScreen(
             }
         }
     }
+}
+
+internal tailrec fun Context.findFragmentActivity(): FragmentActivity? = when (this) {
+    is FragmentActivity -> this
+    is ContextWrapper -> baseContext.findFragmentActivity()
+    else -> null
 }

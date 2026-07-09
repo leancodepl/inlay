@@ -13,8 +13,10 @@ import 'inlay_navigator.dart';
 ///
 /// Use this for **imperative** (non-router) entrypoints where you call
 /// `showDialog` / `showModalBottomSheet` directly. For **declarative**
-/// router-based navigation (go_router, auto_route), prefer
-/// [InlayDialogPage] / [InlayBottomSheetPage] instead.
+/// router-based navigation, prefer [InlayDialogPage] /
+/// [InlayBottomSheetPage] (go_router, or any router that accepts custom
+/// [Page]s) or [InlayDialogLauncher] / [InlayBottomSheetLauncher]
+/// (auto_route and other routers that manage their own page types).
 ///
 /// ```dart
 /// runInlayDialog(
@@ -86,10 +88,13 @@ class _DialogLauncherState extends State<_DialogLauncher> {
 
 /// A [Page] that shows a Flutter dialog inside a transparent native container.
 ///
-/// Use this with declarative routers (go_router, auto_route) to show
-/// dialogs as inlay routes. The native side opens a transparent
-/// Activity/ViewController, and Flutter renders the dialog content
-/// (barrier, animation, positioning) over the native screen underneath.
+/// Use this with declarative routers that accept custom [Page]s (e.g.
+/// go_router's `pageBuilder`) to show dialogs as inlay routes. For routers
+/// that manage their own page types (e.g. auto_route), use
+/// [InlayDialogLauncher] in a transparent route instead. The native side
+/// opens a transparent Activity/ViewController, and Flutter renders the
+/// dialog content (barrier, animation, positioning) over the native screen
+/// underneath.
 ///
 /// When the dialog is dismissed, the native container is automatically
 /// closed via `InlayNavigator.instance.pop()`.
@@ -262,7 +267,13 @@ class _InlayDialogPageRoute<T> extends _TransparentPageRoute<T> {
     Animation<double> animation,
     Animation<double> secondaryAnimation,
   ) {
-    return _ShowDialogOnReady<T>(page: _page);
+    return InlayDialogLauncher<T>(
+      builder: _page.builder,
+      encodeResult: _page.encodeResult,
+      barrierDismissible: _page.barrierDismissible,
+      barrierColor: _page.barrierColor,
+      barrierLabel: _page.barrierLabel,
+    );
   }
 }
 
@@ -279,20 +290,72 @@ class _InlayBottomSheetPageRoute<T> extends _TransparentPageRoute<T> {
     Animation<double> animation,
     Animation<double> secondaryAnimation,
   ) {
-    return _ShowBottomSheetOnReady<T>(page: _page);
+    return InlayBottomSheetLauncher<T>(
+      builder: _page.builder,
+      encodeResult: _page.encodeResult,
+      isScrollControlled: _page.isScrollControlled,
+      isDismissible: _page.isDismissible,
+      enableDrag: _page.enableDrag,
+      showDragHandle: _page.showDragHandle,
+      backgroundColor: _page.backgroundColor,
+      modalBarrierColor: _page.modalBarrierColor,
+    );
   }
 }
 
-class _ShowDialogOnReady<T> extends StatefulWidget {
-  const _ShowDialogOnReady({required this.page});
+/// Shows a dialog after the first frame and closes the native transparent
+/// container - delivering the encoded result - when it is dismissed.
+///
+/// This is the router-agnostic building block behind [InlayDialogPage].
+/// Use it directly with routers that manage their own [Page] types and
+/// can't host a foreign one (e.g. auto_route): place it as the content of
+/// a transparent, zero-transition route.
+///
+/// ## auto_route example
+///
+/// ```dart
+/// NamedRouteDef(
+///   name: 'ConfirmActionDialogRoute',
+///   path: ConfirmActionDialog.pathTemplate,
+///   type: const RouteType.custom(opaque: false, duration: Duration.zero),
+///   builder: (_, data) => InlayDialogLauncher<bool>(
+///     encodeResult: ConfirmActionDialog.encodeResult,
+///     builder: (_) => ConfirmActionContent(action: action),
+///   ),
+/// )
+/// ```
+class InlayDialogLauncher<T> extends StatefulWidget {
+  const InlayDialogLauncher({
+    required this.builder,
+    this.encodeResult,
+    this.barrierDismissible = true,
+    this.barrierColor,
+    this.barrierLabel,
+    super.key,
+  });
 
-  final InlayDialogPage<T> page;
+  /// Builds the dialog content (e.g. an [AlertDialog]).
+  final WidgetBuilder builder;
+
+  /// Encodes the value the dialog pops with into the wire format delivered
+  /// to the native caller. Pass the generated route's `encodeResult`.
+  // ignore: unsafe_variance
+  final Object? Function(T result)? encodeResult;
+
+  /// Whether tapping the barrier dismisses the dialog.
+  final bool barrierDismissible;
+
+  /// Color of the modal barrier. Defaults to [Colors.black54] when `null`.
+  final Color? barrierColor;
+
+  /// Semantic label for the barrier, used by accessibility tools.
+  final String? barrierLabel;
 
   @override
-  State<_ShowDialogOnReady<T>> createState() => _ShowDialogOnReadyState<T>();
+  State<InlayDialogLauncher<T>> createState() => _InlayDialogLauncherState<T>();
 }
 
-class _ShowDialogOnReadyState<T> extends State<_ShowDialogOnReady<T>> {
+class _InlayDialogLauncherState<T> extends State<InlayDialogLauncher<T>> {
   @override
   void initState() {
     super.initState();
@@ -300,15 +363,14 @@ class _ShowDialogOnReadyState<T> extends State<_ShowDialogOnReady<T>> {
       if (!mounted) {
         return;
       }
-      final page = widget.page;
       final navigator = Navigator.of(context);
       final route = DialogRoute<Object?>(
         context: context,
-        builder: page.builder,
+        builder: widget.builder,
         themes: InheritedTheme.capture(from: context, to: navigator.context),
-        barrierDismissible: page.barrierDismissible,
-        barrierColor: page.barrierColor ?? Colors.black54,
-        barrierLabel: page.barrierLabel,
+        barrierDismissible: widget.barrierDismissible,
+        barrierColor: widget.barrierColor ?? Colors.black54,
+        barrierLabel: widget.barrierLabel,
       );
       unawaited(navigator.push(route));
       // route.completed (from TransitionRoute) resolves after the reverse
@@ -319,7 +381,7 @@ class _ShowDialogOnReadyState<T> extends State<_ShowDialogOnReady<T>> {
         return;
       }
       await InlayNavigator.instance.pop(
-        result == null ? null : page.encodeResult?.call(result as T),
+        result == null ? null : widget.encodeResult?.call(result as T),
       );
     });
   }
@@ -330,18 +392,59 @@ class _ShowDialogOnReadyState<T> extends State<_ShowDialogOnReady<T>> {
   }
 }
 
-class _ShowBottomSheetOnReady<T> extends StatefulWidget {
-  const _ShowBottomSheetOnReady({required this.page});
+/// Shows a modal bottom sheet after the first frame and closes the native
+/// transparent container - delivering the encoded result - when it is
+/// dismissed.
+///
+/// The router-agnostic building block behind [InlayBottomSheetPage]; see
+/// [InlayDialogLauncher] for when to use launchers directly.
+class InlayBottomSheetLauncher<T> extends StatefulWidget {
+  const InlayBottomSheetLauncher({
+    required this.builder,
+    this.encodeResult,
+    this.isScrollControlled = false,
+    this.isDismissible = true,
+    this.enableDrag = true,
+    this.showDragHandle,
+    this.backgroundColor,
+    this.modalBarrierColor,
+    super.key,
+  });
 
-  final InlayBottomSheetPage<T> page;
+  /// Builds the bottom sheet content.
+  final WidgetBuilder builder;
+
+  /// Encodes the value the sheet pops with into the wire format delivered
+  /// to the native caller. Pass the generated route's `encodeResult`.
+  // ignore: unsafe_variance
+  final Object? Function(T result)? encodeResult;
+
+  /// Whether the sheet takes the full height (for [DraggableScrollableSheet]
+  /// or tall content). Forwarded to [ModalBottomSheetRoute.isScrollControlled].
+  final bool isScrollControlled;
+
+  /// Whether tapping the barrier or pressing back dismisses the sheet.
+  final bool isDismissible;
+
+  /// Whether the sheet can be dragged up/down. Defaults to `true`.
+  final bool enableDrag;
+
+  /// Whether to show a drag handle at the top of the sheet.
+  final bool? showDragHandle;
+
+  /// Background color of the sheet surface.
+  final Color? backgroundColor;
+
+  /// Color of the modal barrier behind the sheet.
+  final Color? modalBarrierColor;
 
   @override
-  State<_ShowBottomSheetOnReady<T>> createState() =>
-      _ShowBottomSheetOnReadyState<T>();
+  State<InlayBottomSheetLauncher<T>> createState() =>
+      _InlayBottomSheetLauncherState<T>();
 }
 
-class _ShowBottomSheetOnReadyState<T>
-    extends State<_ShowBottomSheetOnReady<T>> {
+class _InlayBottomSheetLauncherState<T>
+    extends State<InlayBottomSheetLauncher<T>> {
   @override
   void initState() {
     super.initState();
@@ -349,20 +452,19 @@ class _ShowBottomSheetOnReadyState<T>
       if (!mounted) {
         return;
       }
-      final page = widget.page;
       final navigator = Navigator.of(context);
       final route = ModalBottomSheetRoute<Object?>(
-        builder: page.builder,
+        builder: widget.builder,
         capturedThemes: InheritedTheme.capture(
           from: context,
           to: navigator.context,
         ),
-        isScrollControlled: page.isScrollControlled,
-        isDismissible: page.isDismissible,
-        enableDrag: page.enableDrag,
-        showDragHandle: page.showDragHandle,
-        backgroundColor: page.backgroundColor,
-        modalBarrierColor: page.modalBarrierColor,
+        isScrollControlled: widget.isScrollControlled,
+        isDismissible: widget.isDismissible,
+        enableDrag: widget.enableDrag,
+        showDragHandle: widget.showDragHandle,
+        backgroundColor: widget.backgroundColor,
+        modalBarrierColor: widget.modalBarrierColor,
       );
       unawaited(navigator.push(route));
       final result = await route.completed;
@@ -370,7 +472,7 @@ class _ShowBottomSheetOnReadyState<T>
         return;
       }
       await InlayNavigator.instance.pop(
-        result == null ? null : page.encodeResult?.call(result as T),
+        result == null ? null : widget.encodeResult?.call(result as T),
       );
     });
   }

@@ -15,20 +15,29 @@ import Flutter
 ///     Button("Show Dialog") { showDialog = true }
 ///         .inlayDialog(
 ///             isPresented: $showDialog,
-///             route: ConfirmDeleteDialog(itemId: "42")
+///             route: ConfirmDeleteDialog(itemId: "42"),
+///             onResult: { raw in
+///                 let confirmed = ConfirmDeleteDialog.decodeResult(raw)
+///             }
 ///         )
 /// }
 /// ```
+///
+/// `onResult` is invoked exactly once — with the result the dialog popped
+/// with, or `nil` when it is dismissed without one. Decode raw values with
+/// the generated `decodeResult`.
 @available(iOS 16.0, *)
 extension View {
     public func inlayDialog(
         isPresented: Binding<Bool>,
-        route: FlutterDialogRoute
+        route: FlutterDialogRoute,
+        onResult: ((Any?) -> Void)? = nil
     ) -> some View {
         background(
             InlayDialogPresenter(
                 isPresented: isPresented,
-                route: route.toPageSettings()
+                route: route.toPageSettings(),
+                onResult: onResult
             )
         )
     }
@@ -45,6 +54,7 @@ private struct InlayDialogPresenter: UIViewControllerRepresentable {
 
     @Binding var isPresented: Bool
     let route: PageSettings
+    var onResult: ((Any?) -> Void)?
 
     func makeCoordinator() -> Coordinator {
         Coordinator()
@@ -64,6 +74,7 @@ private struct InlayDialogPresenter: UIViewControllerRepresentable {
             coordinator.isPresenting = true
 
             let dialogVC = InlayNavigator.shared.createFlutterDialogViewController(page: route)
+            dialogVC.onResult = onResult
             dialogVC.modalPresentationStyle = .overFullScreen
             dialogVC.modalTransitionStyle = .crossDissolve
 

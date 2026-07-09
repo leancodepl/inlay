@@ -74,8 +74,8 @@ public final class InlayNavigator {
     /// Single `FlutterEngineGroup` shared across all inlay pages.
     private(set) var engineGroup: FlutterEngineGroup?
 
-    /// The single Dart entrypoint used by all inlay pages.
-    private static let dartEntrypoint = "inlayMain"
+    /// The Dart entrypoint used by all inlay pages. Defaults to `inlayMain`.
+    public private(set) var dartEntrypoint = "inlayMain"
     /// Internal route used only for hidden engine warm-up.
     private static let prewarmRouteId = "__inlay_prewarm__"
 
@@ -84,7 +84,7 @@ public final class InlayNavigator {
     /// Per-engine setup hook invoked once for every engine inlay creates.
     private var onEngineCreated: ((FlutterEngine) -> Void)?
     /// Whether `start()` should prewarm a hidden engine.
-    private var isPrewarmEnabled = true
+    public private(set) var isPrewarmEnabled = true
     /// Hidden warm-up engine kept alive for app lifetime.
     private var prewarmedEngine: FlutterEngine?
 
@@ -131,6 +131,23 @@ public final class InlayNavigator {
         }
     }
 
+    /// Change the Dart entrypoint used for every engine inlay creates.
+    ///
+    /// The entrypoint must be a top-level function in the Flutter module
+    /// annotated with `@pragma('vm:entry-point')`. Engines that are already
+    /// running keep their entrypoint; the hidden prewarmed engine is
+    /// recreated so the next navigation uses the new one.
+    public func setDartEntrypoint(_ entrypoint: String) {
+        guard entrypoint != dartEntrypoint else { return }
+        dartEntrypoint = entrypoint
+        if prewarmedEngine != nil {
+            destroyPrewarmedEngine()
+            if isPrewarmEnabled {
+                prewarmEngineIfNeeded()
+            }
+        }
+    }
+
     /// Enable/disable automatic prewarming performed by `start()`.
     ///
     /// Enabled by default.
@@ -166,7 +183,7 @@ public final class InlayNavigator {
         guard prewarmedEngine == nil, let engineGroup else { return }
 
         let options = FlutterEngineGroupOptions()
-        options.entrypoint = Self.dartEntrypoint
+        options.entrypoint = dartEntrypoint
         options.initialRoute = Self.prewarmRouteId
 
         let engine = engineGroup.makeEngine(with: options)
@@ -304,7 +321,7 @@ public final class InlayNavigator {
         let initialRoute = Self.encodePageSettings(page)
 
         let options = FlutterEngineGroupOptions()
-        options.entrypoint = Self.dartEntrypoint
+        options.entrypoint = dartEntrypoint
         options.initialRoute = initialRoute
         let engine = engineGroup!.makeEngine(with: options)
         onEngineCreated?(engine)
@@ -404,7 +421,7 @@ public final class InlayNavigator {
         let initialRoute = Self.encodePageSettings(page)
 
         let options = FlutterEngineGroupOptions()
-        options.entrypoint = Self.dartEntrypoint
+        options.entrypoint = dartEntrypoint
         options.initialRoute = initialRoute
         let engine = engineGroup!.makeEngine(with: options)
         onEngineCreated?(engine)
