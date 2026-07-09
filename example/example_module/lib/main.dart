@@ -85,23 +85,44 @@ Future<void> _runInlayWithGoRouter() async {
 Future<void> _runInlayWithAutoRoute() async {
   WidgetsFlutterBinding.ensureInitialized();
   await KeyValueStorage.instance.init();
+  await InlayAppearance.instance.init();
 
   final path = InlayNavigator.initialPath;
   final route = await InlayNavigator.fetchInitialRoute(decodeInlayRouteData);
   final router = createExampleAutoRouter(routeData: route);
 
+  final isDialog = route is FlutterDialogRoute;
+  final appearance = InlayAppearance.instance;
+
   runApp(
-    MaterialApp.router(
-      routeInformationParser: router.defaultRouteParser(
-        includePrefixMatches: true,
-      ),
-      routerDelegate: router.delegate(
-        deepLinkBuilder: (_) => DeepLink.path(path),
-        rebuildStackOnDeepLink: true,
-      ),
-      backButtonDispatcher: InlayBackButtonDispatcher(),
-      builder: (_, child) => InlayNativePopGestureObserver(
-        child: child ?? const SizedBox.shrink(),
+    ListenableBuilder(
+      listenable: appearance,
+      builder: (context, _) => MaterialApp.router(
+        theme: isDialog
+            ? ThemeData.light().copyWith(
+                scaffoldBackgroundColor: Colors.transparent,
+              )
+            : ThemeData.light(),
+        darkTheme: isDialog
+            ? ThemeData.dark().copyWith(
+                scaffoldBackgroundColor: Colors.transparent,
+              )
+            : ThemeData.dark(),
+        themeMode: appearance.themeMode,
+        locale: appearance.locale,
+        supportedLocales: const [Locale('en'), Locale('pl')],
+        localizationsDelegates: GlobalMaterialLocalizations.delegates,
+        routeInformationParser: router.defaultRouteParser(
+          includePrefixMatches: true,
+        ),
+        routerDelegate: router.delegate(
+          deepLinkBuilder: (_) => DeepLink.path(path),
+          rebuildStackOnDeepLink: true,
+        ),
+        backButtonDispatcher: InlayBackButtonDispatcher(),
+        builder: (_, child) => InlayNativePopGestureObserver(
+          child: child ?? const SizedBox.shrink(),
+        ),
       ),
     ),
   );

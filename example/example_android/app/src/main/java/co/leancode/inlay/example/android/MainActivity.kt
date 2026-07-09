@@ -3,7 +3,7 @@ package co.leancode.inlay.example.android
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
-import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import co.leancode.inlay.InlayNavigator
 import co.leancode.example_module.generated.BadgeLevel
@@ -77,6 +77,10 @@ class MainActivity : AppCompatActivity() {
   }
 
   private fun showResult(label: String, value: String) {
-    Toast.makeText(this, "$label returned: $value", Toast.LENGTH_LONG).show()
+    AlertDialog.Builder(this)
+      .setTitle("$label returned")
+      .setMessage(value)
+      .setPositiveButton("OK", null)
+      .show()
   }
 }

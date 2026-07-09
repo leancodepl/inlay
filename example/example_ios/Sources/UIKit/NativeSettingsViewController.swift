@@ -13,6 +13,7 @@ final class NativeSettingsViewController: UIViewController {
     private let themeValue = UILabel()
     private let tagsValue = UILabel()
     private let notifPrefsValue = UILabel()
+    private let routingValue = UILabel()
 
     init(userId: String) {
         self.userId = userId
@@ -59,17 +60,36 @@ final class NativeSettingsViewController: UIViewController {
             makeButton("Flutter language: polski", action: { InlayAppearance.shared.localeLanguageTag = "pl" }),
             makeButton("Flutter language: system", action: { InlayAppearance.shared.localeLanguageTag = nil }),
             makeButton("Open Flutter Profile", action: openFlutterProfile),
+            // Framework-level controls: engine prewarming + the Dart
+            // entrypoint used for new engines (routing integration demo).
+            makeTitle("Framework"),
+            makePrewarmSwitchRow(),
+            makeTitle("Routing entrypoint"),
+            routingValue,
+            makeButton("Routing: go_router", action: { [weak self] in self?.setRouting("inlayGoRouterMain") }),
+            makeButton("Routing: auto_route", action: { [weak self] in self?.setRouting("inlayAutoRouteMain") }),
+            makeButton("Routing: imperative", action: { [weak self] in self?.setRouting("inlayImperativeMain") }),
         ])
         stack.axis = .vertical
         stack.alignment = .fill
         stack.spacing = 10
         stack.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(stack)
+
+        let scrollView = UIScrollView()
+        scrollView.translatesAutoresizingMaskIntoConstraints = false
+        scrollView.addSubview(stack)
+        view.addSubview(scrollView)
 
         NSLayoutConstraint.activate([
-            stack.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 16),
-            stack.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -16),
-            stack.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 16),
+            scrollView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
+            scrollView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
+            scrollView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            scrollView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
+            stack.leadingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.leadingAnchor, constant: 16),
+            stack.trailingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.trailingAnchor, constant: -16),
+            stack.topAnchor.constraint(equalTo: scrollView.contentLayoutGuide.topAnchor, constant: 16),
+            stack.bottomAnchor.constraint(equalTo: scrollView.contentLayoutGuide.bottomAnchor, constant: -16),
+            stack.widthAnchor.constraint(equalTo: scrollView.frameLayoutGuide.widthAnchor, constant: -32),
         ])
 
         scope.startObserving { [weak self] _ in
@@ -122,6 +142,11 @@ final class NativeSettingsViewController: UIViewController {
         render()
     }
 
+    private func setRouting(_ entrypoint: String) {
+        InlayNavigator.shared.setDartEntrypoint(entrypoint)
+        render()
+    }
+
     private func openFlutterProfile() {
         InlayNavigator.shared.push(
             from: self,
@@ -141,6 +166,25 @@ final class NativeSettingsViewController: UIViewController {
         } else {
             notifPrefsValue.text = "(not set)"
         }
+        routingValue.text = InlayNavigator.shared.dartEntrypoint
+    }
+
+    private func makePrewarmSwitchRow() -> UIView {
+        let label = UILabel()
+        label.text = "Engine prewarming"
+        let toggle = UISwitch()
+        toggle.isOn = InlayNavigator.shared.isPrewarmEnabled
+        toggle.addAction(
+            UIAction { action in
+                guard let toggle = action.sender as? UISwitch else { return }
+                InlayNavigator.shared.setPrewarmEnabled(toggle.isOn)
+            },
+            for: .valueChanged
+        )
+        let row = UIStackView(arrangedSubviews: [label, toggle])
+        row.axis = .horizontal
+        row.distribution = .equalSpacing
+        return row
     }
 
     private func makeTitle(_ text: String) -> UILabel {

@@ -5,6 +5,7 @@ import inlay
 struct SwiftUIHomeView: View {
     @State private var showConfirmDialog = false
     @State private var showThemePickerDialog = false
+    @State private var lastDialogResult: String?
 
     var body: some View {
         List {
@@ -41,11 +42,19 @@ struct SwiftUIHomeView: View {
             Button("Open Theme Picker Dialog") {
                 showThemePickerDialog = true
             }
+
+            if let lastDialogResult {
+                Text("Confirm dialog returned: \(lastDialogResult)")
+            }
         }
         .navigationTitle("SwiftUI Home")
         .inlayDialog(
             isPresented: $showConfirmDialog,
-            route: ConfirmActionDialog(action: "delete", message: "Are you sure?")
+            route: ConfirmActionDialog(action: "delete", message: "Are you sure?"),
+            onResult: { raw in
+                let confirmed = ConfirmActionDialog.decodeResult(raw)
+                lastDialogResult = confirmed.map(String.init) ?? "dismissed"
+            }
         )
         .inlayDialog(
             isPresented: $showThemePickerDialog,

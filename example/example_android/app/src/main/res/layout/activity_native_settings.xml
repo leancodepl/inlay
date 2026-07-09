@@ -166,5 +166,49 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Open Flutter Profile" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Framework"
+            android:textStyle="bold" />
+
+        <androidx.appcompat.widget.SwitchCompat
+            android:id="@+id/switchPrewarm"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Engine prewarming" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Routing entrypoint" />
+
+        <TextView
+            android:id="@+id/valueRouting"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="-" />
+
+        <Button
+            android:id="@+id/btnRoutingGoRouter"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Routing: go_router" />
+
+        <Button
+            android:id="@+id/btnRoutingAutoRoute"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Routing: auto_route" />
+
+        <Button
+            android:id="@+id/btnRoutingImperative"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Routing: imperative" />
     </LinearLayout>
 </ScrollView>

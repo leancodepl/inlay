@@ -24,11 +24,10 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.compose.dialog
 import androidx.navigation.compose.rememberNavController
 import co.leancode.inlay.InlayFragmentHostDelegate
 import co.leancode.inlay.KeyValueStorageImpl
-import co.leancode.inlay.compose.InlayFlutterDialogScreen
+import co.leancode.inlay.compose.InlayFlutterDialog
 import co.leancode.inlay.compose.InlayFlutterScreen
 import co.leancode.example_module.generated.BadgeLevel
 import co.leancode.example_module.generated.ConfirmActionDialog
@@ -97,6 +96,8 @@ class ComposeActivity : AppCompatActivity() {
 @Composable
 private fun ComposeHost() {
   val navController = rememberNavController()
+  var lastDialogResult by remember { mutableStateOf<String?>(null) }
+  var showConfirmDialog by remember { mutableStateOf(false) }
   NavHost(navController = navController, startDestination = "home") {
     composable("home") {
       Column(
@@ -116,10 +117,22 @@ private fun ComposeHost() {
         Button(onClick = { navController.navigate("native-counter") }) {
           Text("Open native Compose Counter")
         }
-        Button(onClick = { navController.navigate("confirm-dialog/delete") }) {
+        Button(onClick = { showConfirmDialog = true }) {
           Text("Open Confirm Dialog")
         }
+        lastDialogResult?.let {
+          Text("Confirm dialog returned: $it")
+        }
       }
+      InlayFlutterDialog(
+        isPresented = showConfirmDialog,
+        route = ConfirmActionDialog(action = "delete", message = "Are you sure?"),
+        onDismissRequest = { showConfirmDialog = false },
+        onResult = { raw ->
+          val confirmed = ConfirmActionDialog.decodeResult(raw)
+          lastDialogResult = confirmed?.toString() ?: "dismissed"
+        },
+      )
     }
 
     composable("flutter-counter") {
@@ -141,14 +154,6 @@ private fun ComposeHost() {
         modifier = Modifier
           .fillMaxSize()
           .statusBarsPadding(),
-      )
-    }
-
-    dialog("confirm-dialog/{action}") { backStackEntry ->
-      val action = backStackEntry.arguments?.getString("action") ?: "delete"
-      InlayFlutterDialogScreen(
-        route = ConfirmActionDialog(action = action, message = "Are you sure?"),
-        modifier = Modifier.fillMaxSize(),
       )
     }
 

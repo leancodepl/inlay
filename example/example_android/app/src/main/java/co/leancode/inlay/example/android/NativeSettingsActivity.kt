@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.widget.Button
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.SwitchCompat
 import co.leancode.inlay.InlayAppearance
 import co.leancode.inlay.InlayNavigator
 import co.leancode.inlay.InlayThemeMode
@@ -24,6 +25,7 @@ class NativeSettingsActivity : AppCompatActivity() {
   private lateinit var themeValue: TextView
   private lateinit var tagsValue: TextView
   private lateinit var notifPrefsValue: TextView
+  private lateinit var routingValue: TextView
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -36,6 +38,7 @@ class NativeSettingsActivity : AppCompatActivity() {
     themeValue = findViewById(R.id.valueTheme)
     tagsValue = findViewById(R.id.valueTags)
     notifPrefsValue = findViewById(R.id.valueNotifPrefs)
+    routingValue = findViewById(R.id.valueRouting)
 
     storage = KeyValueStorageImpl.createScope()
     store = UserPreferencesStore(storage, userId = "42")
@@ -95,7 +98,29 @@ class NativeSettingsActivity : AppCompatActivity() {
     findViewById<Button>(R.id.btnOpenFlutterProfile).setOnClickListener {
       InlayNavigator.push(this, ProfilePage(userId = "42", badges = null))
     }
+    // Framework-level controls: engine prewarming + the Dart entrypoint
+    // used for new engines (routing integration demo).
+    findViewById<SwitchCompat>(R.id.switchPrewarm).apply {
+      isChecked = InlayNavigator.isPrewarmEnabled
+      setOnCheckedChangeListener { _, isChecked ->
+        InlayNavigator.setPrewarmEnabled(isChecked)
+      }
+    }
+    findViewById<Button>(R.id.btnRoutingGoRouter).setOnClickListener {
+      setRouting("inlayGoRouterMain")
+    }
+    findViewById<Button>(R.id.btnRoutingAutoRoute).setOnClickListener {
+      setRouting("inlayAutoRouteMain")
+    }
+    findViewById<Button>(R.id.btnRoutingImperative).setOnClickListener {
+      setRouting("inlayImperativeMain")
+    }
 
+    render()
+  }
+
+  private fun setRouting(entrypoint: String) {
+    InlayNavigator.setDartEntrypoint(entrypoint)
     render()
   }
 
@@ -112,5 +137,6 @@ class NativeSettingsActivity : AppCompatActivity() {
     tagsValue.text = store.tags.ifEmpty { listOf("(none)") }.joinToString(", ")
     val prefs = store.notificationPreferences
     notifPrefsValue.text = if (prefs != null) "sound=${prefs.sound}, vibration=${prefs.vibration}" else "(not set)"
+    routingValue.text = InlayNavigator.dartEntrypoint
   }
 }
