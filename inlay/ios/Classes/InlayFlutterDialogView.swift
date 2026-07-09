@@ -16,28 +16,41 @@ import Flutter
 ///         .inlayDialog(
 ///             isPresented: $showDialog,
 ///             route: ConfirmDeleteDialog(itemId: "42"),
-///             onResult: { raw in
-///                 let confirmed = ConfirmDeleteDialog.decodeResult(raw)
+///             onResult: { confirmed in
+///                 // confirmed: Bool?
 ///             }
 ///         )
 /// }
 /// ```
 ///
-/// `onResult` is invoked exactly once — with the result the dialog popped
-/// with, or `nil` when it is dismissed without one. Decode raw values with
-/// the generated `decodeResult`.
+/// For dialog routes with a `result:` type, `onResult` is invoked exactly
+/// once — with the decoded result the dialog popped with, or `nil` when it
+/// is dismissed without one.
 @available(iOS 16.0, *)
 extension View {
     public func inlayDialog(
         isPresented: Binding<Bool>,
-        route: FlutterDialogRoute,
-        onResult: ((Any?) -> Void)? = nil
+        route: FlutterDialogRoute
     ) -> some View {
         background(
             InlayDialogPresenter(
                 isPresented: isPresented,
                 route: route.toPageSettings(),
-                onResult: onResult
+                onResult: nil
+            )
+        )
+    }
+
+    public func inlayDialog<R: FlutterDialogRouteWithResult>(
+        isPresented: Binding<Bool>,
+        route: R,
+        onResult: @escaping (R.ResultValue?) -> Void
+    ) -> some View {
+        background(
+            InlayDialogPresenter(
+                isPresented: isPresented,
+                route: route.toPageSettings(),
+                onResult: { raw in onResult(R.decodeResult(raw)) }
             )
         )
     }

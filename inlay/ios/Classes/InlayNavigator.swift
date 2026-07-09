@@ -221,17 +221,39 @@ public final class InlayNavigator {
     ///     route: SoundsNotificationsPage(contactId: "42")
     /// )
     /// ```
-    /// - Parameter onResult: Invoked exactly once with the result the
-    ///   Flutter screen pops with (`nil` when dismissed without one).
-    ///   Generated route extensions provide typed variants; decode raw
-    ///   values with the generated `decodeResult`.
     public func push(
         from viewController: UIViewController,
         route: FlutterRoute,
         enableNativeNavigationBar: Bool = false,
         animated: Bool = true,
+        enableInteractiveContentPopGestureRecognizer: Bool = true
+    ) {
+        push(
+            from: viewController,
+            page: route.toPageSettings(),
+            enableNativeNavigationBar: enableNativeNavigationBar,
+            animated: animated,
+            enableInteractiveContentPopGestureRecognizer: enableInteractiveContentPopGestureRecognizer
+        )
+    }
+
+    /// Push a Flutter screen that returns a typed result.
+    ///
+    /// `onResult` is invoked exactly once - with the decoded result the
+    /// screen pops with, or `nil` when it is dismissed without one.
+    ///
+    /// ```swift
+    /// InlayNavigator.shared.push(from: self, route: CounterPage()) { count in
+    ///     // count: Int64?
+    /// }
+    /// ```
+    public func push<R: FlutterRouteWithResult>(
+        from viewController: UIViewController,
+        route: R,
+        enableNativeNavigationBar: Bool = false,
+        animated: Bool = true,
         enableInteractiveContentPopGestureRecognizer: Bool = true,
-        onResult: ((Any?) -> Void)? = nil
+        onResult: @escaping (R.ResultValue?) -> Void
     ) {
         push(
             from: viewController,
@@ -239,7 +261,7 @@ public final class InlayNavigator {
             enableNativeNavigationBar: enableNativeNavigationBar,
             animated: animated,
             enableInteractiveContentPopGestureRecognizer: enableInteractiveContentPopGestureRecognizer,
-            onResult: onResult
+            onResult: { raw in onResult(R.decodeResult(raw)) }
         )
     }
 
@@ -248,15 +270,33 @@ public final class InlayNavigator {
         from viewController: UIViewController,
         route: FlutterRoute,
         animated: Bool = true,
+        enableInteractiveContentPopGestureRecognizer: Bool = true
+    ) {
+        present(
+            from: viewController,
+            page: route.toPageSettings(),
+            animated: animated,
+            enableInteractiveContentPopGestureRecognizer: enableInteractiveContentPopGestureRecognizer
+        )
+    }
+
+    /// Present a Flutter page modally, receiving its typed result.
+    ///
+    /// `onResult` is invoked exactly once - with the decoded result, or
+    /// `nil` when the screen is dismissed without one.
+    public func present<R: FlutterRouteWithResult>(
+        from viewController: UIViewController,
+        route: R,
+        animated: Bool = true,
         enableInteractiveContentPopGestureRecognizer: Bool = true,
-        onResult: ((Any?) -> Void)? = nil
+        onResult: @escaping (R.ResultValue?) -> Void
     ) {
         present(
             from: viewController,
             page: route.toPageSettings(),
             animated: animated,
             enableInteractiveContentPopGestureRecognizer: enableInteractiveContentPopGestureRecognizer,
-            onResult: onResult
+            onResult: { raw in onResult(R.decodeResult(raw)) }
         )
     }
 
@@ -287,14 +327,39 @@ public final class InlayNavigator {
     public func presentDialog(
         from viewController: UIViewController,
         route: FlutterDialogRoute,
+        animated: Bool = true
+    ) {
+        presentDialog(
+            from: viewController,
+            page: route.toPageSettings(),
+            animated: animated
+        )
+    }
+
+    /// Present a Flutter dialog that returns a typed result.
+    ///
+    /// `onResult` is invoked exactly once - with the decoded result the
+    /// dialog pops with, or `nil` when it is dismissed without one.
+    ///
+    /// ```swift
+    /// InlayNavigator.shared.presentDialog(
+    ///     from: self,
+    ///     route: ConfirmDeleteDialog(itemId: "42")
+    /// ) { confirmed in
+    ///     // confirmed: Bool?
+    /// }
+    /// ```
+    public func presentDialog<R: FlutterDialogRouteWithResult>(
+        from viewController: UIViewController,
+        route: R,
         animated: Bool = true,
-        onResult: ((Any?) -> Void)? = nil
+        onResult: @escaping (R.ResultValue?) -> Void
     ) {
         presentDialog(
             from: viewController,
             page: route.toPageSettings(),
             animated: animated,
-            onResult: onResult
+            onResult: { raw in onResult(R.decodeResult(raw)) }
         )
     }
 

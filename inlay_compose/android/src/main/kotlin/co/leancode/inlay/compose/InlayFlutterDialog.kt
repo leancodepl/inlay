@@ -8,6 +8,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import co.leancode.inlay.FlutterDialogRoute
+import co.leancode.inlay.FlutterDialogRouteWithResult
 import co.leancode.inlay.InlayNavigator
 
 /**
@@ -37,28 +38,65 @@ import co.leancode.inlay.InlayNavigator
  *
  * [onDismissRequest] is called when the dialog goes away for any reason
  * (Flutter pop, barrier tap, back) - flip [isPresented] back to `false`
- * there. [onResult] is invoked exactly once - with the popped result, or
- * `null` on dismissal without one. Decode raw values with the generated
- * `decodeResult`.
+ * there. For dialog routes with a `result:` type, the typed overload's
+ * [onResult] is invoked exactly once - with the decoded result, or `null`
+ * on dismissal without one.
  */
 @Composable
 fun InlayFlutterDialog(
     isPresented: Boolean,
     route: FlutterDialogRoute,
     onDismissRequest: () -> Unit,
-    onResult: ((Any?) -> Unit)? = null,
+) {
+    InlayFlutterDialogImpl(
+        isPresented = isPresented,
+        route = route,
+        onDismissRequest = onDismissRequest,
+        onRawResult = null,
+    )
+}
+
+/**
+ * Overload for dialog routes that return a typed result.
+ *
+ * [onResult] is invoked exactly once - with the decoded result the dialog
+ * pops with, or `null` on dismissal without one (barrier tap, back).
+ */
+@Composable
+fun <R : Any> InlayFlutterDialog(
+    isPresented: Boolean,
+    route: FlutterDialogRouteWithResult<R>,
+    onDismissRequest: () -> Unit,
+    onResult: (R?) -> Unit,
+) {
+    InlayFlutterDialogImpl(
+        isPresented = isPresented,
+        route = route,
+        onDismissRequest = onDismissRequest,
+        onRawResult = { raw -> onResult(route.decodeResult(raw)) },
+    )
+}
+
+@Composable
+private fun InlayFlutterDialogImpl(
+    isPresented: Boolean,
+    route: FlutterDialogRoute,
+    onDismissRequest: () -> Unit,
+    onRawResult: ((Any?) -> Unit)?,
 ) {
     val activity = LocalContext.current.findFragmentActivity()
         ?: error("InlayFlutterDialog must be hosted in a FragmentActivity")
-    val currentOnResult by rememberUpdatedState(onResult)
+    val currentOnRawResult by rememberUpdatedState(onRawResult)
     val currentOnDismissRequest by rememberUpdatedState(onDismissRequest)
 
     if (!isPresented) return
 
     DisposableEffect(route) {
-        val fragment = InlayNavigator.createDialogFragment(activity, route) { raw ->
-            currentOnResult?.invoke(raw)
-        }
+        val fragment = InlayNavigator.createDialogFragment(
+            activity,
+            route.toPageSettings(),
+            onResult = { raw -> currentOnRawResult?.invoke(raw) },
+        )
         fragment.lifecycle.addObserver(object : DefaultLifecycleObserver {
             override fun onDestroy(owner: LifecycleOwner) {
                 currentOnDismissRequest()

@@ -31,8 +31,8 @@ NavHost(navController, startDestination = "home") {
         InlayFlutterScreen(
             route = CounterPage(seed = null),
             modifier = Modifier.fillMaxSize(),
-            onResult = { raw ->
-                val count = CounterPage.decodeResult(raw)
+            onResult = { count ->
+                // count: Long? - already decoded
             },
         )
     }
@@ -57,8 +57,8 @@ InlayFlutterDialog(
     isPresented = showDialog,
     route = ConfirmDeleteDialog(itemId = "42"),
     onDismissRequest = { showDialog = false },
-    onResult = { raw ->
-        lastResult = ConfirmDeleteDialog.decodeResult(raw)?.toString()
+    onResult = { confirmed ->
+        lastResult = confirmed?.toString() // confirmed: Boolean? - already decoded
     },
 )
 ```

@@ -3,7 +3,7 @@
 # 0.1.0
 
 - Initial release
-- Type-safe navigation between native and Flutter screens in both directions, with typed screen results
+- Type-safe navigation between native and Flutter screens in both directions, with typed screen results delivered as already-decoded values (`FlutterRouteWithResult` / `FlutterDialogRouteWithResult`)
 - Multi-engine management on top of `FlutterEngineGroup` with automatic engine lifecycle, optional prewarming, and a configurable Dart entrypoint
 - Cross-engine key-value storage synchronized in real time between Flutter isolates and native code, with typed store wrappers and optional `InlayCubit` BLoC integration
 - Cross-engine theme and locale propagation (`InlayAppearance`)

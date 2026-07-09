@@ -23,6 +23,12 @@ String generateKotlinRoutes({
 }) {
   final hasFlutterRoutes = schema.flutterRoutes.isNotEmpty;
   final hasDialogRoutes = schema.flutterDialogRoutes.isNotEmpty;
+  final hasFlutterRoutesWithResult = schema.flutterRoutes.any(
+    (r) => r.resultType != null,
+  );
+  final hasDialogRoutesWithResult = schema.flutterDialogRoutes.any(
+    (r) => r.resultType != null,
+  );
   final buffer = StringBuffer()
     // Header.
     ..writeln('// GENERATED CODE — DO NOT MODIFY BY HAND')
@@ -35,8 +41,14 @@ String generateKotlinRoutes({
   if (hasFlutterRoutes) {
     buffer.writeln('import co.leancode.inlay.FlutterRoute');
   }
+  if (hasFlutterRoutesWithResult) {
+    buffer.writeln('import co.leancode.inlay.FlutterRouteWithResult');
+  }
   if (hasDialogRoutes) {
     buffer.writeln('import co.leancode.inlay.FlutterDialogRoute');
+  }
+  if (hasDialogRoutesWithResult) {
+    buffer.writeln('import co.leancode.inlay.FlutterDialogRouteWithResult');
   }
   buffer
     ..writeln(
@@ -144,11 +156,25 @@ void _writeRouteDataClass(
     }
   }
 
-  // Flutter routes implement FlutterRoute interface, dialog routes implement FlutterDialogRoute.
+  // Flutter routes implement FlutterRoute, dialog routes FlutterDialogRoute;
+  // routes declaring a result type implement the typed WithResult variants
+  // so native callers receive an already-decoded result.
+  final resultType = route.resultType;
+  final kotlinResultType = resultType != null
+      ? dartTypeToKotlin(resultType)
+      : null;
   if (isFlutterRoute) {
-    buffer.writeln(') : FlutterRoute {');
+    buffer.writeln(
+      kotlinResultType != null
+          ? ') : FlutterRouteWithResult<$kotlinResultType> {'
+          : ') : FlutterRoute {',
+    );
   } else if (isDialogRoute) {
-    buffer.writeln(') : FlutterDialogRoute {');
+    buffer.writeln(
+      kotlinResultType != null
+          ? ') : FlutterDialogRouteWithResult<$kotlinResultType> {'
+          : ') : FlutterDialogRoute {',
+    );
   } else {
     buffer.writeln(') {');
   }
@@ -183,8 +209,19 @@ void _writeRouteDataClass(
       ..writeln('            if (raw == null) null else $decode');
   }
 
+  buffer.writeln('    }');
+
+  // Instance-level typed decode for the WithResult interfaces.
+  if (kotlinResultType != null && (isFlutterRoute || isDialogRoute)) {
+    buffer
+      ..writeln()
+      ..writeln(
+        '    override fun decodeResult(raw: Any?): $kotlinResultType? = '
+        'Companion.decodeResult(raw)',
+      );
+  }
+
   buffer
-    ..writeln('    }')
     ..writeln()
     // toList() method.
     ..writeln('    ${generateKotlinToListMethod(fields, typeGraph)}');

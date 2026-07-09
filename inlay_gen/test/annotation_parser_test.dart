@@ -194,6 +194,24 @@ class ThemePickerDialog {
 }
 ''';
 
+const _resultRoutesSource = '''
+import 'package:inlay/inlay.dart';
+
+@InlayFlutterRoute('/counter', result: int)
+class CounterPage {
+  const CounterPage({this.seed});
+
+  final int? seed;
+}
+
+@InlayFlutterDialog('/confirm-action/:action', result: bool)
+class ConfirmActionDialog {
+  const ConfirmActionDialog({required this.action});
+
+  final String action;
+}
+''';
+
 const _invalidStoreMultipleKeysSource = '''
 import 'package:inlay/inlay.dart';
 
@@ -828,6 +846,41 @@ class SecondPage {
       expect(code, contains('override fun toPageSettings()'));
     });
 
+    test('generates typed WithResult interfaces for result routes', () {
+      final schema = parser.parse(_resultRoutesSource);
+      final resolver = TypeResolver();
+      final result = resolver.resolve(schema);
+
+      final code = generateKotlinRoutes(
+        schemaFingerprint: 'testfp',
+        schema: schema,
+        typeGraph: result.typeGraph,
+        packageName: 'com.example.generated',
+      );
+
+      expect(code, contains('import co.leancode.inlay.FlutterRouteWithResult'));
+      expect(
+        code,
+        contains('import co.leancode.inlay.FlutterDialogRouteWithResult'),
+      );
+      expect(code, contains(') : FlutterRouteWithResult<Long> {'));
+      expect(code, contains(') : FlutterDialogRouteWithResult<Boolean> {'));
+      expect(
+        code,
+        contains(
+          'override fun decodeResult(raw: Any?): Long? = '
+          'Companion.decodeResult(raw)',
+        ),
+      );
+      expect(
+        code,
+        contains(
+          'override fun decodeResult(raw: Any?): Boolean? = '
+          'Companion.decodeResult(raw)',
+        ),
+      );
+    });
+
     test('generates Kotlin stores with complex fields', () {
       final schema = parser.parse(_complexStoreSource);
       final resolver = TypeResolver();
@@ -911,6 +964,26 @@ class SecondPage {
         contains('struct ConfirmActionDialog: FlutterDialogRoute {'),
       );
       expect(code, contains('func toPageSettings() -> PageSettings'));
+    });
+
+    test('generates typed WithResult conformance for result routes', () {
+      final schema = parser.parse(_resultRoutesSource);
+      final resolver = TypeResolver();
+      final result = resolver.resolve(schema);
+
+      final code = generateSwiftRoutes(
+        schemaFingerprint: 'testfp',
+        schema: schema,
+        typeGraph: result.typeGraph,
+      );
+
+      expect(code, contains('struct CounterPage: FlutterRouteWithResult {'));
+      expect(
+        code,
+        contains('struct ConfirmActionDialog: FlutterDialogRouteWithResult {'),
+      );
+      expect(code, contains('static func decodeResult(_ raw: Any?) -> Int64?'));
+      expect(code, contains('static func decodeResult(_ raw: Any?) -> Bool?'));
     });
 
     test('generates Swift stores with complex fields', () {

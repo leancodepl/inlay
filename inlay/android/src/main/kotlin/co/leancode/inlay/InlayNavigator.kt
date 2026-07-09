@@ -259,20 +259,28 @@ object InlayNavigator {
     }
 
     /**
-     * Push a Flutter page and receive the result it pops with.
+     * Push a Flutter screen that returns a typed result.
      *
-     * [onResult] is invoked exactly once - with the popped result, or
-     * `null` when the screen is dismissed without one. Generated route
-     * extensions provide typed variants; decode raw values with the
-     * generated `decodeResult`.
+     * [onResult] is invoked exactly once - with the decoded result the
+     * screen pops with, or `null` when it is dismissed without one. The
+     * callback lives in process memory: if the process is killed while the
+     * Flutter screen is open, it is not restored.
      *
-     * The callback lives in process memory: if the process is killed while
-     * the Flutter screen is open, it is not restored.
+     * ```kotlin
+     * InlayNavigator.push(context, CounterPage()) { count -> ... } // count: Long?
+     * ```
      */
-    fun push(context: Context, route: FlutterRoute, onResult: (Any?) -> Unit) {
+    fun <R : Any> push(
+        context: Context,
+        route: FlutterRouteWithResult<R>,
+        onResult: (R?) -> Unit,
+    ) {
         init(context, prewarm = isPrewarmEnabled)
         val intent = createIntent(context, route.toPageSettings())
-        intent.putExtra(EXTRA_RESULT_ID, registerResultCallback(onResult))
+        intent.putExtra(
+            EXTRA_RESULT_ID,
+            registerResultCallback { raw -> onResult(route.decodeResult(raw)) },
+        )
         context.startActivity(intent)
     }
 
@@ -320,57 +328,76 @@ object InlayNavigator {
     }
 
     /**
-     * Present a Flutter dialog and receive the result it pops with.
+     * Present a Flutter dialog that returns a typed result.
      *
-     * [onResult] is invoked exactly once - with the popped result, or
-     * `null` when the dialog is dismissed without one (barrier tap, back).
+     * [onResult] is invoked exactly once - with the decoded result the
+     * dialog pops with, or `null` when it is dismissed without one
+     * (barrier tap, back).
+     *
+     * ```kotlin
+     * InlayNavigator.presentDialog(activity, ConfirmDeleteDialog(itemId = "42")) { confirmed -> ... }
+     * ```
      */
-    fun presentDialog(
+    fun <R : Any> presentDialog(
         activity: FragmentActivity,
-        route: FlutterDialogRoute,
-        onResult: (Any?) -> Unit,
+        route: FlutterDialogRouteWithResult<R>,
+        onResult: (R?) -> Unit,
     ) {
         init(activity, prewarm = isPrewarmEnabled)
         val page = route.toPageSettings()
-        val dialogFragment = createDialogFragment(activity, page)
-        val dialogId = dialogFragment.arguments
-            ?.getString(InlayFlutterDialogFragment.EXTRA_DIALOG_ROUTE_ID)
-        if (dialogId != null) {
-            registerResultCallback(dialogId, onResult)
+        val dialogFragment = createDialogFragment(activity, page) { raw ->
+            onResult(route.decodeResult(raw))
         }
         dialogFragment.show(activity.supportFragmentManager, page.routeId)
     }
 
     /**
      * Create a [InlayFlutterDialogFragment] configured for the given page.
+     */
+    fun createDialogFragment(
+        context: Context,
+        route: FlutterDialogRoute,
+    ): InlayFlutterDialogFragment {
+        return createDialogFragment(context, route.toPageSettings())
+    }
+
+    /**
+     * Create a [InlayFlutterDialogFragment] for a dialog that returns a
+     * typed result.
      *
-     * [onResult] is invoked exactly once - with the popped result, or
+     * [onResult] is invoked exactly once - with the decoded result, or
      * `null` when the dialog is dismissed without one (barrier tap, back).
+     */
+    fun <R : Any> createDialogFragment(
+        context: Context,
+        route: FlutterDialogRouteWithResult<R>,
+        onResult: (R?) -> Unit,
+    ): InlayFlutterDialogFragment {
+        return createDialogFragment(context, route.toPageSettings()) { raw ->
+            onResult(route.decodeResult(raw))
+        }
+    }
+
+    /**
+     * Low-level factory operating on raw [PageSettings]; prefer the typed
+     * route overloads. [onResult] receives the wire-format result the
+     * dialog pops with, or `null` on dismissal without one.
      */
     @JvmOverloads
     fun createDialogFragment(
         context: Context,
-        route: FlutterDialogRoute,
+        page: PageSettings,
         onResult: ((Any?) -> Unit)? = null,
     ): InlayFlutterDialogFragment {
-        val dialogFragment = createDialogFragment(context, route.toPageSettings())
-        if (onResult != null) {
-            val dialogId = dialogFragment.arguments
-                ?.getString(InlayFlutterDialogFragment.EXTRA_DIALOG_ROUTE_ID)
-            if (dialogId != null) {
-                registerResultCallback(dialogId, onResult)
-            }
-        }
-        return dialogFragment
-    }
-
-    internal fun createDialogFragment(context: Context, page: PageSettings): InlayFlutterDialogFragment {
         init(context, prewarm = isPrewarmEnabled)
         val fragmentId = java.util.UUID.randomUUID().toString()
         pendingRouteData[fragmentId] = page
         val fragment = InlayFlutterDialogFragment()
         fragment.arguments = Bundle().apply {
             putString(InlayFlutterDialogFragment.EXTRA_DIALOG_ROUTE_ID, fragmentId)
+        }
+        if (onResult != null) {
+            registerResultCallback(fragmentId, onResult)
         }
         return fragment
     }
@@ -460,20 +487,34 @@ object InlayNavigator {
      *
      * Engine configuration (Pigeon APIs, storage) is set up automatically
      * when the fragment attaches — no manual wiring needed.
-     *
-     * [onResult] is invoked exactly once — with the result the Flutter page
-     * pops with, or `null` when the fragment is destroyed without one.
-     * Like Activity result callbacks, it lives in process memory and is not
-     * restored across process death.
      */
     @JvmOverloads
     fun createFragment(
         context: Context,
         route: FlutterRoute,
         useBackDispatcher: Boolean = false,
-        onResult: ((Any?) -> Unit)? = null,
     ): InlayFlutterFragment {
-        return createFragment(context, route.toPageSettings(), useBackDispatcher, onResult)
+        return createFragment(context, route.toPageSettings(), useBackDispatcher)
+    }
+
+    /**
+     * Create an [InlayFlutterFragment] for a Flutter page that returns a
+     * typed result.
+     *
+     * [onResult] is invoked exactly once — with the decoded result the
+     * Flutter page pops with, or `null` when the fragment is destroyed
+     * without one. Like Activity result callbacks, it lives in process
+     * memory and is not restored across process death.
+     */
+    fun <R : Any> createFragment(
+        context: Context,
+        route: FlutterRouteWithResult<R>,
+        useBackDispatcher: Boolean = false,
+        onResult: (R?) -> Unit,
+    ): InlayFlutterFragment {
+        return createFragment(context, route.toPageSettings(), useBackDispatcher) { raw ->
+            onResult(route.decodeResult(raw))
+        }
     }
 
     @JvmOverloads

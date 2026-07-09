@@ -14,6 +14,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentContainerView
 import co.leancode.inlay.FlutterRoute
+import co.leancode.inlay.FlutterRouteWithResult
 import co.leancode.inlay.InlayFlutterFragment
 import co.leancode.inlay.InlayNavigator
 import co.leancode.inlay.navigator.PageSettings
@@ -77,15 +78,33 @@ import co.leancode.inlay.navigator.PageSettings
 fun InlayFlutterScreen(
     route: FlutterRoute,
     modifier: Modifier = Modifier,
-    onResult: ((Any?) -> Unit)? = null,
 ) {
-    InlayFlutterScreen(route = route.toPageSettings(), modifier = modifier, onResult = onResult)
+    InlayFlutterScreen(route = route.toPageSettings(), modifier = modifier)
 }
 
 /**
- * [onResult] is invoked exactly once — with the result the Flutter page
- * pops with, or `null` when the composable leaves the composition without
- * one. Decode raw values with the generated `decodeResult`.
+ * Overload for routes that return a typed result.
+ *
+ * [onResult] is invoked exactly once — with the decoded result the Flutter
+ * page pops with, or `null` when the composable leaves the composition
+ * without one.
+ */
+@Composable
+fun <R : Any> InlayFlutterScreen(
+    route: FlutterRouteWithResult<R>,
+    modifier: Modifier = Modifier,
+    onResult: (R?) -> Unit,
+) {
+    InlayFlutterScreen(route = route.toPageSettings(), modifier = modifier) { raw ->
+        onResult(route.decodeResult(raw))
+    }
+}
+
+/**
+ * Low-level overload operating on raw [PageSettings]; prefer the typed
+ * route overloads. [onResult] receives the wire-format result the Flutter
+ * page pops with, or `null` when the composable leaves the composition
+ * without one.
  */
 @Composable
 fun InlayFlutterScreen(

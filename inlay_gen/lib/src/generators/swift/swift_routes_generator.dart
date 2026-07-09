@@ -128,11 +128,23 @@ void _writeRouteStruct(
   final isDialogRoute = route.routeType == RouteType.flutterDialog;
   final path = route.path;
 
-  // Flutter routes conform to FlutterRoute, dialog routes to FlutterDialogRoute.
+  // Flutter routes conform to FlutterRoute, dialog routes to
+  // FlutterDialogRoute; routes declaring a result type conform to the typed
+  // WithResult variants (ResultValue is inferred from decodeResult) so
+  // native callers receive an already-decoded result.
+  final hasResult = route.resultType != null;
   if (isFlutterRoute) {
-    buffer.writeln('struct $structName: FlutterRoute {');
+    buffer.writeln(
+      hasResult
+          ? 'struct $structName: FlutterRouteWithResult {'
+          : 'struct $structName: FlutterRoute {',
+    );
   } else if (isDialogRoute) {
-    buffer.writeln('struct $structName: FlutterDialogRoute {');
+    buffer.writeln(
+      hasResult
+          ? 'struct $structName: FlutterDialogRouteWithResult {'
+          : 'struct $structName: FlutterDialogRoute {',
+    );
   } else {
     buffer.writeln('struct $structName {');
   }
