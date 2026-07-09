@@ -1,19 +1,9 @@
-# Flutter Inlay
+# inlay
 
 ![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)
 [![inlay pub.dev badge](https://img.shields.io/pub/v/inlay)](https://pub.dev/packages/inlay)
-[![inlay_gen pub.dev badge](https://img.shields.io/pub/v/inlay_gen)](https://pub.dev/packages/inlay_gen)
-[![inlay_compose pub.dev badge](https://img.shields.io/pub/v/inlay_compose)](https://pub.dev/packages/inlay_compose)
 
 An opinionated Flutter add-to-app framework providing **type-safe navigation** and **cross-platform state sharing** for apps that embed Flutter inside a native iOS or Android host.
-
-## Packages
-
-| Package                          | Role                                                                                              |
-| -------------------------------- | ------------------------------------------------------------------------------------------------- |
-| [`inlay`](inlay/)                | Core framework plugin (Dart + Swift + Kotlin) - navigation, storage, appearance                    |
-| [`inlay_gen`](inlay_gen/)        | Code generator - typed route and store classes for Dart, Kotlin, and Swift from annotated schemas |
-| [`inlay_compose`](inlay_compose/) | Optional Jetpack Compose integration - embed inlay screens and dialogs in Compose apps            |
 
 ## Why
 
@@ -22,16 +12,20 @@ Integrating Flutter into an existing native app is painful:
 - **Navigation** - There are no official guidelines for seamless navigation between native and Flutter screens. The typical approach is raw `MethodChannel` calls with arbitrary strings, which is error-prone and not type-safe.
 - **State** - There is no standard way to share data between native code and Flutter, especially when multiple Flutter screens (engines) are involved.
 
-This framework solves both problems with a code-generation-driven, type-safe approach. Engine management (based on `FlutterEngineGroup`) is handled for you behind the scenes.
+inlay solves both problems with a code-generation-driven, type-safe approach. Engine management (based on `FlutterEngineGroup`) is handled for you behind the scenes.
 
 ## Features
 
-- **Navigation** - Type-safe routing between Native and Flutter screens (in both directions), with code-generated route classes for Dart, Swift, and Kotlin. Screens can return a typed **result** to their caller (declare `result:` on the route).
+- **Navigation** - Type-safe routing between native and Flutter screens (in both directions), with code-generated route classes for Dart, Swift, and Kotlin. Screens can return a typed **result** to their caller (declare `result:` on the route).
 - **Shared State** - A key-value storage layer that stays in sync across all Flutter engines and native code. Changes made anywhere are automatically broadcast to all other consumers.
 - **Engine Management** - The framework creates and destroys Flutter engines automatically. You never interact with `FlutterEngineGroup` directly (unless you want to).
-- **Theme & Locale Propagation** - `InlayAppearance` lets the host drive dark mode and an in-app language override across every Flutter engine, live (see [State Management](docs_internal/state.md)).
+- **Theme & Locale Propagation** - `InlayAppearance` lets the host drive dark mode and an in-app language override across every Flutter engine, live.
+- **Dialogs & Sheets** - Flutter dialogs and bottom sheets rendered in transparent native containers over native screens, with go_router, auto_route, and imperative integrations.
+- **Native Embeddings** - UIKit push/present, SwiftUI (`InlayFlutterView`, `.inlayDialog`), Android Activities and Fragments; Jetpack Compose via the optional [`inlay_compose`](https://pub.dev/packages/inlay_compose) package.
 
 ## Quick Start
+
+Route and store classes are generated from annotated Dart schemas by [`inlay_gen`](https://pub.dev/packages/inlay_gen).
 
 ### 1. Define routes (Dart)
 
@@ -92,8 +86,6 @@ From **Kotlin** (Android):
 InlayNavigator.push(context, SoundsNotificationsPage(contactId = "abc-123"))
 ```
 
-For Jetpack Compose support add the optional `inlay_compose` plugin alongside `inlay` in your module's `pubspec.yaml`. Projects that don't use Compose depend only on `inlay` - no Compose transitive dependencies. See the [Navigation](docs_internal/navigation.md) guide for details.
-
 ### 3. Share state
 
 Define a store (Dart):
@@ -143,15 +135,14 @@ scope.startObserving { entries ->
 }
 ```
 
-On the Flutter side, the generated store can be used directly or combined with the optional `InlayCubit` helper (see the [State Management](docs_internal/state.md) guide).
+On the Flutter side, the generated store can be used directly or combined with the optional `InlayCubit` helper.
 
 ## Documentation
 
-- [Navigation](docs_internal/navigation.md) - Route definitions, dialogs & bottom sheets, cross-boundary navigation, go_router & auto_route integration
-- [State Management](docs_internal/state.md) - Stores, native access, optional Cubit integration, cross-engine sync
-- [Testing](docs_internal/testing.md) - Widget-testing screens that navigate and use stores, via `package:inlay/testing.dart` fakes
-
-Each package also has its own README with focused usage instructions, and the [example](example/) folder contains a complete Flutter module plus native iOS and Android host apps exercising every feature.
+- [Navigation](https://github.com/leancodepl/inlay/blob/main/docs_internal/navigation.md) - Route definitions, dialogs & bottom sheets, cross-boundary navigation, go_router & auto_route integration
+- [State Management](https://github.com/leancodepl/inlay/blob/main/docs_internal/state.md) - Stores, native access, optional Cubit integration, cross-engine sync
+- [Testing](https://github.com/leancodepl/inlay/blob/main/docs_internal/testing.md) - Widget-testing screens that navigate and use stores, via `package:inlay/testing.dart` fakes
+- [Example apps](https://github.com/leancodepl/inlay/tree/main/example) - A complete Flutter module plus native iOS and Android host apps exercising every feature
 
 ---
 
