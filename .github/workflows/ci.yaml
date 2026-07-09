@@ -1,0 +1,165 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+
+jobs:
+  test:
+    name: Analyze and test
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version-file: .fvmrc
+          cache: true
+
+      - name: Check version consistency
+        run: ./tool/check_versions.sh
+
+      - name: Install dependencies (workspace)
+        run: flutter pub get
+
+      - name: Analyze
+        run: dart analyze --fatal-infos .
+
+      - name: Check formatting
+        run: dart format --set-exit-if-changed .
+
+      - name: Test inlay_gen
+        working-directory: inlay_gen
+        run: dart test
+
+      - name: Test inlay
+        working-directory: inlay
+        run: flutter test
+
+      - name: Test example_module
+        working-directory: example/example_module
+        run: flutter test
+
+  build_android_example:
+    name: Build Android example
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version-file: .fvmrc
+          cache: true
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      # Generates the gitignored example_module/.android that
+      # example_android/settings.gradle.kts includes via include_flutter.groovy.
+      - name: Install module dependencies
+        working-directory: example/example_module
+        run: flutter pub get
+
+      - name: Build example_android
+        working-directory: example/example_android
+        run: ./gradlew :app:assembleDebug
+
+  build_ios_example:
+    name: Build iOS example
+    runs-on: macos-15
+    timeout-minutes: 45
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version-file: .fvmrc
+          cache: true
+
+      # Generates the gitignored example_module/.ios used by the Podfile.
+      - name: Install module dependencies
+        working-directory: example/example_module
+        run: flutter pub get
+
+      - name: Install pods
+        working-directory: example/example_ios
+        run: pod install
+
+      - name: Build example_ios
+        working-directory: example/example_ios
+        run: >
+          xcodebuild build
+          -workspace ExampleApp.xcworkspace
+          -scheme ExampleApp
+          -destination 'generic/platform=iOS Simulator'
+          CODE_SIGNING_ALLOWED=NO
+
+  publish:
+    name: Publish to pub.dev
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [test, build_android_example, build_ios_example]
+    runs-on: ubuntu-latest
+
+    permissions:
+      id-token: write # pub.dev OIDC
+      contents: write
+
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version-file: .fvmrc
+          cache: true
+
+      - name: Check versions match tag
+        run: ./tool/check_versions.sh "$GITHUB_REF_NAME"
+
+      - name: Install dependencies (workspace)
+        run: flutter pub get
+
+      - name: Publish inlay_gen
+        working-directory: inlay_gen
+        run: dart pub publish --force
+
+      # Shared LeanCode release action - publishes and creates the GitHub
+      # release for the tag.
+      - name: Publish inlay
+        uses: leancodepl/mobile-tools/.github/actions/pub-release@pub-release-v1
+        with:
+          path: inlay
+
+      # Depends on inlay ^<version>, so inlay must be published first.
+      - name: Publish inlay_compose
+        working-directory: inlay_compose
+        run: flutter pub publish --force

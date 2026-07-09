@@ -1,0 +1,89 @@
+name: E2E
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 3 * * *' # nightly
+
+jobs:
+  android_e2e:
+    name: Android instrumentation tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v4
+
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' \
+            | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version-file: .fvmrc
+          cache: true
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Install module dependencies
+        working-directory: example/example_module
+        run: flutter pub get
+
+      - name: Run instrumentation tests
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          arch: x86_64
+          disable-animations: true
+          working-directory: example/example_android
+          script: ./gradlew :app:connectedDebugAndroidTest
+
+  ios_e2e:
+    name: iOS XCUITests
+    runs-on: macos-15
+    timeout-minutes: 60
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version-file: .fvmrc
+          cache: true
+
+      - name: Install module dependencies
+        working-directory: example/example_module
+        run: flutter pub get
+
+      - name: Install pods
+        working-directory: example/example_ios
+        run: pod install
+
+      - name: Run XCUITests
+        working-directory: example/example_ios
+        run: >
+          xcodebuild test
+          -workspace ExampleApp.xcworkspace
+          -scheme ExampleApp
+          -destination 'platform=iOS Simulator,name=iPhone 16'
+          CODE_SIGNING_ALLOWED=NO
