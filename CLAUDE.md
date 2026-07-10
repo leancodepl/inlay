@@ -18,7 +18,7 @@ Dart workspace (SDK ^3.11.0) with five packages:
 | `example/example_module/`                        | Standalone example Flutter module with go_router, auto_route, and sealed-class routing demos.       |
 | `example/example_module/example_module_native/`  | Companion plugin holding the module's generated native code so `flutter build aar` bundles it.      |
 
-Non-workspace directories: `example/example_android/`, `example/example_ios/` (native host apps), `docs_app/` (fumadocs documentation site, Next.js), `docs_internal/` (internal library docs in Markdown).
+Non-workspace directories: `example/example_android/`, `example/example_ios/` (native host apps), `docs_internal/` (internal library docs in Markdown).
 
 ## Common Commands
 
