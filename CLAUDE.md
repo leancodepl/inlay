@@ -18,7 +18,7 @@ Dart workspace (SDK ^3.11.0) with five packages:
 | `example/example_module/`                        | Standalone example Flutter module with go_router, auto_route, and sealed-class routing demos.       |
 | `example/example_module/example_module_native/`  | Companion plugin holding the module's generated native code so `flutter build aar` bundles it.      |
 
-Non-workspace directories: `example/example_android/`, `example/example_ios/` (native host apps), `docs_internal/` (internal library docs in Markdown).
+Non-workspace directories: `example/example_android/`, `example/example_ios/` (native host apps), `docs/` (internal library docs in Markdown).
 
 ## Common Commands
 
@@ -93,5 +93,5 @@ Generated outputs go to `lib/src/*/...g.dart`, `android/src/.../...Api.g.kt`, `i
 - **Linting:** all packages use `leancode_lint` (analysis_options.yaml includes `package:leancode_lint/analysis_options_package.yaml`).
 - **Feature independence:** future plan involves splitting the current framework into separate packages so that features (navigation, stores, BLoC integration) can be used separately. Do not introduce cross-feature dependencies that will be hard to resolve later.
 - **Example:** any new feature added to the framework should have a use case added to the main example in `example` folder. Always consider example in the plan mode. Prefer expanding existing pages over adding new pages and complicating the example if possible.
-- **Docs:** after introducing any changes inspect the `docs_internal` folder and `README.md` and introduce any updates if necessary. `README.md` is supposed to be a general overview and shouldn't include too many details. Prefer directing the reader to detailed docs in the `docs_internal` folder.
+- **Docs:** after introducing any changes inspect the `docs` folder and `README.md` and introduce any updates if necessary. `README.md` is supposed to be a general overview and shouldn't include too many details. Prefer directing the reader to detailed docs in the `docs` folder.
 - **Native code verification:**: After introducing any changes in the generator or the native code, always compile native example iOS and Android applications before completion.

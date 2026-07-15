@@ -12,6 +12,12 @@ android/local.properties
 android/.gradle/
 android/build/
 
+# Swift Package Manager
+.build/
+.swiftpm/
+ios/inlay/.build/
+ios/inlay/Package.resolved
+
 # IDE
 .idea/
 *.iml

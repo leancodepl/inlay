@@ -93,7 +93,7 @@ dart run build_runner build
 - **Kotlin** - route data classes, an abstract `NativeRouteHandler` with typed `on*` methods, typed store wrappers with `containsChanges`.
 - **Swift** - route structs conforming to `FlutterRoute`/`FlutterDialogRoute`, a `NativeRouteHandler` class, typed store structs with `containsChanges(in:)`.
 
-See the [inlay documentation](https://github.com/leancodepl/inlay/blob/main/docs_internal/navigation.md) for how the generated code is used, and the [example module](https://github.com/leancodepl/inlay/tree/main/example/example_module) for a complete schema.
+See the [inlay documentation](https://github.com/leancodepl/inlay/blob/main/docs/navigation.md) for how the generated code is used, and the [example module](https://github.com/leancodepl/inlay/tree/main/example/example_module) for a complete schema.
 
 ---
 

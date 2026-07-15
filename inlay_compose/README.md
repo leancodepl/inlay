@@ -13,8 +13,8 @@ Add it next to `inlay` in your Flutter module's `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  inlay: ^0.1.0
-  inlay_compose: ^0.1.0
+  inlay: ^0.1.1
+  inlay_compose: ^0.1.1
 ```
 
 ## Embed a Flutter screen
@@ -67,7 +67,7 @@ Do **not** wrap `InlayFlutterDialog` in a Compose `Dialog` or a Compose Navigati
 
 ## Documentation
 
-- [Navigation guide](https://github.com/leancodepl/inlay/blob/main/docs_internal/navigation.md) - the full navigation model, including the Compose sections
+- [Navigation guide](https://github.com/leancodepl/inlay/blob/main/docs/navigation.md) - the full navigation model, including the Compose sections
 - [Compose example](https://github.com/leancodepl/inlay/blob/main/example/example_android/app/src/main/java/co/leancode/inlay/example/android/ComposeActivity.kt) - a working NavHost mixing native and Flutter destinations
 
 ---

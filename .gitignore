@@ -1,3 +1,6 @@
 .dart_tool/
 signal_module/custom_lint.log
 .DS_Store
+
+# FVM Version Cache
+.fvm/

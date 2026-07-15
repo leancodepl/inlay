@@ -139,9 +139,9 @@ On the Flutter side, the generated store can be used directly or combined with t
 
 ## Documentation
 
-- [Navigation](https://github.com/leancodepl/inlay/blob/main/docs_internal/navigation.md) - Route definitions, dialogs & bottom sheets, cross-boundary navigation, go_router & auto_route integration
-- [State Management](https://github.com/leancodepl/inlay/blob/main/docs_internal/state.md) - Stores, native access, optional Cubit integration, cross-engine sync
-- [Testing](https://github.com/leancodepl/inlay/blob/main/docs_internal/testing.md) - Widget-testing screens that navigate and use stores, via `package:inlay/testing.dart` fakes
+- [Navigation](https://github.com/leancodepl/inlay/blob/main/docs/navigation.md) - Route definitions, dialogs & bottom sheets, cross-boundary navigation, go_router & auto_route integration
+- [State Management](https://github.com/leancodepl/inlay/blob/main/docs/state.md) - Stores, native access, optional Cubit integration, cross-engine sync
+- [Testing](https://github.com/leancodepl/inlay/blob/main/docs/testing.md) - Widget-testing screens that navigate and use stores, via `package:inlay/testing.dart` fakes
 - [Example apps](https://github.com/leancodepl/inlay/tree/main/example) - A complete Flutter module plus native iOS and Android host apps exercising every feature
 
 ---

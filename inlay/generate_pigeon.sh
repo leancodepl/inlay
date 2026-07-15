@@ -16,7 +16,7 @@ dart run pigeon --input pigeons/key_value_storage.dart
 echo "Patching Swift files with public access modifiers..."
 
 # --- InlayNavigatorApi.g.swift ---
-NAV="ios/Classes/InlayNavigatorApi.g.swift"
+NAV="ios/inlay/Sources/inlay/InlayNavigatorApi.g.swift"
 
 # Error class
 sed -i '' 's/^final class InlayNavigatorError/public final class InlayNavigatorError/' "$NAV"
@@ -50,7 +50,7 @@ sed -i '' '/^  public var schemaFingerprint: String? = nil$/a\
   }' "$NAV"
 
 # --- KeyValueStorageApi.g.swift ---
-KVS="ios/Classes/KeyValueStorageApi.g.swift"
+KVS="ios/inlay/Sources/inlay/KeyValueStorageApi.g.swift"
 
 # StorageEntry struct
 sed -i '' 's/^struct StorageEntry: Hashable/public struct StorageEntry: Hashable/' "$KVS"

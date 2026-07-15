@@ -1,3 +1,7 @@
+# 0.1.1
+
+- Documentation and example improvements
+
 # 0.1.0
 
 - Initial release

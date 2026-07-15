@@ -1,3 +1,8 @@
+# 0.1.1
+
+- iOS plugin now supports Swift Package Manager alongside CocoaPods
+- Relaxed `meta` constraint to `^1.16.0` for wider Flutter SDK compatibility
+
 # 0.1.0
 
 - Initial release

@@ -9,7 +9,7 @@ import 'package:pigeon/pigeon.dart';
       package: 'co.leancode.inlay.storage',
       errorClassName: 'InlayKeyValueStorageError',
     ),
-    swiftOut: 'ios/Classes/KeyValueStorageApi.g.swift',
+    swiftOut: 'ios/inlay/Sources/inlay/KeyValueStorageApi.g.swift',
     swiftOptions: SwiftOptions(errorClassName: 'InlayKeyValueStorageError'),
     dartPackageName: 'inlay',
   ),

@@ -29,7 +29,7 @@ This framework solves both problems with a code-generation-driven, type-safe app
 - **Navigation** - Type-safe routing between Native and Flutter screens (in both directions), with code-generated route classes for Dart, Swift, and Kotlin. Screens can return a typed **result** to their caller (declare `result:` on the route).
 - **Shared State** - A key-value storage layer that stays in sync across all Flutter engines and native code. Changes made anywhere are automatically broadcast to all other consumers.
 - **Engine Management** - The framework creates and destroys Flutter engines automatically. You never interact with `FlutterEngineGroup` directly (unless you want to).
-- **Theme & Locale Propagation** - `InlayAppearance` lets the host drive dark mode and an in-app language override across every Flutter engine, live (see [State Management](docs_internal/state.md)).
+- **Theme & Locale Propagation** - `InlayAppearance` lets the host drive dark mode and an in-app language override across every Flutter engine, live (see [State Management](docs/state.md)).
 
 ## Quick Start
 
@@ -92,7 +92,7 @@ From **Kotlin** (Android):
 InlayNavigator.push(context, SoundsNotificationsPage(contactId = "abc-123"))
 ```
 
-For Jetpack Compose support add the optional `inlay_compose` plugin alongside `inlay` in your module's `pubspec.yaml`. Projects that don't use Compose depend only on `inlay` - no Compose transitive dependencies. See the [Navigation](docs_internal/navigation.md) guide for details.
+For Jetpack Compose support add the optional `inlay_compose` plugin alongside `inlay` in your module's `pubspec.yaml`. Projects that don't use Compose depend only on `inlay` - no Compose transitive dependencies. See the [Navigation](docs/navigation.md) guide for details.
 
 ### 3. Share state
 
@@ -143,13 +143,13 @@ scope.startObserving { entries ->
 }
 ```
 
-On the Flutter side, the generated store can be used directly or combined with the optional `InlayCubit` helper (see the [State Management](docs_internal/state.md) guide).
+On the Flutter side, the generated store can be used directly or combined with the optional `InlayCubit` helper (see the [State Management](docs/state.md) guide).
 
 ## Documentation
 
-- [Navigation](docs_internal/navigation.md) - Route definitions, dialogs & bottom sheets, cross-boundary navigation, go_router & auto_route integration
-- [State Management](docs_internal/state.md) - Stores, native access, optional Cubit integration, cross-engine sync
-- [Testing](docs_internal/testing.md) - Widget-testing screens that navigate and use stores, via `package:inlay/testing.dart` fakes
+- [Navigation](docs/navigation.md) - Route definitions, dialogs & bottom sheets, cross-boundary navigation, go_router & auto_route integration
+- [State Management](docs/state.md) - Stores, native access, optional Cubit integration, cross-engine sync
+- [Testing](docs/testing.md) - Widget-testing screens that navigate and use stores, via `package:inlay/testing.dart` fakes
 
 Each package also has its own README with focused usage instructions, and the [example](example/) folder contains a complete Flutter module plus native iOS and Android host apps exercising every feature.
 

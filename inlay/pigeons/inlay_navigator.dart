@@ -9,7 +9,7 @@ import 'package:pigeon/pigeon.dart';
       package: 'co.leancode.inlay.navigator',
       errorClassName: 'InlayNavigatorError',
     ),
-    swiftOut: 'ios/Classes/InlayNavigatorApi.g.swift',
+    swiftOut: 'ios/inlay/Sources/inlay/InlayNavigatorApi.g.swift',
     swiftOptions: SwiftOptions(errorClassName: 'InlayNavigatorError'),
     dartPackageName: 'inlay',
   ),
