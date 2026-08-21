@@ -28,9 +28,15 @@ dev_dependencies:
     path: ../leancode_add2app_gen
   leancode_lint: ^21.0.0
   patrol:
-    path: /Users/szymonkwiatek/Documents/patrol/packages/patrol
+    git:
+      url: https://github.com/leancodepl/patrol.git
+      ref: feature/adjust-patrol-to-add2app
+      path: packages/patrol
   patrol_cli:
-    path: /Users/szymonkwiatek/Documents/patrol/packages/patrol_cli
+    git:
+      url: https://github.com/leancodepl/patrol.git
+      ref: feature/adjust-patrol-to-add2app
+      path: packages/patrol_cli
   pigeon: ^26.1.0
 
 patrol:
