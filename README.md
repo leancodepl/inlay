@@ -153,6 +153,8 @@ On the Flutter side, the generated store can be used directly or combined with t
 
 Each package also has its own README with focused usage instructions, and the [example](example/) folder contains a complete Flutter module plus native iOS and Android host apps exercising every feature.
 
+Using an AI coding agent? The [skills](skills/) folder ships [Agent Skills](https://agentskills.io/) that teach Claude Code, Cursor, Codex, and other agents how to set up inlay, evolve route/store schemas, and test inlay screens - see [skills/README.md](skills/README.md) for installation.
+
 ---
 
 ## 🛠️ Maintained by LeanCode

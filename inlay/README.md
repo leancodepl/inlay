@@ -143,6 +143,7 @@ On the Flutter side, the generated store can be used directly or combined with t
 - [State Management](https://github.com/leancodepl/inlay/blob/main/docs/state.md) - Stores, native access, optional Cubit integration, cross-engine sync
 - [Testing](https://github.com/leancodepl/inlay/blob/main/docs/testing.md) - Widget-testing screens that navigate and use stores, via `package:inlay/testing.dart` fakes
 - [Example apps](https://github.com/leancodepl/inlay/tree/main/example) - A complete Flutter module plus native iOS and Android host apps exercising every feature
+- [Agent skills](https://github.com/leancodepl/inlay/tree/main/skills) - Installable skills that teach AI coding agents (Claude Code, Cursor, Codex, …) how to set up inlay, evolve schemas, and test inlay screens
 
 ---
 
