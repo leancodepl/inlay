@@ -51,7 +51,7 @@ kotlin:
   package: <host package>.generated
 
 swift:
-  output: <module>_native/ios/Classes/Generated/
+  output: <module>_native/ios/<module>_native/Sources/<module>_native/Generated/
 ```
 
 Create the schema files: plain Dart classes annotated with `@InlayFlutterRoute('/path/:param')`,
@@ -64,9 +64,13 @@ inside the module (the `<module>_native/` paths above) so `flutter build aar` bu
 binary artifacts. Mirror the reference:
 https://github.com/leancodepl/inlay/tree/main/example/example_module/example_module_native —
 a plugin `pubspec.yaml` (android `package`/`pluginClass`, ios `pluginClass`, dependency on
-`inlay`), stub plugin classes, a podspec with `s.source_files = 'Classes/**/*'` and
-`s.dependency 'inlay'`, and an Android library `build.gradle.kts`. Add it to the module's
-`dependencies` by path.
+`inlay`), stub plugin classes, an Android library `build.gradle.kts`, and on iOS **both**
+integration manifests: `ios/<module>_native/Package.swift` (Swift Package Manager - depends on
+`../FlutterFramework` and `../inlay`, product name with `-` instead of `_`) and
+`ios/<module>_native.podspec` (CocoaPods - `s.source_files` pointing at
+`<module>_native/Sources/<module>_native/**/*.swift`, `s.dependency 'inlay'`). Without the
+`Package.swift` the plugin is built as a CocoaPods xcframework instead of a Swift package. Add
+the plugin to the module's `dependencies` by path.
 
 Then run codegen from the module: `dart run build_runner build` (or
 `dart run inlay_gen:inlay_gen --config inlay.yaml`), followed by `dart format` on the Dart
@@ -115,12 +119,28 @@ reference host: https://github.com/leancodepl/inlay/tree/main/example/example_an
 Follow https://github.com/leancodepl/inlay/blob/main/docs/navigation.md#setup plus the
 reference host: https://github.com/leancodepl/inlay/tree/main/example/example_ios
 
-1. `Podfile`: load the module's `podhelper.rb` and call
-   `install_all_flutter_pods(flutter_application_path)`; add `flutter_post_install(installer)`
-   in `post_install`. Then `pod install`.
-2. Add the generated Swift directory (`<module>_native/ios/Classes/Generated`) to the **app
-   target's sources** so host code can use the typed routes/stores (the example does this in
-   its XcodeGen `project.yml`).
+1. Integrate the module. Prefer **Swift Package Manager** (Flutter 3.44+, Xcode 15+); use
+   CocoaPods only if the host already depends on it (Flutter keeps CocoaPods in maintenance
+   mode and its registry goes read-only on 2 December 2026). Follow
+   https://docs.flutter.dev/add-to-app/ios/project-setup exactly:
+   - **SwiftPM:** in the module run `flutter build swift-package --platform ios`. In Xcode add
+     the generated `<module>/build/ios/SwiftPackages/FlutterNativeIntegration` package
+     (reference in place) and link `FlutterNativeIntegration`; set the
+     `FLUTTER_SWIFT_PACKAGE_OUTPUT` build setting to `$(SRCROOT)/<path>/build/ios/SwiftPackages`;
+     add a scheme **Build pre-action** `/bin/sh $FLUTTER_SWIFT_PACKAGE_OUTPUT/Scripts/flutter_integration.sh prebuild`
+     (build settings from the app target) and a **Run Script build phase**
+     `/bin/sh $FLUTTER_SWIFT_PACKAGE_OUTPUT/Scripts/flutter_integration.sh assemble` with
+     input file list `$(FLUTTER_SWIFT_PACKAGE_OUTPUT)/Scripts/FlutterAssembleInputs.xcfilelist`
+     and "Based on dependency analysis" off. Optionally set `FLUTTER_APPLICATION_PATH` and
+     `ENABLE_USER_SCRIPT_SANDBOXING=NO` so Xcode rebuilds Dart changes. The example's XcodeGen
+     `project.yml` encodes all of this.
+   - **CocoaPods:** `Podfile` loads the module's `podhelper.rb`, calls
+     `install_all_flutter_pods(flutter_application_path)` and `flutter_post_install(installer)`
+     in `post_install`; then `pod install`.
+2. Add the generated Swift directory
+   (`<module>_native/ios/<module>_native/Sources/<module>_native/Generated`) to the **app
+   target's sources** so host code can use the typed routes/stores - the generated types are
+   internal to the plugin module (the example does this in its XcodeGen `project.yml`).
 3. `AppDelegate`, in this order:
    ```swift
    InlayNavigator.shared.setOnEngineCreated { engine in
@@ -144,6 +164,15 @@ reference host: https://github.com/leancodepl/inlay/tree/main/example/example_io
 - **`.android` / `.ios` are generated.** They appear only after `flutter pub get` runs in the
   module. Errors like a missing `include_flutter.groovy` or `podhelper.rb` mean pub get hasn't
   run — they are not checked in.
+- **`build/ios/SwiftPackages` is generated too.** A missing `FlutterNativeIntegration` package
+  means `flutter build swift-package --platform ios` hasn't run. Re-run it after adding or
+  removing module dependencies (Dart-only changes rebuild from Xcode). As of Flutter 3.44 the
+  command still runs `pod install` for a module and builds every plugin as a pod first
+  (flutter/flutter#184590), so CocoaPods must be installed even for a SwiftPM host. If a
+  plugin's podspec paths change or it gains a `Package.swift`, delete the module's `.ios/Pods`,
+  `.ios/Podfile.lock` and `build/ios/SwiftPackages` first — the stale Pods project fails with
+  "Build input files cannot be found", and the cached CocoaPods framework otherwise conflicts
+  with the new Swift package ("multiple packages declare targets with a conflicting name").
 - **iOS plugin registration is manual.** The iOS embedding does not register plugins on
   engines inlay creates — without the `setOnEngineCreated` callback (set **before** `start()`),
   every plugin with native iOS code throws `MissingPluginException`. On Android registration is

@@ -588,6 +588,40 @@ Note that this approach uses a plain `MaterialApp` - not `MaterialApp.router` - 
 
 ## Setup
 
+### iOS Project Integration
+
+The `inlay` iOS plugin ships both a `Package.swift` and a podspec, so a host app can embed the
+Flutter module through either integration path Flutter offers:
+
+- **Swift Package Manager** (recommended, Flutter 3.44+). In the module run
+  `flutter build swift-package --platform ios`, then add the generated
+  `build/ios/SwiftPackages/FlutterNativeIntegration` package to the Xcode project, set the
+  `FLUTTER_SWIFT_PACKAGE_OUTPUT` build setting, and add the `flutter_integration.sh`
+  `prebuild` scheme pre-action and `assemble` build phase. Follow
+  [Flutter's add-to-app guide](https://docs.flutter.dev/add-to-app/ios/project-setup) step by
+  step; the example host's [`project.yml`](../example/example_ios/project.yml) is a complete
+  XcodeGen spec of that setup. Re-run `flutter build swift-package` whenever the module's
+  dependencies change - Dart-only changes are rebuilt by Xcode.
+- **CocoaPods** (Flutter keeps it in maintenance mode; the CocoaPods registry becomes
+  read-only on 2 December 2026). Load `podhelper.rb` from the module's `.ios/Flutter` in the
+  `Podfile` and call `install_all_flutter_pods`, as described in the same Flutter guide.
+
+Plugins with a `Package.swift` are linked into the host as Swift packages (source); plugins
+without one are compiled by `flutter build swift-package` into CocoaPods xcframeworks. Give the
+companion plugin that holds the generated Swift a `Package.swift` too (see the
+[example](../example/example_module/example_module_native/ios/example_module_native/Package.swift)):
+it follows Flutter's plugin layout (`ios/<plugin>/Package.swift`, `ios/<plugin>/Sources/<plugin>/`)
+and depends on `../FlutterFramework` and `../inlay` - Flutter lays every plugin package out as
+a sibling of `FlutterFramework`, so plugin-to-plugin dependencies use the same relative-path
+convention. Note that, as of Flutter 3.44, `flutter build swift-package` still runs
+`pod install` for a **module** and builds every plugin as a pod before discarding the ones that
+have a Swift package ([flutter/flutter#184590](https://github.com/flutter/flutter/issues/184590)),
+so CocoaPods must be installed on the machine that builds the module even though the host app
+itself no longer uses it.
+
+The generated Swift routes and stores are internal to their module, so the host app compiles the
+generated directory directly into its app target (the example lists it under `sources`).
+
 ### Native Initialization
 
 Call once at app startup to create the engine group. Both `start()` and `init()` accept an optional `prewarm` parameter (defaults to `true`) that controls whether a hidden engine is prewarmed immediately.
@@ -625,8 +659,9 @@ once per engine (including the hidden prewarmed engine), right after the engine 
 - On Android, `setOnEngineCreated` also exists, but do **not** register plugins in it (they
   register automatically - doing it again would double-register). Use it for other per-engine
   setup, e.g. custom platform channels or platform view factories.
-- `GeneratedPluginRegistrant` on iOS lives in the `FlutterPluginRegistrant` pod (source
-  integration via `podhelper.rb`) - `import FlutterPluginRegistrant` in the AppDelegate.
+- `GeneratedPluginRegistrant` on iOS lives in the `FlutterPluginRegistrant` module - a Swift
+  package target inside `FlutterNativeIntegration` (Swift Package Manager) or a pod (CocoaPods
+  via `podhelper.rb`). Either way, `import FlutterPluginRegistrant` in the AppDelegate.
 
 ### Returning Results from Screens
 

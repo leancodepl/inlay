@@ -10,17 +10,30 @@ import 'package:inlay/inlay.dart';
 /// fails fast instead of corrupting positional data.
 const String inlaySchemaFingerprint = '231397b50962578d';
 
-enum GreetingStyle { casual, formal }
+enum GreetingStyle {
+  casual,
+  formal,
+}
 
-enum BadgeLevel { bronze, silver, gold }
+enum BadgeLevel {
+  bronze,
+  silver,
+  gold,
+}
 
 class UserBadge {
-  const UserBadge({required this.label, required this.level});
+  const UserBadge({
+    required this.label,
+    required this.level,
+  });
 
   final String label;
   final BadgeLevel level;
 
-  List<Object?> encode() => <Object?>[label, level.index];
+  List<Object?> encode() => <Object?>[
+    label,
+    level.index,
+  ];
 
   static UserBadge decode(List<Object?> list) {
     return UserBadge(
@@ -47,7 +60,10 @@ sealed class FlutterRoute extends FlutterRouteBase {
 }
 
 class GreetingPage extends FlutterRoute {
-  const GreetingPage({required this.name, this.style});
+  const GreetingPage({
+    required this.name,
+    this.style,
+  });
 
   final String name;
   final GreetingStyle? style;
@@ -72,12 +88,7 @@ class GreetingPage extends FlutterRoute {
   static GreetingPage decode(List<Object?> list) {
     return GreetingPage(
       name: list[0] as String,
-      style: list[1] != null
-          ? (() {
-              final v = list[1];
-              return GreetingStyle.values[v as int];
-            })()
-          : null,
+      style: list[1] != null ? (() { final v = list[1]; return GreetingStyle.values[v as int]; })() : null,
     );
   }
 
@@ -96,17 +107,14 @@ class GreetingPage extends FlutterRoute {
 
   @override
   PageSettings toPageSettings() {
-    return PageSettings(
-      routeId: routeId,
-      params: params,
-      path: toPath(),
-      schemaFingerprint: inlaySchemaFingerprint,
-    );
+    return PageSettings(routeId: routeId, params: params, path: toPath(), schemaFingerprint: inlaySchemaFingerprint);
   }
 }
 
 class CounterPage extends FlutterRoute {
-  const CounterPage({this.seed});
+  const CounterPage({
+    this.seed,
+  });
 
   final int? seed;
 
@@ -122,17 +130,19 @@ class CounterPage extends FlutterRoute {
     return '$basePath?${query.entries.map((e) => '${e.key}=${Uri.encodeComponent(e.value)}').join('&')}';
   }
 
-  List<Object?> encode() => <Object?>[seed != null ? seed! : null];
+  List<Object?> encode() => <Object?>[
+    seed != null ? seed! : null,
+  ];
 
   static CounterPage decode(List<Object?> list) {
-    return CounterPage(seed: list[0] as int?);
+    return CounterPage(
+      seed: list[0] as int?,
+    );
   }
 
   static CounterPage decodeFromMap(Map<Object?, Object?> map) {
     return CounterPage(
-      seed: map['seed'] != null
-          ? int.tryParse(map['seed'] as String? ?? '')
-          : null,
+      seed: map['seed'] != null ? int.tryParse(map['seed'] as String? ?? '') : null,
     );
   }
 
@@ -144,19 +154,15 @@ class CounterPage extends FlutterRoute {
 
   @override
   PageSettings toPageSettings() {
-    return PageSettings(
-      routeId: routeId,
-      params: params,
-      path: toPath(),
-      schemaFingerprint: inlaySchemaFingerprint,
-    );
+    return PageSettings(routeId: routeId, params: params, path: toPath(), schemaFingerprint: inlaySchemaFingerprint);
   }
 
   /// Encodes a result value into its wire form.
   static Object? encodeResult(int result) => result;
 
   /// Decodes a wire result value, or `null` when absent.
-  static int? decodeResult(Object? raw) => raw == null ? null : raw as int;
+  static int? decodeResult(Object? raw) =>
+      raw == null ? null : raw as int;
 
   /// Pops the screen, returning [result] to the caller.
   static Future<void> popWithResult(int result) =>
@@ -164,15 +170,16 @@ class CounterPage extends FlutterRoute {
 
   /// Opens this screen in a new engine and awaits its result.
   Future<int?> pushForResult() async {
-    final raw = await InlayNavigator.instance.pushFlutterRouteForResult(
-      toPageSettings(),
-    );
+    final raw = await InlayNavigator.instance.pushFlutterRouteForResult(toPageSettings());
     return decodeResult(raw);
   }
 }
 
 class ProfilePage extends FlutterRoute {
-  const ProfilePage({required this.userId, this.badges});
+  const ProfilePage({
+    required this.userId,
+    this.badges,
+  });
 
   final String userId;
   final List<UserBadge>? badges;
@@ -194,14 +201,7 @@ class ProfilePage extends FlutterRoute {
   static ProfilePage decode(List<Object?> list) {
     return ProfilePage(
       userId: list[0] as String,
-      badges: list[1] != null
-          ? (() {
-              final v = list[1];
-              return (v as List<Object?>)
-                  .map((e) => UserBadge.decode(e as List<Object?>))
-                  .toList();
-            })()
-          : null,
+      badges: list[1] != null ? (() { final v = list[1]; return (v as List<Object?>).map((e) => UserBadge.decode(e as List<Object?>)).toList(); })() : null,
     );
   }
 
@@ -220,12 +220,7 @@ class ProfilePage extends FlutterRoute {
 
   @override
   PageSettings toPageSettings() {
-    return PageSettings(
-      routeId: routeId,
-      params: params,
-      path: toPath(),
-      schemaFingerprint: inlaySchemaFingerprint,
-    );
+    return PageSettings(routeId: routeId, params: params, path: toPath(), schemaFingerprint: inlaySchemaFingerprint);
   }
 }
 
@@ -246,7 +241,10 @@ sealed class FlutterDialogRoute extends FlutterDialogRouteBase {
 }
 
 class ConfirmActionDialog extends FlutterDialogRoute {
-  const ConfirmActionDialog({required this.action, this.message});
+  const ConfirmActionDialog({
+    required this.action,
+    this.message,
+  });
 
   final String action;
   final String? message;
@@ -290,19 +288,15 @@ class ConfirmActionDialog extends FlutterDialogRoute {
 
   @override
   PageSettings toPageSettings() {
-    return PageSettings(
-      routeId: routeId,
-      params: params,
-      path: toPath(),
-      schemaFingerprint: inlaySchemaFingerprint,
-    );
+    return PageSettings(routeId: routeId, params: params, path: toPath(), schemaFingerprint: inlaySchemaFingerprint);
   }
 
   /// Encodes a result value into its wire form.
   static Object? encodeResult(bool result) => result;
 
   /// Decodes a wire result value, or `null` when absent.
-  static bool? decodeResult(Object? raw) => raw == null ? null : raw as bool;
+  static bool? decodeResult(Object? raw) =>
+      raw == null ? null : raw as bool;
 
   /// Pops the screen, returning [result] to the caller.
   static Future<void> popWithResult(bool result) =>
@@ -310,15 +304,15 @@ class ConfirmActionDialog extends FlutterDialogRoute {
 
   /// Opens this screen in a new engine and awaits its result.
   Future<bool?> pushForResult() async {
-    final raw = await InlayNavigator.instance.presentFlutterDialogForResult(
-      toPageSettings(),
-    );
+    final raw = await InlayNavigator.instance.presentFlutterDialogForResult(toPageSettings());
     return decodeResult(raw);
   }
 }
 
 class ThemePickerDialog extends FlutterDialogRoute {
-  const ThemePickerDialog({required this.userId});
+  const ThemePickerDialog({
+    required this.userId,
+  });
 
   final String userId;
 
@@ -331,14 +325,20 @@ class ThemePickerDialog extends FlutterDialogRoute {
     return basePath;
   }
 
-  List<Object?> encode() => <Object?>[userId];
+  List<Object?> encode() => <Object?>[
+    userId,
+  ];
 
   static ThemePickerDialog decode(List<Object?> list) {
-    return ThemePickerDialog(userId: list[0] as String);
+    return ThemePickerDialog(
+      userId: list[0] as String,
+    );
   }
 
   static ThemePickerDialog decodeFromMap(Map<Object?, Object?> map) {
-    return ThemePickerDialog(userId: map['userId'] as String? ?? '');
+    return ThemePickerDialog(
+      userId: map['userId'] as String? ?? '',
+    );
   }
 
   @override
@@ -349,56 +349,55 @@ class ThemePickerDialog extends FlutterDialogRoute {
 
   @override
   PageSettings toPageSettings() {
-    return PageSettings(
-      routeId: routeId,
-      params: params,
-      path: toPath(),
-      schemaFingerprint: inlaySchemaFingerprint,
-    );
+    return PageSettings(routeId: routeId, params: params, path: toPath(), schemaFingerprint: inlaySchemaFingerprint);
   }
 }
 
 class NativeSettingsPage {
-  const NativeSettingsPage({this.source});
+  const NativeSettingsPage({
+    this.source,
+  });
 
   final String? source;
 
   static const String routeId = 'nativeSettings';
 
-  List<Object?> encode() => <Object?>[source != null ? source! : null];
+  List<Object?> encode() => <Object?>[
+    source != null ? source! : null,
+  ];
 
   static NativeSettingsPage decode(List<Object?> list) {
-    return NativeSettingsPage(source: list[0] as String?);
+    return NativeSettingsPage(
+      source: list[0] as String?,
+    );
   }
 
   NativeRouteWrapper toNativeRoute() => NativeRouteWrapper(
-    PageSettings(
-      routeId: routeId,
-      params: encode(),
-      schemaFingerprint: inlaySchemaFingerprint,
-    ),
+    PageSettings(routeId: routeId, params: encode(), schemaFingerprint: inlaySchemaFingerprint),
   );
 }
 
 class NativeAboutPage {
-  const NativeAboutPage({required this.appVersion});
+  const NativeAboutPage({
+    required this.appVersion,
+  });
 
   final String appVersion;
 
   static const String routeId = 'nativeAbout';
 
-  List<Object?> encode() => <Object?>[appVersion];
+  List<Object?> encode() => <Object?>[
+    appVersion,
+  ];
 
   static NativeAboutPage decode(List<Object?> list) {
-    return NativeAboutPage(appVersion: list[0] as String);
+    return NativeAboutPage(
+      appVersion: list[0] as String,
+    );
   }
 
   NativeRouteWrapper toNativeRoute() => NativeRouteWrapper(
-    PageSettings(
-      routeId: routeId,
-      params: encode(),
-      schemaFingerprint: inlaySchemaFingerprint,
-    ),
+    PageSettings(routeId: routeId, params: encode(), schemaFingerprint: inlaySchemaFingerprint),
   );
 
   /// Encodes a result value into its wire form.
@@ -410,12 +409,9 @@ class NativeAboutPage {
 
   /// Opens this native screen and awaits its result.
   Future<String?> pushForResult() async {
-    final raw = await InlayNavigator.instance.pushNativeRouteForResult(
-      PageSettings(
-        routeId: routeId,
-        params: encode(),
-        schemaFingerprint: inlaySchemaFingerprint,
-      ),
+    final raw = await InlayNavigator.instance
+        .pushNativeRouteForResult(
+      PageSettings(routeId: routeId, params: encode(), schemaFingerprint: inlaySchemaFingerprint),
     );
     return decodeResult(raw);
   }
@@ -461,12 +457,8 @@ FlutterDialogRoute? decodeFlutterDialogRouteData(PageSettings? settings) {
   final params = settings.params;
   if (params is! List) return null;
   return switch (settings.routeId) {
-    ConfirmActionDialog.routeName => ConfirmActionDialog.decode(
-      params.cast<Object?>(),
-    ),
-    ThemePickerDialog.routeName => ThemePickerDialog.decode(
-      params.cast<Object?>(),
-    ),
+    ConfirmActionDialog.routeName => ConfirmActionDialog.decode(params.cast<Object?>()),
+    ThemePickerDialog.routeName => ThemePickerDialog.decode(params.cast<Object?>()),
     _ => null,
   };
 }
@@ -476,6 +468,5 @@ FlutterDialogRoute? decodeFlutterDialogRouteData(PageSettings? settings) {
 /// Pass this to [InlayNavigator.fetchInitialRoute] as the decoder
 /// when you need a single entrypoint that handles both pages and dialogs.
 InlayRoute? decodeInlayRouteData(PageSettings? settings) {
-  return decodeFlutterRouteData(settings) ??
-      decodeFlutterDialogRouteData(settings);
+  return decodeFlutterRouteData(settings) ?? decodeFlutterDialogRouteData(settings);
 }

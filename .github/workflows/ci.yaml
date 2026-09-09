@@ -104,20 +104,17 @@ jobs:
           flutter-version-file: .fvmrc
           cache: true
 
-      # Generates the gitignored example_module/.ios used by the Podfile.
-      - name: Install module dependencies
+      # Generates the gitignored example_module/build/ios/SwiftPackages that
+      # example_ios/project.yml references as a local Swift package.
+      - name: Build Flutter module as Swift package
         working-directory: example/example_module
-        run: flutter pub get
-
-      - name: Install pods
-        working-directory: example/example_ios
-        run: pod install
+        run: flutter build swift-package --platform ios
 
       - name: Build example_ios
         working-directory: example/example_ios
         run: >
           xcodebuild build
-          -workspace ExampleApp.xcworkspace
+          -project ExampleApp.xcodeproj
           -scheme ExampleApp
           -destination 'generic/platform=iOS Simulator'
           CODE_SIGNING_ALLOWED=NO

@@ -1,7 +1,8 @@
 name: example_module_native
 description: >
   Companion plugin for example_module. Holds generated native code
-  (Routes, Stores) so that flutter build aar bundles them into a binary artifact.
+  (Routes, Stores) so that flutter build aar / flutter build swift-package
+  bundle them into binary artifacts.
 publish_to: none
 resolution: workspace
 

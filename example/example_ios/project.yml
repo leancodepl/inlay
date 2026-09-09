@@ -4,15 +4,42 @@ options:
   deploymentTarget:
     iOS: "16.0"
 
+# The Flutter module is integrated through Swift Package Manager. Run
+# `flutter build swift-package --platform ios` in ../example_module first -
+# it generates the FlutterNativeIntegration package referenced below.
+packages:
+  FlutterNativeIntegration:
+    path: ../example_module/build/ios/SwiftPackages/FlutterNativeIntegration
+
+settings:
+  base:
+    # Where `flutter build swift-package` put its output. Used by the
+    # flutter_integration.sh scheme pre-action and build phase below.
+    FLUTTER_SWIFT_PACKAGE_OUTPUT: $(SRCROOT)/../example_module/build/ios/SwiftPackages
+    # Lets Xcode rebuild the Flutter module's Dart code as part of its build.
+    # Requires user-script sandboxing to be disabled.
+    FLUTTER_APPLICATION_PATH: $(SRCROOT)/../example_module
+    ENABLE_USER_SCRIPT_SANDBOXING: NO
+
 targets:
   ExampleApp:
     type: application
     platform: iOS
     sources:
       - path: Sources
-      - path: ../example_module/example_module_native/ios/Classes/Generated
+      # Generated Swift routes/stores are internal to the plugin module, so the
+      # host compiles them directly to get access to the typed API.
+      - path: ../example_module/example_module_native/ios/example_module_native/Sources/example_module_native/Generated
     resources:
       - path: Resources
+    dependencies:
+      - package: FlutterNativeIntegration
+    postBuildScripts:
+      - name: Flutter Assemble
+        script: /bin/sh $FLUTTER_SWIFT_PACKAGE_OUTPUT/Scripts/flutter_integration.sh assemble
+        basedOnDependencyAnalysis: false
+        inputFileLists:
+          - $(FLUTTER_SWIFT_PACKAGE_OUTPUT)/Scripts/FlutterAssembleInputs.xcfilelist
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: co.leancode.inlay.example.ios
@@ -37,6 +64,10 @@ schemes:
     build:
       targets:
         ExampleApp: all
+      preActions:
+        - name: Flutter Prebuild
+          script: /bin/sh $FLUTTER_SWIFT_PACKAGE_OUTPUT/Scripts/flutter_integration.sh prebuild
+          settingsTarget: ExampleApp
     run:
       config: Debug
     test:

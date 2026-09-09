@@ -49,7 +49,7 @@ kotlin:
   package: com.example.generated
 
 swift:
-  output: native/ios/Classes/Generated/
+  output: native/ios/native/Sources/native/Generated/
 ```
 
 ## 3. Generate

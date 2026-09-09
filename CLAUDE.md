@@ -46,6 +46,14 @@ dart format .
 dart test
 # Single test:
 dart test test/annotation_parser_test.dart
+
+# Native example apps
+# Android (from example/example_android/):
+./gradlew :app:assembleDebug
+# iOS - SwiftPM integration: build the module's Swift package first
+# (from example/example_module/), then the host (from example/example_ios/):
+flutter build swift-package --platform ios
+xcodebuild build -project ExampleApp.xcodeproj -scheme ExampleApp -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO
 ```
 
 ## Architecture
@@ -65,7 +73,7 @@ Two pigeon definitions in `inlay/pigeons/`:
 - `inlay_navigator.dart` — navigation APIs (push/pop between native and Flutter)
 - `key_value_storage.dart` — cross-engine key-value storage sync
 
-Generated outputs go to `lib/src/*/...g.dart`, `android/src/.../...Api.g.kt`, `ios/Classes/...Api.g.swift`.
+Generated outputs go to `lib/src/*/...g.dart`, `android/src/.../...Api.g.kt`, `ios/inlay/Sources/inlay/...Api.g.swift`.
 
 **Important:** Pigeon does not generate `public` Swift types, but the plugin module boundary requires it. Use `./generate_pigeon.sh` (in `inlay/`) instead of running `dart run pigeon` directly — the script runs pigeon and then patches Swift output with the necessary `public` access modifiers.
 
@@ -74,6 +82,7 @@ Generated outputs go to `lib/src/*/...g.dart`, `android/src/.../...Api.g.kt`, `i
 - Each Flutter screen runs in its own engine (created/destroyed automatically).
 - Single Dart entrypoint (`inlayMain`) handles all engines.
 - Three routing integration patterns in examples: go_router (declarative), auto_route (declarative), sealed classes + pattern matching (imperative).
+- iOS plugins (`inlay`, `example_module_native`) ship both `Package.swift` (Flutter SwiftPM layout: `ios/<plugin>/Sources/<plugin>/`) and a podspec pointing at the same sources - keep both in sync when adding Swift files. The iOS example host integrates via SwiftPM (`flutter build swift-package`), not CocoaPods; the generated Swift stays internal to the plugin, so the host compiles the `Generated` directory into its own target.
 - `InlayBackButtonDispatcher` and `InlayNativePopGestureObserver` handle back gesture/pop coordination between native and Flutter navigation stacks.
 
 ### Cross-Engine State (KeyValueStorage)

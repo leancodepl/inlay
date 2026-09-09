@@ -10,4 +10,4 @@ kotlin:
   package: co.leancode.example_module.generated
 
 swift:
-  output: example_module_native/ios/Classes/Generated/
+  output: example_module_native/ios/example_module_native/Sources/example_module_native/Generated/

@@ -10,7 +10,7 @@ so that flutter build aar bundles them into binary artifacts.
   s.license          = { :file => '../LICENSE' }
   s.author           = { 'LeanCode' => 'info@leancode.co' }
   s.source           = { :path => '.' }
-  s.source_files     = 'Classes/**/*'
+  s.source_files     = 'example_module_native/Sources/example_module_native/**/*.swift'
   s.dependency 'Flutter'
   s.dependency 'inlay'
   s.platform         = :ios, '13.0'

@@ -27,8 +27,22 @@ cd example/example_android
 
 ## iOS setup
 
+The iOS host integrates the Flutter module through Swift Package Manager (Flutter 3.44+).
+Build the module's Swift package first, then generate and open the Xcode project:
+
 ```bash
-cd example/example_ios
+cd example/example_module
+flutter build swift-package --platform ios
+
+cd ../example_ios
 xcodegen generate
-pod install
+open ExampleApp.xcodeproj
+```
+
+Re-run `flutter build swift-package` whenever the module's dependencies change (Dart code
+changes are rebuilt by Xcode automatically). To build from the command line:
+
+```bash
+xcodebuild build -project ExampleApp.xcodeproj -scheme ExampleApp \
+  -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO
 ```

@@ -4,7 +4,7 @@ analyzer:
   exclude:
     - lib/src/generated/**
     - android/src/main/kotlin/co/leancode/example_module/generated/**
-    - ios/Classes/Generated/**
+    - ios/example_module_native/Sources/example_module_native/Generated/**
 
 # Additional information about this file can be found at
 # https://dart.dev/guides/language/analysis-options

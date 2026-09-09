@@ -71,19 +71,15 @@ jobs:
           flutter-version-file: .fvmrc
           cache: true
 
-      - name: Install module dependencies
+      - name: Build Flutter module as Swift package
         working-directory: example/example_module
-        run: flutter pub get
-
-      - name: Install pods
-        working-directory: example/example_ios
-        run: pod install
+        run: flutter build swift-package --platform ios
 
       - name: Run XCUITests
         working-directory: example/example_ios
         run: >
           xcodebuild test
-          -workspace ExampleApp.xcworkspace
+          -project ExampleApp.xcodeproj
           -scheme ExampleApp
           -destination 'platform=iOS Simulator,name=iPhone 16'
           CODE_SIGNING_ALLOWED=NO
