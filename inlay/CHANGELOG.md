@@ -9,6 +9,9 @@
   (non-path parameters included).
 - iOS: the engine is torn down (`destroyContext`) when its container is deallocated, instead of
   lingering until the last reference to it goes away.
+- iOS: `Package.swift` declares the `FlutterFramework` dependency explicitly, like the Flutter
+  plugin template, so `flutter build swift-package` no longer injects it with
+  `swift package add-dependency` - which fails on SwiftPM versions that validate the path.
 
 # 0.1.1
 
