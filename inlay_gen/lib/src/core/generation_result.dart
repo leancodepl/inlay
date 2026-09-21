@@ -9,6 +9,7 @@ class GenerationResult {
     this.dartStoresCode,
     this.kotlinRoutesCode,
     this.kotlinStoresCode,
+    this.javaRoutesCode,
     this.swiftRoutesCode,
     this.swiftStoresCode,
   });
@@ -19,6 +20,9 @@ class GenerationResult {
   final String? dartStoresCode;
   final String? kotlinRoutesCode;
   final String? kotlinStoresCode;
+
+  /// Generated Java sources keyed by file name (one public class per file).
+  final Map<String, String>? javaRoutesCode;
   final String? swiftRoutesCode;
   final String? swiftStoresCode;
 

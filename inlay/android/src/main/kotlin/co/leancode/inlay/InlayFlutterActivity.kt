@@ -1,5 +1,6 @@
 package co.leancode.inlay
 
+import android.os.Bundle
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 
@@ -14,6 +15,15 @@ import io.flutter.embedding.engine.FlutterEngine
  * built in [InlayNavigator.createIntent].
  */
 class InlayFlutterActivity : FlutterActivity() {
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        // FlutterActivity resolves the cached engine group during onCreate.
+        // After process death the in-memory cache is empty unless the app
+        // initialized inlay in Application.onCreate, so re-register the group
+        // first to avoid an IllegalStateException.
+        InlayNavigator.ensureInitialized(this)
+        super.onCreate(savedInstanceState)
+    }
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)

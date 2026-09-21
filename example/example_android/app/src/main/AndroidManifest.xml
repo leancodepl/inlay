@@ -23,6 +23,7 @@
         <activity android:name=".NativeAboutActivity" android:exported="false" />
         <activity android:name=".FlutterCounterFragmentActivity" android:exported="false" />
         <activity android:name=".ComposeActivity" android:exported="false" />
+        <activity android:name=".JavaHostActivity" android:exported="false" />
 
         <activity
             android:name="co.leancode.inlay.InlayFlutterActivity"

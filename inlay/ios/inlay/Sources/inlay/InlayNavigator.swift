@@ -539,12 +539,20 @@ public final class InlayNavigator {
     }
 
     /// Called when the Flutter view controller is being deallocated.
+    ///
+    /// Detaches the channels and then tears the engine down explicitly, so
+    /// the Dart isolate and its native resources are released together with
+    /// the container instead of lingering until the last reference to the
+    /// engine goes away - host-side channel wrappers created on the engine's
+    /// binary messenger (and other plugin registrations) commonly keep it
+    /// alive past the view controller's deinit.
     func cleanUpEngine(_ engine: FlutterEngine) {
         InlayNavigatorHostApiSetup.setUp(
             binaryMessenger: engine.binaryMessenger,
             api: nil
         )
         KeyValueStorageImpl.shared.detachFromEngine(engine)
+        engine.destroyContext()
     }
 
     // MARK: - Encoding

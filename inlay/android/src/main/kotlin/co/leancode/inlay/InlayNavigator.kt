@@ -97,8 +97,6 @@ object InlayNavigator {
         private set
     /** Hidden warm-up engine kept alive for app lifetime. */
     private var prewarmedEngine: FlutterEngine? = null
-    /** Route data for fragments, keyed by fragment ID (consumed once on configureEngine). */
-    private val pendingRouteData = mutableMapOf<String, PageSettings>()
 
     // ── Initialisation ───────────────────────────────────────────────────
 
@@ -114,6 +112,24 @@ object InlayNavigator {
         if (isPrewarmEnabled) {
             prewarmEngineIfNeeded()
         }
+    }
+
+    /**
+     * Register the shared [FlutterEngineGroup] in the cache without prewarming
+     * or changing the prewarm setting. Idempotent and cheap.
+     *
+     * [InlayFlutterActivity] and [InlayFlutterFragment] call this before the
+     * Flutter embedding resolves the cached engine group, so a container
+     * restored from saved state (process death, config change) works even
+     * when the app initializes inlay lazily instead of in
+     * `Application.onCreate` - without it the embedding throws
+     * `IllegalStateException` for the missing group. Host code only needs
+     * it for its own `FlutterFragment` subclasses built on inlay's engine
+     * group; call it from the Activity's `onCreate` **before** `super.onCreate`.
+     */
+    fun ensureInitialized(context: Context) {
+        appContext = context.applicationContext
+        ensureEngineGroup()
     }
 
     /**
@@ -294,10 +310,6 @@ object InlayNavigator {
         return id
     }
 
-    internal fun registerResultCallback(id: String, onResult: (Any?) -> Unit) {
-        synchronized(pendingResultCallbacks) { pendingResultCallbacks[id] = onResult }
-    }
-
     /**
      * Delivers [result] to the callback registered under [id], exactly once
      * (removal makes redundant deliveries no-ops).
@@ -390,14 +402,12 @@ object InlayNavigator {
         onResult: ((Any?) -> Unit)? = null,
     ): InlayFlutterDialogFragment {
         init(context, prewarm = isPrewarmEnabled)
-        val fragmentId = java.util.UUID.randomUUID().toString()
-        pendingRouteData[fragmentId] = page
         val fragment = InlayFlutterDialogFragment()
         fragment.arguments = Bundle().apply {
-            putString(InlayFlutterDialogFragment.EXTRA_DIALOG_ROUTE_ID, fragmentId)
-        }
-        if (onResult != null) {
-            registerResultCallback(fragmentId, onResult)
+            writeRouteData(this, page)
+            if (onResult != null) {
+                putString(EXTRA_RESULT_ID, registerResultCallback(onResult))
+            }
         }
         return fragment
     }
@@ -409,8 +419,6 @@ object InlayNavigator {
     internal fun createDialogFlutterFragment(context: Context, page: PageSettings): InlayFlutterFragment {
         init(context, prewarm = isPrewarmEnabled)
         val initialRoute = encodePageSettings(page)
-        val fragmentId = java.util.UUID.randomUUID().toString()
-        pendingRouteData[fragmentId] = page
         val fragment = FlutterFragment.NewEngineInGroupFragmentBuilder(
             InlayFlutterFragment::class.java,
             ENGINE_GROUP_ID
@@ -420,7 +428,7 @@ object InlayNavigator {
             .transparencyMode(TransparencyMode.transparent)
             .build<InlayFlutterFragment>()
         fragment.arguments = (fragment.arguments ?: Bundle()).apply {
-            putString(EXTRA_FRAGMENT_ROUTE_ID, fragmentId)
+            writeRouteData(this, page)
             putBoolean(InlayFlutterFragment.ARG_USE_BACK_DISPATCHER, true)
         }
         return fragment
@@ -526,8 +534,6 @@ object InlayNavigator {
     ): InlayFlutterFragment {
         init(context, prewarm = isPrewarmEnabled)
         val initialRoute = encodePageSettings(page)
-        val fragmentId = java.util.UUID.randomUUID().toString()
-        pendingRouteData[fragmentId] = page
         val fragment = FlutterFragment.NewEngineInGroupFragmentBuilder(
             InlayFlutterFragment::class.java,
             ENGINE_GROUP_ID
@@ -535,8 +541,8 @@ object InlayNavigator {
             .dartEntrypoint(dartEntrypoint)
             .initialRoute(initialRoute)
             .build<InlayFlutterFragment>()
-        val args = fragment.arguments ?: android.os.Bundle().also { fragment.arguments = it }
-        args.putString(EXTRA_FRAGMENT_ROUTE_ID, fragmentId)
+        val args = fragment.arguments ?: Bundle().also { fragment.arguments = it }
+        writeRouteData(args, page)
         if (useBackDispatcher) {
             args.putBoolean(InlayFlutterFragment.ARG_USE_BACK_DISPATCHER, true)
         }
@@ -562,48 +568,64 @@ object InlayNavigator {
         return intent
     }
 
-    // ── Route data serialization (Intent extras) ──────────────────────────
+    // ── Route data serialization (Intent extras / Fragment arguments) ─────
 
-    private const val EXTRA_FRAGMENT_ROUTE_ID = "inlay_fragment_route_id"
     internal const val EXTRA_RESULT_ID = "inlay_result_id"
     private const val EXTRA_ROUTE_ID = "inlay_route_id"
     private const val EXTRA_ROUTE_PATH = "inlay_route_path"
     private const val EXTRA_ROUTE_PARAMS = "inlay_route_params"
     private const val EXTRA_ROUTE_FINGERPRINT = "inlay_route_fingerprint"
 
+    /**
+     * Writes [page] into [bundle] in a process-death-safe encoding.
+     *
+     * Route data lives in framework-persisted state (Intent extras or
+     * Fragment arguments), never in an in-memory map: a container restored
+     * after process death must still recover its full typed route in
+     * `configureFlutterEngine`, otherwise `getInitialRouteData()` returns
+     * `null` and non-path parameters are lost. [PageSettings.params] is
+     * pigeon-encoded so the typed positional list round-trips intact.
+     */
+    private fun writeRouteData(bundle: Bundle, page: PageSettings) {
+        bundle.putString(EXTRA_ROUTE_ID, page.routeId)
+        page.path?.let { bundle.putString(EXTRA_ROUTE_PATH, it) }
+        page.schemaFingerprint?.let { bundle.putString(EXTRA_ROUTE_FINGERPRINT, it) }
+        encodeRouteParams(page.params)?.let { bundle.putByteArray(EXTRA_ROUTE_PARAMS, it) }
+    }
+
+    /** Reads what [writeRouteData] stored, or `null` when [bundle] has no route. */
+    internal fun readRouteData(bundle: Bundle?): PageSettings? {
+        if (bundle == null) return null
+        val routeId = bundle.getString(EXTRA_ROUTE_ID) ?: return null
+        return PageSettings(
+            routeId,
+            decodeRouteParams(bundle.getByteArray(EXTRA_ROUTE_PARAMS)),
+            bundle.getString(EXTRA_ROUTE_PATH),
+            bundle.getString(EXTRA_ROUTE_FINGERPRINT),
+        )
+    }
+
     private fun putRouteDataExtra(intent: Intent, page: PageSettings) {
-        intent.putExtra(EXTRA_ROUTE_ID, page.routeId)
-        page.path?.let { intent.putExtra(EXTRA_ROUTE_PATH, it) }
-        page.schemaFingerprint?.let { intent.putExtra(EXTRA_ROUTE_FINGERPRINT, it) }
-        page.params?.let { params ->
-            val buffer = StandardMessageCodec.INSTANCE.encodeMessage(params)
-            if (buffer != null) {
-                intent.putExtra(EXTRA_ROUTE_PARAMS, bufferToByteArray(buffer))
-            }
-        }
+        intent.putExtras(Bundle().apply { writeRouteData(this, page) })
     }
 
-    internal fun extractRouteDataFromIntent(intent: Intent): PageSettings? {
-        val routeId = intent.getStringExtra(EXTRA_ROUTE_ID) ?: return null
-        val path = intent.getStringExtra(EXTRA_ROUTE_PATH)
-        val fingerprint = intent.getStringExtra(EXTRA_ROUTE_FINGERPRINT)
-        val paramsBytes = intent.getByteArrayExtra(EXTRA_ROUTE_PARAMS)
-        val params = paramsBytes?.let {
-            StandardMessageCodec.INSTANCE.decodeMessage(ByteBuffer.wrap(it))
-        }
-        return PageSettings(routeId, params, path, fingerprint)
-    }
+    internal fun extractRouteDataFromIntent(intent: Intent): PageSettings? =
+        readRouteData(intent.extras)
 
-    internal fun consumePendingRouteData(fragmentId: String?): PageSettings? {
-        if (fragmentId == null) return null
-        return pendingRouteData.remove(fragmentId)
-    }
-
-    private fun bufferToByteArray(buffer: ByteBuffer): ByteArray {
+    /** Pigeon-encodes [params] (`StandardMessageCodec`); `null` stays `null`. */
+    internal fun encodeRouteParams(params: Any?): ByteArray? {
+        if (params == null) return null
+        val buffer = StandardMessageCodec.INSTANCE.encodeMessage(params) ?: return null
         buffer.flip()
         val bytes = ByteArray(buffer.remaining())
         buffer.get(bytes)
         return bytes
+    }
+
+    /** Inverse of [encodeRouteParams]. */
+    internal fun decodeRouteParams(bytes: ByteArray?): Any? {
+        if (bytes == null) return null
+        return StandardMessageCodec.INSTANCE.decodeMessage(ByteBuffer.wrap(bytes))
     }
 
     // ── Engine configuration (called by InlayFlutterActivity / Fragment) ─
@@ -668,13 +690,8 @@ object InlayNavigator {
                     callback(Result.success(null))
                     return
                 }
-                val dialogFragment = createDialogFragment(activity, page)
-                val dialogId = dialogFragment.arguments
-                    ?.getString(InlayFlutterDialogFragment.EXTRA_DIALOG_ROUTE_ID)
-                if (dialogId != null) {
-                    registerResultCallback(dialogId) { callback(Result.success(it)) }
-                } else {
-                    callback(Result.success(null))
+                val dialogFragment = createDialogFragment(activity, page) {
+                    callback(Result.success(it))
                 }
                 dialogFragment.show(fragmentActivity.supportFragmentManager, page.routeId)
             }

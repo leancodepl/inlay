@@ -1,7 +1,7 @@
 /// Code generator for inlay Flutter projects.
 ///
 /// This package provides:
-/// - CLI tool for generating Dart/Kotlin/Swift code from schema files
+/// - CLI tool for generating Dart/Kotlin/Java/Swift code from schema files
 /// - build_runner integration via `InlayBuilder`
 library;
 

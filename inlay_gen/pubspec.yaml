@@ -2,7 +2,7 @@ name: inlay_gen
 description: >
   Code generator for the inlay add-to-app framework - produces type-safe route
   and store classes for Dart, Kotlin, and Swift from annotated schemas.
-version: 0.1.1
+version: 0.2.0
 repository: https://github.com/leancodepl/inlay
 issue_tracker: https://github.com/leancodepl/inlay/issues
 topics:

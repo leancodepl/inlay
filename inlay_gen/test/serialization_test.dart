@@ -1,3 +1,5 @@
+import 'package:inlay_gen/src/generators/dart/dart_routes_generator.dart';
+import 'package:inlay_gen/src/generators/kotlin/kotlin_routes_generator.dart';
 import 'package:inlay_gen/src/generators/kotlin/kotlin_serialization.dart';
 import 'package:inlay_gen/src/generators/swift/swift_routes_generator.dart';
 import 'package:inlay_gen/src/models/route_definition.dart';
@@ -86,6 +88,68 @@ void main() {
     });
   });
 
+  group('Dart routes', () {
+    test('parameterless routes produce a single statement terminator', () {
+      final output = generateDartRoutes(
+        schema: const Schema(
+          flutterRoutes: [
+            RouteDefinition(
+              className: 'SettingsPage',
+              routeType: RouteType.flutter,
+              routeName: '/settings',
+              path: '/settings',
+              fields: [],
+            ),
+          ],
+        ),
+        typeGraph: {},
+        schemaFingerprint: 'testfp',
+      );
+
+      // Regression: the empty-fields encode already ended with `;`, so the
+      // generated file contained `;;` and did not parse.
+      expect(output, contains('List<Object?> encode() => <Object?>[];'));
+      expect(output, isNot(contains(';;')));
+    });
+
+    test('generated Dart is exempt from dart format', () {
+      final output = generateDartRoutes(
+        schema: const Schema(),
+        typeGraph: {},
+        schemaFingerprint: 'testfp',
+      );
+
+      expect(output, startsWith('// dart format off\n'));
+    });
+  });
+
+  group('Kotlin routes', () {
+    test(
+      'parameterless routes are plain classes (data classes need a field)',
+      () {
+        final output = generateKotlinRoutes(
+          schema: const Schema(
+            flutterRoutes: [
+              RouteDefinition(
+                className: 'SettingsPage',
+                routeType: RouteType.flutter,
+                routeName: '/settings',
+                path: '/settings',
+                fields: [],
+              ),
+            ],
+          ),
+          typeGraph: {},
+          packageName: 'com.example',
+          schemaFingerprint: 'testfp',
+        );
+
+        expect(output, contains('class SettingsPage() : FlutterRoute {'));
+        expect(output, isNot(contains('data class SettingsPage')));
+      },
+    );
+  });
+
   group('Swift route encoding', () {
     Schema schemaWithRoute() => const Schema(
       flutterRoutes: [
@@ -109,6 +173,46 @@ void main() {
         ),
       ],
     );
+
+    test('parameterless routes produce an empty dictionary literal', () {
+      final output = generateSwiftRoutes(
+        schema: const Schema(
+          flutterRoutes: [
+            RouteDefinition(
+              className: 'SettingsPage',
+              routeType: RouteType.flutter,
+              routeName: '/settings',
+              path: '/settings',
+              fields: [],
+            ),
+          ],
+        ),
+        typeGraph: {},
+        schemaFingerprint: 'testfp',
+      );
+
+      // Regression: `[` + `]` is an empty *array* literal, which does not
+      // compile as `[String: String]`.
+      expect(
+        output,
+        contains('func toDict() -> [String: String] {\n        [:]\n    }'),
+      );
+    });
+
+    test('optional fields get an init with nil defaults', () {
+      final output = generateSwiftRoutes(
+        schema: schemaWithRoute(),
+        typeGraph: {},
+        schemaFingerprint: 'testfp',
+      );
+
+      // The synthesized memberwise init would force callers to pass `note:`.
+      expect(
+        output,
+        contains('        name: String,\n        note: String? = nil\n    ) {'),
+      );
+      expect(output, contains('        self.note = note'));
+    });
 
     test('uses the cross-platform character set, not urlQueryAllowed', () {
       final output = generateSwiftRoutes(

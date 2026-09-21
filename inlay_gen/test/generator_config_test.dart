@@ -48,6 +48,47 @@ swift:
       expect(parseYamlConfig('- a\n- b').routes, isNull);
     });
 
+    test('java section is optional and parsed like kotlin', () {
+      final config = parseYamlConfig('''
+routes: lib/inlay/routes.dart
+
+java:
+  output: android/src/main/java/com/example/generated/
+  package: com.example.app.generated
+''');
+
+      expect(config.javaOutput, 'android/src/main/java/com/example/generated/');
+      expect(config.javaPackage, 'com.example.app.generated');
+      expect(
+        parseYamlConfig('routes: lib/inlay/routes.dart').javaOutput,
+        isNull,
+      );
+    });
+
+    test('header accepts a list of lines or one multi-line string', () {
+      final config = parseYamlConfig('''
+java:
+  output: android/generated/
+  package: com.example
+  header:
+    - "CHECKSTYLE.OFF: LineLength"
+    - "CHECKSTYLE.OFF: MagicNumber"
+swift:
+  output: ios/Generated/
+  header: |
+    swiftlint:disable all
+    a second line
+''');
+
+      expect(config.javaHeader, [
+        'CHECKSTYLE.OFF: LineLength',
+        'CHECKSTYLE.OFF: MagicNumber',
+      ]);
+      expect(config.swiftHeader, ['swiftlint:disable all', 'a second line']);
+      expect(config.dartHeader, isNull);
+      expect(config.kotlinHeader, isNull);
+    });
+
     test('kotlin section without package leaves package null', () {
       final config = parseYamlConfig('''
 kotlin:

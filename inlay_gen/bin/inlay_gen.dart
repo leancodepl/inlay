@@ -37,6 +37,8 @@ void main(List<String> arguments) {
       dartOutput: results['dart-output'] as String?,
       kotlinOutput: results['kotlin-output'] as String?,
       kotlinPackage: results['kotlin-package'] as String?,
+      javaOutput: results['java-output'] as String?,
+      javaPackage: results['java-package'] as String?,
       swiftOutput: results['swift-output'] as String?,
     );
 
@@ -96,6 +98,19 @@ ArgParser buildArgParser() {
       valueHelp: 'com.example.app.generated',
     )
     ..addOption(
+      'java-output',
+      abbr: 'j',
+      help:
+          'Directory where generated Java files will be written '
+          '(for hosts written in Java instead of Kotlin).',
+      valueHelp: 'android/src/main/java/...',
+    )
+    ..addOption(
+      'java-package',
+      help: 'Java package name for generated files.',
+      valueHelp: 'com.example.app.generated',
+    )
+    ..addOption(
       'swift-output',
       abbr: 's',
       help: 'Directory where generated Swift files will be written.',
@@ -113,7 +128,7 @@ void printUsage(ArgParser parser) {
   stdout
     ..writeln('Usage: inlay_gen [options]\n')
     ..writeln(
-      'Generates Dart, Kotlin, and Swift code from inlay schema files.\n',
+      'Generates Dart, Kotlin, Java, and Swift code from inlay schema files.\n',
     )
     ..writeln('Options:')
     ..writeln(parser.usage)
@@ -131,8 +146,17 @@ void printUsage(ArgParser parser) {
     ..writeln('      output: android/src/main/kotlin/com/example/generated/')
     ..writeln('      package: com.example.app.generated')
     ..writeln()
+    ..writeln('    java:  # optional, for Java hosts')
+    ..writeln('      output: android/src/main/java/com/example/generated/')
+    ..writeln('      package: com.example.app.generated')
+    ..writeln()
     ..writeln('    swift:')
     ..writeln('      output: ios/Classes/Generated/')
+    ..writeln()
+    ..writeln(
+      '  Every language section also accepts `header:` - a list of comment',
+    )
+    ..writeln('  lines that open each generated file (e.g. lint suppressions).')
     ..writeln()
     ..writeln('CLI arguments override values from the config file.');
 }

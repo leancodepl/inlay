@@ -17,12 +17,12 @@ A few Flutter concepts referenced in this guide:
 - **Flutter route** - A screen rendered by Flutter. Navigating to it from native code creates a new engine inside a native container (Activity / ViewController). Navigating to it from within Flutter uses the existing engine's navigation stack.
 - **Flutter dialog route** - A dialog, bottom sheet, or action sheet rendered by Flutter over a native screen. The native side opens a transparent container so the underlying screen stays visible. Flutter renders the overlay content (barrier, animation, positioning). Uses the same engine-per-container model as regular routes.
 - **Native route** - A screen rendered by the native platform. Flutter can request navigation to it, and the native side decides how to present it.
-- **`InlayNavigator`** - The singleton that orchestrates all cross-boundary navigation. Accessed as `InlayNavigator.instance` (Dart), `InlayNavigator.shared` (iOS), or the `InlayNavigator` object (Android).
+- **`InlayNavigator`** - The singleton that orchestrates all cross-boundary navigation. Accessed as `InlayNavigator.instance` (Dart), `InlayNavigator.shared` (iOS), or the `InlayNavigator` object (Android; `InlayNavigator.INSTANCE` from Java).
 - **`PageSettings`** - A data class that carries a `routeId`, optional `params`, and optional `path` across the platform boundary. Generated route classes create this for you - you rarely touch it directly.
 
 ## Defining Routes
 
-Routes are defined as plain Dart classes with annotations. Running the code generator produces type-safe route classes for **Dart, Swift, and Kotlin** so every platform gets compile-time safety.
+Routes are defined as plain Dart classes with annotations. Running the code generator produces type-safe route classes for **Dart, Swift, and Kotlin** so every platform gets compile-time safety. Android hosts written in Java can additionally request **Java** classes (see [inlay_gen](../inlay_gen/README.md#configuration-inlayyaml)); they follow the Kotlin shape one-to-one.
 
 ### Flutter Routes
 
@@ -169,6 +169,40 @@ InlayFlutterScreen(route = ContactDetailsPage(contactId = "abc-123"))
 
 Projects that don't use Compose should depend only on `inlay` - no Compose dependencies end up on the classpath. Use `InlayNavigator.push(...)` or `InlayNavigator.createFragment(...)` directly in that case.
 
+### From Android (Java)
+
+Add a `java:` section to `inlay.yaml` and the generator emits the route classes as plain Java
+(final classes with a constructor, getters, `equals`/`hashCode`, one file per class). The
+navigation API is the same Kotlin `InlayNavigator` object, reached as `InlayNavigator.INSTANCE`;
+result callbacks are Kotlin `Function1` lambdas, so they return `Unit.INSTANCE`:
+
+```java
+// Start a new Activity
+InlayNavigator.INSTANCE.push(context, new ContactDetailsPage("abc-123", null));
+
+// Typed result back from a Flutter screen (count: Long, null when dismissed)
+InlayNavigator.INSTANCE.push(context, new CounterPage(null), count -> {
+    // ...
+    return Unit.INSTANCE;
+});
+
+// Flutter dialog over the current Activity, with a typed result
+InlayNavigator.INSTANCE.presentDialog(activity, new ConfirmDeleteDialog("42"), confirmed -> {
+    // ...
+    return Unit.INSTANCE;
+});
+
+// Or embed a Fragment in an existing Activity
+Fragment fragment = InlayNavigator.INSTANCE.createFragment(
+    context, new ContactDetailsPage("abc-123", null)
+);
+```
+
+The generated Java classes implement the same `FlutterRoute` / `FlutterRouteWithResult<R>`
+contracts as the Kotlin ones, so the typed overloads deliver already-decoded results. The
+example's [`JavaHostActivity`](../example/example_android/app/src/main/java/co/leancode/inlay/example/android/JavaHostActivity.java)
+exercises all of this.
+
 #### Host Activity forwarding
 
 `InlayFlutterFragment` extends Flutter's `FlutterFragment`, which requires the host Activity to forward seven callbacks - without them deep links, back handling, user-leave events, and memory trimming don't reach Flutter. This applies to any Activity that hosts an `InlayFlutterFragment` directly, via `InlayFlutterScreen` from the `inlay_compose` plugin, or via `InlayFlutterDialogFragment`.
@@ -308,6 +342,26 @@ InlayNavigator.setNativeRouteHandler(object : NativeRouteHandler() {
     )
   }
 })
+```
+
+With the Java output the generated `NativeRouteHandler` is an abstract Java class; routes
+declaring `result:` get a `java.util.function.Consumer<R>` completion to invoke:
+
+```java
+InlayNavigator.INSTANCE.setNativeRouteHandler(new NativeRouteHandler() {
+    @Override
+    public void onNativeEditProfile(NativeEditProfilePage page, Context context) {
+        context.startActivity(
+            new Intent(context, EditProfileActivity.class)
+                .putExtra("contactId", page.getContactId()));
+    }
+
+    @Override
+    public void onNativeAbout(NativeAboutPage page, Context context, Consumer<String> completion) {
+        // ... later, exactly once:
+        completion.accept(feedback);
+    }
+});
 ```
 
 ## Flutter Router Integration
@@ -646,6 +700,30 @@ InlayNavigator.init(applicationContext) // prewarm = true by default
 InlayNavigator.setNativeRouteHandler(MyNativeRouteHandler())
 ```
 
+```java
+// Java
+InlayNavigator.INSTANCE.init(getApplicationContext());
+InlayNavigator.INSTANCE.setNativeRouteHandler(new MyNativeRouteHandler());
+```
+
+#### Lazy initialization and process death (Android)
+
+`init()` does not have to run in `Application.onCreate` - every navigation call initializes
+inlay on demand, so an app can defer it (e.g. until after login). Two things make this safe
+when Android kills the process while a Flutter container is open and later restores it:
+
+- `InlayFlutterActivity` and `InlayFlutterFragment` call `InlayNavigator.ensureInitialized`
+  before the Flutter embedding resolves the cached engine group, so the restored container finds
+  the group instead of crashing with `IllegalStateException`. Only a host that builds its own
+  `FlutterFragment` subclass on inlay's engine group needs to call it itself - from the
+  Activity's `onCreate`, **before** `super.onCreate`.
+- The typed route travels in the Intent extras (Activities) or the Fragment arguments
+  (fragments, dialogs), never in an in-memory map, so `getInitialRouteData()` still returns the
+  full route - non-path parameters included - after a restore.
+
+Result callbacks (`onResult`) are the exception: like Activity result callbacks they live in
+process memory and are not restored.
+
 ### Plugin Registration (`setOnEngineCreated`)
 
 Flutter plugins register **per engine**. On Android the Flutter embedding invokes
@@ -680,17 +758,18 @@ The result type joins the schema fingerprint. Dismissal without an explicit resu
 so do the declarative wrappers - SwiftUI's `.inlayDialog(onResult:)` and Compose's
 `InlayFlutterScreen`/`InlayFlutterDialog` (`onResult =`). The callbacks are **typed**:
 routes declaring `result:` generate classes implementing `FlutterRouteWithResult<R>` /
-`FlutterDialogRouteWithResult<R>` (Kotlin) or conforming to `FlutterRouteWithResult` /
+`FlutterDialogRouteWithResult<R>` (Kotlin and Java) or conforming to `FlutterRouteWithResult` /
 `FlutterDialogRouteWithResult` (Swift, `ResultValue` associated type), and the generic
 overloads deliver an already-decoded `R?` - no casts, no `decodeResult` at call sites
 (the raw `decodeResult`/`encodeResult` codecs remain for the low-level `PageSettings`
-APIs). The Flutter screen returns via `Route.popWithResult(value)` (full screen) or an
+APIs). From Java the callback is a `Function1` lambda returning `Unit.INSTANCE`. The Flutter screen returns via `Route.popWithResult(value)` (full screen) or an
 `InlayDialogPage`/`InlayBottomSheetPage`'s `encodeResult:` + `Navigator.pop(context, value)`
 (dialog/sheet).
 
 **Flutter → native / Flutter → Flutter** (Flutter awaits): the generated route class exposes
 `Future<R?> pushForResult()`. On the native side, the generated `NativeRouteHandler` method for
-a result-typed route gains a `completion: (R) -> Unit/Void` the developer invokes.
+a result-typed route gains a `completion: (R) -> Unit/Void` (Kotlin/Swift) or a
+`Consumer<R>` (Java) the developer invokes.
 
 Transport: `InlayNavigatorHostApi` gained `@async pushForResult` / `presentDialogForResult` /
 `pushNativeRouteForResult`, and `pop(result)` carries the value back. Per-container result
@@ -703,7 +782,7 @@ The generated Dart compiles into the module and the generated Kotlin/Swift compi
 hosts, so the two binaries can be built from different schema revisions. Serialization is
 positional, which turns such drift into silent corruption or crashes. `inlay_gen` therefore
 emits a stable **schema fingerprint** into every language's output (Dart:
-`inlaySchemaFingerprint`, Kotlin: `InlaySchema.FINGERPRINT`, Swift: `InlaySchema.fingerprint`)
+`inlaySchemaFingerprint`, Kotlin and Java: `InlaySchema.FINGERPRINT`, Swift: `InlaySchema.fingerprint`)
 and wires the check into the generated code itself - no app code involved:
 
 - Every generated `toPageSettings()` embeds the sender's fingerprint into `PageSettings`
@@ -714,8 +793,8 @@ and wires the check into the generated code itself - no app code involved:
   `fetchInitialRoute` deliberately rethrows it (unlike other decode errors), so the
   engine fails loudly instead of falling back to a path-only render.
 - Flutter → native: the generated `NativeRouteHandler` verifies before dispatching
-  (`IllegalStateException` on Android - surfaced to the Dart caller as a
-  `PlatformException` - and `fatalError` on iOS).
+  (`IllegalStateException` on Android, in both the Kotlin and the Java output - surfaced to the
+  Dart caller as a `PlatformException` - and `fatalError` on iOS).
 
 A `PageSettings` without a fingerprint (hand-built, or produced by pre-fingerprint
 generated code) skips the check.

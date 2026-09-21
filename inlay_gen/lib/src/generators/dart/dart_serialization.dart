@@ -153,7 +153,8 @@ String generateDartEncodeMethod(
   Map<String, TypeDefinition> typeGraph,
 ) {
   if (fields.isEmpty) {
-    return 'List<Object?> encode() => <Object?>[];';
+    // No trailing `;` - callers append it, like for the multi-line form.
+    return 'List<Object?> encode() => <Object?>[]';
   }
 
   final buffer = StringBuffer()
