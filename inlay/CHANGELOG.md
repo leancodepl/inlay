@@ -1,17 +1,9 @@
 # 0.2.0
 
-- Android: `InlayNavigator.ensureInitialized(context)` re-registers the engine group; called
-  automatically by `InlayFlutterActivity` and `InlayFlutterFragment`, so containers restored after
-  process death no longer crash with `IllegalStateException` when the app initializes inlay lazily
-  instead of in `Application.onCreate`.
-- Android: route data for fragments and dialogs is stored in the fragment arguments instead of an
-  in-memory map, so a container restored after process death still receives its full typed route
-  (non-path parameters included).
-- iOS: the engine is torn down (`destroyContext`) when its container is deallocated, instead of
-  lingering until the last reference to it goes away.
-- iOS: `Package.swift` declares the `FlutterFramework` dependency explicitly, like the Flutter
-  plugin template, so `flutter build swift-package` no longer injects it with
-  `swift package add-dependency` - which fails on SwiftPM versions that validate the path.
+- Android: fixed a crash when a Flutter screen is restored after the app process is killed.
+- Android: fragments and dialogs now keep their full route data across process death.
+- iOS: the engine is now destroyed as soon as its screen goes away.
+- iOS: fixed `flutter build swift-package` failing on newer SwiftPM versions.
 
 # 0.1.1
 
