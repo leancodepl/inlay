@@ -2,7 +2,7 @@ name: inlay
 description: >
   Embed Flutter in native iOS and Android apps with type-safe navigation and
   key-value storage synced in real time across engines and native code.
-version: 0.1.1
+version: 0.2.0
 repository: https://github.com/leancodepl/inlay
 issue_tracker: https://github.com/leancodepl/inlay/issues
 topics:

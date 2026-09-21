@@ -2,7 +2,7 @@ name: inlay_compose
 description: >
   Optional Jetpack Compose integration for the inlay framework - embed inlay
   Flutter screens directly into Compose navigation graphs. Android-only.
-version: 0.1.1
+version: 0.2.0
 repository: https://github.com/leancodepl/inlay
 issue_tracker: https://github.com/leancodepl/inlay/issues
 topics:
@@ -20,7 +20,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  inlay: ^0.1.1
+  inlay: ^0.2.0
 
 dev_dependencies:
   flutter_test:

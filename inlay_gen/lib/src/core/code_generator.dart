@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:inlay_gen/src/core/generation_result.dart';
 import 'package:inlay_gen/src/generators/dart/dart_routes_generator.dart';
 import 'package:inlay_gen/src/generators/dart/dart_store_generator.dart';
+import 'package:inlay_gen/src/generators/java/java_routes_generator.dart';
 import 'package:inlay_gen/src/generators/kotlin/kotlin_routes_generator.dart';
 import 'package:inlay_gen/src/generators/kotlin/kotlin_store_generator.dart';
 import 'package:inlay_gen/src/generators/swift/swift_routes_generator.dart';
@@ -61,6 +62,11 @@ class CodeGenerator {
     required Schema schema,
     required Map<String, TypeDefinition> typeGraph,
     String? kotlinPackage,
+    String? javaPackage,
+    List<String> dartHeader = const [],
+    List<String> kotlinHeader = const [],
+    List<String> javaHeader = const [],
+    List<String> swiftHeader = const [],
   }) {
     // Split types: route-referenced types go to routes file,
     // store-only types go to stores file.
@@ -103,6 +109,7 @@ class CodeGenerator {
               schema: routeSchema,
               typeGraph: typeGraph,
               schemaFingerprint: fingerprint,
+              header: dartHeader,
             )
           : null,
       dartStoresCode: hasStores
@@ -110,6 +117,7 @@ class CodeGenerator {
               schema: storeSchema,
               typeGraph: typeGraph,
               schemaFingerprint: storesFingerprint,
+              header: dartHeader,
             )
           : null,
       kotlinRoutesCode: hasRoutes && kotlinPackage != null
@@ -118,6 +126,7 @@ class CodeGenerator {
               typeGraph: typeGraph,
               packageName: kotlinPackage,
               schemaFingerprint: fingerprint,
+              header: kotlinHeader,
             )
           : null,
       kotlinStoresCode: hasStores && kotlinPackage != null
@@ -126,6 +135,16 @@ class CodeGenerator {
               typeGraph: typeGraph,
               packageName: kotlinPackage,
               schemaFingerprint: storesFingerprint,
+              header: kotlinHeader,
+            )
+          : null,
+      javaRoutesCode: hasRoutes && javaPackage != null
+          ? generateJavaRoutes(
+              schema: routeSchema,
+              typeGraph: typeGraph,
+              packageName: javaPackage,
+              schemaFingerprint: fingerprint,
+              header: javaHeader,
             )
           : null,
       swiftRoutesCode: hasRoutes
@@ -133,6 +152,7 @@ class CodeGenerator {
               schema: routeSchema,
               typeGraph: typeGraph,
               schemaFingerprint: fingerprint,
+              header: swiftHeader,
             )
           : null,
       swiftStoresCode: hasStores
@@ -140,6 +160,7 @@ class CodeGenerator {
               schema: storeSchema,
               typeGraph: typeGraph,
               schemaFingerprint: storesFingerprint,
+              header: swiftHeader,
             )
           : null,
     );
@@ -150,6 +171,7 @@ class CodeGenerator {
     String source, {
     String? path,
     String? kotlinPackage,
+    String? javaPackage,
   }) {
     final parseResult = parseAndValidate(source, path: path);
 
@@ -161,6 +183,7 @@ class CodeGenerator {
           schema: schema,
           typeGraph: resolution.typeGraph,
           kotlinPackage: kotlinPackage,
+          javaPackage: javaPackage,
         );
         return (result, const []);
     }
@@ -173,6 +196,8 @@ class NativeOutputConfig {
   const NativeOutputConfig({
     this.kotlinOutput,
     this.kotlinPackage,
+    this.javaOutput,
+    this.javaPackage,
     this.swiftOutput,
   });
 
@@ -182,20 +207,33 @@ class NativeOutputConfig {
   /// The Kotlin package name for generated files.
   final String? kotlinPackage;
 
+  /// The output directory for Java files.
+  final String? javaOutput;
+
+  /// The Java package name for generated files.
+  final String? javaPackage;
+
   /// The output directory for Swift files.
   final String? swiftOutput;
 
   /// Whether Kotlin generation is configured.
   bool get hasKotlinConfig => kotlinOutput != null && kotlinPackage != null;
 
+  /// Whether Java generation is configured.
+  bool get hasJavaConfig => javaOutput != null && javaPackage != null;
+
   /// Whether Swift generation is configured.
   bool get hasSwiftConfig => swiftOutput != null;
 }
 
-/// Writes native (Kotlin/Swift) files to disk.
+/// Writes native (Kotlin/Java/Swift) files to disk.
 ///
 /// This is extracted as a separate function since both CLI and build_runner
 /// need to write native files (build_runner only manages Dart output).
+///
+/// Java output is one file per class, so generated files that are no longer
+/// produced (e.g. a removed route) are deleted from the Java directory -
+/// only files carrying the inlay_gen header, never hand-written ones.
 void writeNativeFiles(
   GenerationResult result,
   NativeOutputConfig config, {
@@ -220,6 +258,36 @@ void writeNativeFiles(
     }
   }
 
+  // Write Java files (one per public class) and drop stale generated ones.
+  if (config.hasJavaConfig) {
+    final javaDir = Directory(config.javaOutput!);
+    final javaFiles = result.javaRoutesCode;
+
+    if (javaFiles != null) {
+      for (final MapEntry(key: fileName, value: content) in javaFiles.entries) {
+        final file = File(p.join(javaDir.path, fileName));
+        file.parent.createSync(recursive: true);
+        file.writeAsStringSync(content);
+        onFileWritten?.call(file.path);
+      }
+    }
+
+    if (javaDir.existsSync()) {
+      for (final entity in javaDir.listSync()) {
+        if (entity is! File || !entity.path.endsWith('.java')) {
+          continue;
+        }
+        if (javaFiles?.containsKey(p.basename(entity.path)) ?? false) {
+          continue;
+        }
+        if (_isGeneratedJavaFile(entity)) {
+          entity.deleteSync();
+          onFileWritten?.call('${entity.path} (removed - no longer generated)');
+        }
+      }
+    }
+  }
+
   // Write Swift files.
   if (config.hasSwiftConfig) {
     final swiftDir = config.swiftOutput!;
@@ -237,5 +305,25 @@ void writeNativeFiles(
       file.writeAsStringSync(result.swiftStoresCode!);
       onFileWritten?.call(file.path);
     }
+  }
+}
+
+/// Whether [file] opens with the banner every generated Java file carries.
+///
+/// The banner may sit below the user-configured `header:` comment lines, so
+/// the leading comment block is scanned; the first non-comment line ends it.
+bool _isGeneratedJavaFile(File file) {
+  try {
+    for (final line in file.readAsLinesSync()) {
+      if (line.contains('Generated by inlay_gen')) {
+        return true;
+      }
+      if (line.trim().isNotEmpty && !line.trimLeft().startsWith('//')) {
+        return false;
+      }
+    }
+    return false;
+  } on FileSystemException {
+    return false;
   }
 }

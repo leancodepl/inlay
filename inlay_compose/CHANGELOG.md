@@ -1,3 +1,7 @@
+# 0.2.0
+
+- Version bump to stay in lockstep with `inlay` 0.2.0; no changes
+
 # 0.1.1
 
 - Documentation and example improvements

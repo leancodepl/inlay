@@ -49,17 +49,17 @@ class InlayFlutterDialogFragment : DialogFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         if (savedInstanceState == null) {
-            val routeId = arguments?.getString(EXTRA_DIALOG_ROUTE_ID)
-            val routeData = InlayNavigator.consumePendingRouteData(routeId)
-                ?: return
+            // Route data lives in this fragment's arguments (see
+            // InlayNavigator.createDialogFragment).
+            val routeData = InlayNavigator.readRouteData(arguments) ?: return
             val fragment = InlayNavigator.createDialogFlutterFragment(
                 requireContext(),
                 routeData,
             )
             // The result callback (if any) is registered under this dialog's
-            // id; the child fragment's engine delivers pop(result) to it.
-            fragment.arguments = (fragment.arguments ?: Bundle()).apply {
-                putString(InlayNavigator.EXTRA_RESULT_ID, routeId)
+            // result id; the child fragment's engine delivers pop(result) to it.
+            arguments?.getString(InlayNavigator.EXTRA_RESULT_ID)?.let {
+                fragment.requireArguments().putString(InlayNavigator.EXTRA_RESULT_ID, it)
             }
             // Dismiss the DialogFragment directly instead of going through
             // onBackPressedDispatcher, which would re-enter the FlutterFragment's
@@ -75,7 +75,7 @@ class InlayFlutterDialogFragment : DialogFragment() {
         // Dismissed without an explicit result (barrier tap, back) - the
         // caller still gets its callback, with null. deliverResult is
         // exactly-once, so this is a no-op after pop(result).
-        InlayNavigator.deliverResult(arguments?.getString(EXTRA_DIALOG_ROUTE_ID), null)
+        InlayNavigator.deliverResult(arguments?.getString(InlayNavigator.EXTRA_RESULT_ID), null)
         super.onDestroyView()
     }
 
@@ -93,7 +93,4 @@ class InlayFlutterDialogFragment : DialogFragment() {
         }
     }
 
-    companion object {
-        internal const val EXTRA_DIALOG_ROUTE_ID = "inlay_dialog_route_id"
-    }
 }

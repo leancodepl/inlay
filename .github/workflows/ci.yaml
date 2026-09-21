@@ -98,6 +98,14 @@ jobs:
       - name: Clone repository
         uses: actions/checkout@v4
 
+      # The image's default Xcode (16.4, Swift 6.1) validates the path passed to
+      # `swift package add-dependency`, which `flutter build swift-package` uses
+      # to inject FlutterFramework into plugins that don't declare it themselves
+      # (e.g. package_info_plus) - before that package exists, so the build fails
+      # with "Package path not found". Swift 6.2 (Xcode 26) does not validate.
+      - name: Select Xcode 26
+        run: sudo xcode-select -s /Applications/Xcode_26.1.1.app
+
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
@@ -105,10 +113,11 @@ jobs:
           cache: true
 
       # Generates the gitignored example_module/build/ios/SwiftPackages that
-      # example_ios/project.yml references as a local Swift package.
+      # example_ios/project.yml references as a local Swift package. The runner
+      # has no signing identity, and the host build below disables signing too.
       - name: Build Flutter module as Swift package
         working-directory: example/example_module
-        run: flutter build swift-package --platform ios
+        run: flutter build swift-package --platform ios --no-codesign
 
       - name: Build example_ios
         working-directory: example/example_ios

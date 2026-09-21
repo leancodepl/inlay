@@ -209,7 +209,7 @@ class SoundsNotificationsScreen extends StatelessWidget {
 
 Native code accesses the same storage through a `NativeStorageScope`. You create a scope, read/write values, and optionally observe changes.
 
-The code generator produces typed store wrappers for both Swift and Kotlin. These wrappers provide typed properties and a `containsChanges` helper for observer filtering - no hardcoded key strings needed.
+The code generator produces typed store wrappers for both Swift and Kotlin. These wrappers provide typed properties and a `containsChanges` helper for observer filtering - no hardcoded key strings needed. (The optional Java output covers routes only; a Java host uses the Kotlin store wrappers - Kotlin and Java compile together in one Android module.)
 
 ### iOS (Swift)
 

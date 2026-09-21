@@ -12,7 +12,7 @@ An opinionated Flutter add-to-app framework providing **type-safe navigation** a
 | Package                          | Role                                                                                              |
 | -------------------------------- | ------------------------------------------------------------------------------------------------- |
 | [`inlay`](inlay/)                | Core framework plugin (Dart + Swift + Kotlin) - navigation, storage, appearance                    |
-| [`inlay_gen`](inlay_gen/)        | Code generator - typed route and store classes for Dart, Kotlin, and Swift from annotated schemas |
+| [`inlay_gen`](inlay_gen/)        | Code generator - typed route and store classes for Dart, Kotlin, Swift (and Java routes) from annotated schemas |
 | [`inlay_compose`](inlay_compose/) | Optional Jetpack Compose integration - embed inlay screens and dialogs in Compose apps            |
 
 ## Why
@@ -26,7 +26,7 @@ This framework solves both problems with a code-generation-driven, type-safe app
 
 ## Features
 
-- **Navigation** - Type-safe routing between Native and Flutter screens (in both directions), with code-generated route classes for Dart, Swift, and Kotlin. Screens can return a typed **result** to their caller (declare `result:` on the route).
+- **Navigation** - Type-safe routing between Native and Flutter screens (in both directions), with code-generated route classes for Dart, Swift, and Kotlin (or Java). Screens can return a typed **result** to their caller (declare `result:` on the route).
 - **Shared State** - A key-value storage layer that stays in sync across all Flutter engines and native code. Changes made anywhere are automatically broadcast to all other consumers.
 - **Engine Management** - The framework creates and destroys Flutter engines automatically. You never interact with `FlutterEngineGroup` directly (unless you want to).
 - **Theme & Locale Propagation** - `InlayAppearance` lets the host drive dark mode and an in-app language override across every Flutter engine, live (see [State Management](docs/state.md)).
@@ -58,7 +58,7 @@ class NativeEditProfilePage {
 }
 ```
 
-Run code generation to produce type-safe route classes for **Dart, Swift, and Kotlin**.
+Run code generation to produce type-safe route classes for **Dart, Swift, and Kotlin** (and **Java**, for Android hosts written in Java).
 
 ### 2. Navigate
 
@@ -90,6 +90,12 @@ From **Kotlin** (Android):
 
 ```kotlin
 InlayNavigator.push(context, SoundsNotificationsPage(contactId = "abc-123"))
+```
+
+From **Java** (Android):
+
+```java
+InlayNavigator.INSTANCE.push(context, new SoundsNotificationsPage("abc-123"));
 ```
 
 For Jetpack Compose support add the optional `inlay_compose` plugin alongside `inlay` in your module's `pubspec.yaml`. Projects that don't use Compose depend only on `inlay` - no Compose transitive dependencies. On iOS the module can be embedded through **Swift Package Manager** (Flutter 3.44+) or CocoaPods - `inlay` ships both a `Package.swift` and a podspec. See the [Navigation](docs/navigation.md) guide for details.

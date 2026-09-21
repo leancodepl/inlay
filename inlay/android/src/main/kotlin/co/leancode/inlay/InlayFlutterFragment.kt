@@ -1,5 +1,6 @@
 package co.leancode.inlay
 
+import android.content.Context
 import androidx.activity.ComponentActivity
 import io.flutter.embedding.android.FlutterFragment
 import io.flutter.embedding.engine.FlutterEngine
@@ -37,15 +38,26 @@ class InlayFlutterFragment : FlutterFragment() {
      */
     internal var onPopOverride: (() -> Unit)? = null
 
+    override fun onAttach(context: Context) {
+        // setUpFlutterEngine (inside super.onAttach) resolves the cached engine
+        // group. When the fragment is restored from saved state after process
+        // death the in-memory cache is empty unless the app initialized inlay
+        // in Application.onCreate, so re-register the group first to avoid an
+        // IllegalStateException. Covers every host, including Flutter dialogs
+        // shown over a purely native Activity via presentDialog.
+        InlayNavigator.ensureInitialized(context)
+        super.onAttach(context)
+    }
+
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
 
         val customOnPop = onPopOverride
         val useBackDispatcher =
             arguments?.getBoolean(ARG_USE_BACK_DISPATCHER, false) ?: false
-        val fragmentId = arguments?.getString(EXTRA_FRAGMENT_ROUTE_ID)
         val resultId = arguments?.getString(InlayNavigator.EXTRA_RESULT_ID)
-        val routeData = InlayNavigator.consumePendingRouteData(fragmentId)
+        // Route data is stored in the arguments, so it survives process death.
+        val routeData = InlayNavigator.readRouteData(arguments)
 
         if (customOnPop != null) {
             InlayNavigator.configureEngine(flutterEngine, requireActivity(), onPop = customOnPop, routeData = routeData, resultId = resultId)
@@ -85,6 +97,5 @@ class InlayFlutterFragment : FlutterFragment() {
          * of finishing the hosting Activity.
          */
         internal const val ARG_USE_BACK_DISPATCHER = "inlay_use_back_dispatcher"
-        private const val EXTRA_FRAGMENT_ROUTE_ID = "inlay_fragment_route_id"
     }
 }

@@ -54,6 +54,13 @@ swift:
   output: <module>_native/ios/<module>_native/Sources/<module>_native/Generated/
 ```
 
+If the Android host is written in **Java**, use a `java:` section (same `output` / `package`
+keys, under `src/main/java/`) instead of - or next to - `kotlin:`. It generates the route
+classes as plain Java, one file per class; stores are Kotlin/Swift only. Any language section
+can be omitted, and each accepts an optional `header:` list of comment lines written at the top
+of every generated file - put the project's lint suppressions for generated code there (e.g.
+Checkstyle `CHECKSTYLE.OFF: ...`, `swiftlint:disable all`, Dart `ignore_for_file:`).
+
 Create the schema files: plain Dart classes annotated with `@InlayFlutterRoute('/path/:param')`,
 `@InlayFlutterDialog(...)`, `@InlayNativeRoute()`, `@InlayStore(...)`. They are specs only —
 app code never imports them. See
@@ -72,9 +79,9 @@ integration manifests: `ios/<module>_native/Package.swift` (Swift Package Manage
 `Package.swift` the plugin is built as a CocoaPods xcframework instead of a Swift package. Add
 the plugin to the module's `dependencies` by path.
 
-Then run codegen from the module: `dart run build_runner build` (or
-`dart run inlay_gen:inlay_gen --config inlay.yaml`), followed by `dart format` on the Dart
-output directory — the generator's raw output is not formatter-clean.
+Then run codegen from the module: `dart run build_runner build --delete-conflicting-outputs`
+(or `dart run inlay_gen:inlay_gen --config inlay.yaml`). The generated Dart starts with
+`// dart format off`, so no formatting step is needed and format checks skip it.
 
 ## 3. Module: the Dart entrypoint
 
@@ -108,7 +115,11 @@ reference host: https://github.com/leancodepl/inlay/tree/main/example/example_an
    `implementation(project(":inlay"))`. The generated Kotlin arrives transitively through the
    companion plugin.
 3. `Application.onCreate`: `InlayNavigator.init(applicationContext)` and, if the schema has
-   native routes, `InlayNavigator.setNativeRouteHandler(...)`.
+   native routes, `InlayNavigator.setNativeRouteHandler(...)`. From Java the object is
+   `InlayNavigator.INSTANCE`, and result callbacks are `Function1` lambdas returning
+   `Unit.INSTANCE`. Initialization may also be deferred - every navigation call initializes
+   on demand, and containers restored after process death re-register the engine group
+   themselves.
 4. Any Activity hosting an `InlayFlutterFragment` (including via Compose's
    `InlayFlutterScreen` or dialogs) must forward seven callbacks — extend
    `InlayFlutterHostActivity`, or use `InlayFragmentHostDelegate` from a custom base class:

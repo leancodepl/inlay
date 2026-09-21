@@ -9,5 +9,11 @@ kotlin:
   output: example_module_native/android/src/main/kotlin/co/leancode/example_module/generated/
   package: co.leancode.example_module.generated
 
+# A real project picks Kotlin or Java. The example generates both so the
+# Java output is compiled too - JavaHostActivity in example_android uses it.
+java:
+  output: example_module_native/android/src/main/java/co/leancode/example_module/javagen/
+  package: co.leancode.example_module.javagen
+
 swift:
   output: example_module_native/ios/example_module_native/Sources/example_module_native/Generated/

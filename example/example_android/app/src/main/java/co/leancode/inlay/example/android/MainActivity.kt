@@ -56,6 +56,10 @@ class MainActivity : AppCompatActivity() {
       startActivity(Intent(this, ComposeActivity::class.java))
     }
 
+    findViewById<Button>(R.id.btnJavaHost).setOnClickListener {
+      startActivity(Intent(this, JavaHostActivity::class.java))
+    }
+
     findViewById<Button>(R.id.btnConfirmDialog).setOnClickListener {
       // Native -> Flutter dialog -> typed result back (confirmed: Boolean?).
       InlayNavigator.presentDialog(

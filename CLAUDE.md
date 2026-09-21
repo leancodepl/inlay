@@ -14,7 +14,7 @@ Dart workspace (SDK ^3.11.0) with five packages:
 | ------------------------------------------------ | --------------------------------------------------------------------------------------------------- |
 | `inlay/`                                         | Core framework plugin (Dart + Swift + Kotlin). Navigation, storage, platform channels via Pigeon.   |
 | `inlay_compose/`                                 | Optional Jetpack Compose integration (Android-only) for embedding inlay screens in Compose hosts.   |
-| `inlay_gen/`                                     | Code generator — produces typed route/store classes for Dart, Kotlin, Swift from annotated schemas. |
+| `inlay_gen/`                                     | Code generator — produces typed route/store classes for Dart, Kotlin, Swift (and Java routes) from annotated schemas. |
 | `example/example_module/`                        | Standalone example Flutter module with go_router, auto_route, and sealed-class routing demos.       |
 | `example/example_module/example_module_native/`  | Companion plugin holding the module's generated native code so `flutter build aar` bundles it.      |
 
@@ -27,7 +27,7 @@ Non-workspace directories: `example/example_android/`, `example/example_ios/` (n
 dart pub get
 
 # Code generation (run from example/example_module/)
-dart run build_runner build
+dart run build_runner build --delete-conflicting-outputs
 
 # CLI alternative for code generation
 dart run inlay_gen:inlay_gen --config inlay.yaml
@@ -62,9 +62,9 @@ xcodebuild build -project ExampleApp.xcodeproj -scheme ExampleApp -destination '
 
 1. **Input:** Annotated Dart schema files (`@InlayFlutterRoute`, `@InlayNativeRoute`, `@InlayStore`) — these are specs only, not imported by app code.
 2. **Processing:** `inlay_gen` parses annotations via `analyzer`, produces typed classes.
-3. **Output:** `routes.g.dart`, `stores.g.dart` (Dart) + equivalent Kotlin data classes and Swift structs.
-4. **Config:** `inlay.yaml` in each module specifies schema paths and output directories per language.
-5. **Integration:** Works as both a `build_runner` builder and a standalone CLI.
+3. **Output:** `routes.g.dart`, `stores.g.dart` (Dart) + equivalent Kotlin data classes and Swift structs; optionally Java route classes (one file per class) for Android hosts written in Java.
+4. **Config:** `inlay.yaml` in each module specifies schema paths and output directories per language; every language section is optional.
+5. **Integration:** Works as both a `build_runner` builder and a standalone CLI. The builder writes Dart outputs through the build step and is ordered before `go_router_builder` / `auto_route_generator`, so those can import the generated route classes in the same build.
 
 ### Platform Channels (Pigeon)
 

@@ -1,6 +1,6 @@
 ---
 name: inlay-add-route
-description: Add or change inlay routes, dialogs, and shared stores in a Flutter add-to-app module — edit the annotated Dart schema, regenerate Dart/Kotlin/Swift, and wire both the Flutter and native sides. Use when adding a Flutter screen or dialog reachable from native, a native screen reachable from Flutter, or state shared between native and Flutter, in a project that already uses inlay.
+description: Add or change inlay routes, dialogs, and shared stores in a Flutter add-to-app module — edit the annotated Dart schema, regenerate Dart/Kotlin/Java/Swift, and wire both the Flutter and native sides. Use when adding a Flutter screen or dialog reachable from native, a native screen reachable from Flutter, or state shared between native and Flutter, in a project that already uses inlay.
 ---
 
 # Add an inlay route, dialog, or store
@@ -39,14 +39,15 @@ https://github.com/leancodepl/inlay/blob/main/docs/navigation.md#returning-resul
 From the module root:
 
 ```bash
-dart run build_runner build
+dart run build_runner build --delete-conflicting-outputs
 # or: dart run inlay_gen:inlay_gen --config inlay.yaml
 ```
 
-This rewrites the Dart output **and** the Kotlin/Swift outputs configured in `inlay.yaml`.
-Never edit `*.g.dart` / `*.g.kt` / `*.g.swift` by hand. Run `dart format` on the Dart output
-directory afterwards — the generator's raw output is not formatter-clean, and unformatted
-generated files will fail `dart format --set-exit-if-changed` checks in CI.
+This rewrites the Dart output **and** the Kotlin/Java/Swift outputs configured in `inlay.yaml`
+(the Java output is one file per class; files for removed routes are deleted). Never edit
+`*.g.dart` / `*.g.kt` / `*.g.swift` or the generated `*.java` by hand. The Dart output starts
+with `// dart format off`, so it needs no formatting pass and `dart format --set-exit-if-changed`
+leaves it alone.
 
 ## 3. Wire the Flutter side
 
@@ -71,12 +72,13 @@ generated files will fail `dart format --set-exit-if-changed` checks in CI.
 Do **both** platforms the project has:
 
 - **Flutter route/dialog** — call it where needed: `InlayNavigator.shared.push/present(Dialog)`
-  (Swift), `InlayNavigator.push/presentDialog/createFragment` (Kotlin), `InlayFlutterView` /
+  (Swift), `InlayNavigator.push/presentDialog/createFragment` (Kotlin;
+  `InlayNavigator.INSTANCE.…` from Java), `InlayFlutterView` /
   `.inlayDialog` (SwiftUI), `InlayFlutterScreen` / `InlayFlutterDialog` (Compose, needs
   `inlay_compose`) — https://github.com/leancodepl/inlay/blob/main/docs/navigation.md#navigating
 - **Native route** — the regenerated `NativeRouteHandler` base class gains a typed `on<Name>`
   method; implement it in each host's handler (routes with `result:` also get a `completion`
-  callback to invoke) —
+  callback to invoke - a `Consumer<R>` in the Java output) —
   https://github.com/leancodepl/inlay/blob/main/docs/navigation.md#handling-native-routes-flutter--native
 - **Store** — construct the generated wrapper over a `NativeStorageScope`; observe with
   `startObserving` + `containsChanges` —

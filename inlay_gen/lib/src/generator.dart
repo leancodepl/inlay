@@ -15,6 +15,8 @@ void runGenerator(GeneratorConfig config) {
     ..writeln('Dart output:    ${config.dartOutput ?? '(not specified)'}')
     ..writeln('Kotlin output:  ${config.kotlinOutput ?? '(not specified)'}')
     ..writeln('Kotlin package: ${config.kotlinPackage ?? '(not specified)'}')
+    ..writeln('Java output:    ${config.javaOutput ?? '(not specified)'}')
+    ..writeln('Java package:   ${config.javaPackage ?? '(not specified)'}')
     ..writeln('Swift output:   ${config.swiftOutput ?? '(not specified)'}')
     ..writeln();
 
@@ -71,6 +73,11 @@ void runGenerator(GeneratorConfig config) {
         schema: schema,
         typeGraph: resolution.typeGraph,
         kotlinPackage: config.kotlinPackage,
+        javaPackage: config.javaPackage,
+        dartHeader: config.dartHeader ?? const [],
+        kotlinHeader: config.kotlinHeader ?? const [],
+        javaHeader: config.javaHeader ?? const [],
+        swiftHeader: config.swiftHeader ?? const [],
       );
 
       if (!result.hasContent) {
@@ -85,12 +92,14 @@ void runGenerator(GeneratorConfig config) {
         _writeDartFiles(result, config.dartOutput!);
       }
 
-      // Write native files (Kotlin/Swift).
+      // Write native files (Kotlin/Java/Swift).
       writeNativeFiles(
         result,
         NativeOutputConfig(
           kotlinOutput: config.kotlinOutput,
           kotlinPackage: config.kotlinPackage,
+          javaOutput: config.javaOutput,
+          javaPackage: config.javaPackage,
           swiftOutput: config.swiftOutput,
         ),
         onFileWritten: (path) => stdout.writeln('  $path'),

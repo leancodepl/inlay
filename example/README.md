@@ -6,7 +6,7 @@ This folder contains a standalone showcase for the Inlay framework:
   - go_router
   - auto_route
   - Imperative via sealed class pattern matching (`fetchInitialRoute` / `decodeFlutterRouteData`)
-- `example_android` - Native Android host app (Activity + Fragment + Compose demos)
+- `example_android` - Native Android host app (Activity + Fragment + Compose demos, plus a Java host screen consuming the generated Java routes)
 - `example_ios` - Native iOS host app (UIKit + SwiftUI demos)
 
 Both hosts expose framework-level controls on their native settings screens: switch the routing integration (go_router / auto_route / imperative) at runtime and toggle engine prewarming. End-to-end UI test suites live in `example_ios/UITests` (XCUITest) and `example_android/app/src/androidTest` (UiAutomator).
@@ -15,8 +15,12 @@ Both hosts expose framework-level controls on their native settings screens: swi
 
 ```bash
 cd example/example_module
-dart run build_runner build
+dart run build_runner build --delete-conflicting-outputs
 ```
+
+`inlay.yaml` configures Dart, Kotlin, Swift **and** Java output. A real project picks Kotlin or
+Java for its Android host; the example generates both so that `JavaHostActivity` can exercise
+the Java classes and CI compiles them.
 
 ## Android setup
 

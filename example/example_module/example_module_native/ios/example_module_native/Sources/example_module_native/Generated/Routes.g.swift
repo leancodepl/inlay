@@ -55,6 +55,14 @@ struct GreetingPage: FlutterRoute {
     let name: String
     let style: GreetingStyle?
 
+    init(
+        name: String,
+        style: GreetingStyle? = nil
+    ) {
+        self.name = name
+        self.style = style
+    }
+
     static let routeName = "/greeting/:name"
     static let pathTemplate = "/greeting/:name"
 
@@ -94,6 +102,12 @@ struct GreetingPage: FlutterRoute {
 
 struct CounterPage: FlutterRouteWithResult {
     let seed: Int64?
+
+    init(
+        seed: Int64? = nil
+    ) {
+        self.seed = seed
+    }
 
     static let routeName = "/counter"
     static let pathTemplate = "/counter"
@@ -142,6 +156,14 @@ struct ProfilePage: FlutterRoute {
     let userId: String
     let badges: [UserBadge]?
 
+    init(
+        userId: String,
+        badges: [UserBadge]? = nil
+    ) {
+        self.userId = userId
+        self.badges = badges
+    }
+
     static let routeName = "/profile/:userId"
     static let pathTemplate = "/profile/:userId"
 
@@ -177,6 +199,14 @@ struct ProfilePage: FlutterRoute {
 struct ConfirmActionDialog: FlutterDialogRouteWithResult {
     let action: String
     let message: String?
+
+    init(
+        action: String,
+        message: String? = nil
+    ) {
+        self.action = action
+        self.message = message
+    }
 
     static let routeName = "confirmActionDialog"
     static let pathTemplate = "/confirm-action/:action"
@@ -259,6 +289,12 @@ struct ThemePickerDialog: FlutterDialogRoute {
 
 struct NativeSettingsPage {
     let source: String?
+
+    init(
+        source: String? = nil
+    ) {
+        self.source = source
+    }
 
     static let routeName = "nativeSettings"
 
