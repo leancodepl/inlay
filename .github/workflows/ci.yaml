@@ -113,10 +113,11 @@ jobs:
           cache: true
 
       # Generates the gitignored example_module/build/ios/SwiftPackages that
-      # example_ios/project.yml references as a local Swift package.
+      # example_ios/project.yml references as a local Swift package. The runner
+      # has no signing identity, and the host build below disables signing too.
       - name: Build Flutter module as Swift package
         working-directory: example/example_module
-        run: flutter build swift-package --platform ios
+        run: flutter build swift-package --platform ios --no-codesign
 
       - name: Build example_ios
         working-directory: example/example_ios
