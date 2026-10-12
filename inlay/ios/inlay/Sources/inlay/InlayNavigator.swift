@@ -43,7 +43,7 @@ public protocol NativeRouteHandling: AnyObject {
 /// Navigation from Flutter to native screens:
 /// ```swift
 /// // Set the generated native route handler (e.g. AppDelegate.didFinishLaunching)
-/// InlayNavigator.shared.setNativeRouteHandler(SignalNativeRouteHandler())
+/// InlayNavigator.shared.setNativeRouteHandler(ExampleNativeRouteHandler())
 /// ```
 /// ```dart
 /// // From Flutter:
@@ -449,7 +449,7 @@ public final class InlayNavigator {
     ///
     /// ```swift
     /// // In AppDelegate.didFinishLaunching:
-    /// InlayNavigator.shared.setNativeRouteHandler(SignalNativeRouteHandler())
+    /// InlayNavigator.shared.setNativeRouteHandler(ExampleNativeRouteHandler())
     /// ```
     public func setNativeRouteHandler(_ handler: NativeRouteHandling) {
         nativeRouteHandler = handler

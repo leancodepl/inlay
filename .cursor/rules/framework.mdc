@@ -12,11 +12,11 @@ You are working on a PoC for a Flutter add-to-app framework. The goal is to crea
 
 The framework is following multi-engine approach leveraging FlutterEngineGroup to optimize resource usage. Engine management should be kept hidden from the end user, with escape hatches left if necessary. With multiple engines, state management has to consider working across multiple Dart isolates.
 
-# Signal
+# Example
 
-The repository contains forks of Signal native iOS and Android apps. It is meant to be our benchmark and serve to verify how our framework works with a real, production native mobile app.
+The `example` folder contains a Flutter module (`example/example_module`) and native host apps (`example/example_android`, `example/example_ios`) that exercise the framework end to end. Every new framework feature should get a use case there.
 
-Prefer modifying existing native screens instead of adding new native screens for the PoC sake. Forcing native screens to work with the framework is much better validation of its usability.
+Prefer expanding existing example screens instead of adding new ones. Forcing existing screens to work with the framework is much better validation of its usability.
 
 # Rules
 
