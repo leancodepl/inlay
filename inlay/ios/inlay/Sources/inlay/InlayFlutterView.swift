@@ -37,6 +37,22 @@ import Flutter
 /// }
 /// ```
 ///
+/// ### Typed results
+///
+/// For routes declared with a `result:` type, pass `onResult` to receive
+/// the decoded value the Flutter page pops with:
+///
+/// ```swift
+/// NavigationLink("Open Counter") {
+///     InlayFlutterView(route: CounterPage(seed: nil)) { count in
+///         // count: Int64?
+///     }
+/// }
+/// ```
+///
+/// `onResult` is invoked exactly once - with the decoded result, or `nil`
+/// when the page is dismissed without one (back button, swipe-back gesture).
+///
 /// ### How it works
 ///
 /// Under the hood the view creates an `InlayFlutterViewController` via
@@ -66,6 +82,10 @@ public struct InlayFlutterView: UIViewControllerRepresentable {
     /// (`interactiveContentPopGestureRecognizer`).
     public let enableInteractiveContentPopGestureRecognizer: Bool
 
+    /// Receives the wire-format result the Flutter page pops with, or `nil`
+    /// when it is dismissed without one. Set by the typed-result initializer.
+    let onResult: ((Any?) -> Void)?
+
     /// Convenience initializer that accepts a type-safe `FlutterRoute`.
     public init(
         route: FlutterRoute,
@@ -75,6 +95,25 @@ public struct InlayFlutterView: UIViewControllerRepresentable {
         self.route = route.toPageSettings()
         self.enableNativeNavigationBar = enableNativeNavigationBar
         self.enableInteractiveContentPopGestureRecognizer = enableInteractiveContentPopGestureRecognizer
+        self.onResult = nil
+    }
+
+    /// Initializer for routes that return a typed result.
+    ///
+    /// `onResult` is invoked exactly once - with the decoded result the
+    /// Flutter page pops with, or `nil` when it is dismissed without one.
+    ///
+    /// Equivalent of Android's `InlayFlutterScreen(route, onResult = ...)`.
+    public init<R: FlutterRouteWithResult>(
+        route: R,
+        enableNativeNavigationBar: Bool = false,
+        enableInteractiveContentPopGestureRecognizer: Bool = true,
+        onResult: @escaping (R.ResultValue?) -> Void
+    ) {
+        self.route = route.toPageSettings()
+        self.enableNativeNavigationBar = enableNativeNavigationBar
+        self.enableInteractiveContentPopGestureRecognizer = enableInteractiveContentPopGestureRecognizer
+        self.onResult = { raw in onResult(R.decodeResult(raw)) }
     }
 
     @Environment(\.dismiss) private var dismiss
@@ -103,6 +142,15 @@ public struct InlayFlutterView: UIViewControllerRepresentable {
         let currentDismiss = dismiss
         coordinator.dismiss = { currentDismiss() }
 
+        // Route the result to whatever `onResult` the caller passed most
+        // recently. The coordinator is captured strongly on purpose: a
+        // swipe-back delivers `nil` from the controller's deinit, which can
+        // run after SwiftUI has released the coordinator.
+        coordinator.onResult = onResult
+        if onResult != nil {
+            vc.onResult = { raw in coordinator.onResult?(raw) }
+        }
+
         return vc
     }
 
@@ -114,14 +162,17 @@ public struct InlayFlutterView: UIViewControllerRepresentable {
         // DismissAction on re-renders.
         let currentDismiss = dismiss
         context.coordinator.dismiss = { currentDismiss() }
+        // Keep the result callback fresh too - it can capture new view state.
+        context.coordinator.onResult = onResult
     }
 
     // MARK: - Coordinator
 
-    /// Bridges the SwiftUI `DismissAction` into an escaping closure that the
-    /// `FlutterViewController` can call from any thread.
+    /// Bridges the SwiftUI `DismissAction` and the latest `onResult` into
+    /// escaping closures that the `FlutterViewController` can call.
     public class Coordinator {
         public var dismiss: (() -> Void)?
+        var onResult: ((Any?) -> Void)?
         public init() {}
     }
 }

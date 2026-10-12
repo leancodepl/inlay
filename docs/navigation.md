@@ -138,6 +138,16 @@ NavigationStack {
 }
 ```
 
+For routes with a `result:` type, pass `onResult` to receive the decoded value. It is invoked exactly once - with the result, or `nil` when the page is left without one:
+
+```swift
+NavigationLink("Open Counter") {
+  InlayFlutterView(route: CounterPage(seed: nil)) { count in
+    // count: Int64?
+  }
+}
+```
+
 ### From Android (Kotlin)
 
 ```kotlin
@@ -755,7 +765,8 @@ The result type joins the schema fingerprint. Dismissal without an explicit resu
 `null`, exactly once.
 
 **Native → Flutter** (native awaits): `push`/`presentDialog` take an `onResult` callback;
-so do the declarative wrappers - SwiftUI's `.inlayDialog(onResult:)` and Compose's
+so do the declarative wrappers - SwiftUI's `InlayFlutterView(route:onResult:)` and
+`.inlayDialog(onResult:)`, and Compose's
 `InlayFlutterScreen`/`InlayFlutterDialog` (`onResult =`). The callbacks are **typed**:
 routes declaring `result:` generate classes implementing `FlutterRouteWithResult<R>` /
 `FlutterDialogRouteWithResult<R>` (Kotlin and Java) or conforming to `FlutterRouteWithResult` /

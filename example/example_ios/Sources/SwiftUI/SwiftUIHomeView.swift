@@ -6,6 +6,7 @@ struct SwiftUIHomeView: View {
     @State private var showConfirmDialog = false
     @State private var showThemePickerDialog = false
     @State private var lastDialogResult: String?
+    @State private var lastCounterResult: String?
 
     var body: some View {
         List {
@@ -17,8 +18,11 @@ struct SwiftUIHomeView: View {
             }
 
             NavigationLink("Open Flutter Counter") {
-                InlayFlutterView(route: CounterPage(seed: nil))
-                    .ignoresSafeArea()
+                InlayFlutterView(route: CounterPage(seed: nil)) { count in
+                    // count: Int64?
+                    lastCounterResult = count.map(String.init) ?? "dismissed"
+                }
+                .ignoresSafeArea()
             }
 
             NavigationLink("Open Flutter Profile") {
@@ -41,6 +45,10 @@ struct SwiftUIHomeView: View {
 
             Button("Open Theme Picker Dialog") {
                 showThemePickerDialog = true
+            }
+
+            if let lastCounterResult {
+                Text("Counter screen returned: \(lastCounterResult)")
             }
 
             if let lastDialogResult {

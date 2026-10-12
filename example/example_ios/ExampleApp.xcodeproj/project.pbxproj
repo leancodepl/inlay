@@ -11,6 +11,7 @@
 		1FDF57DA5078164E93BDD91F /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A9D1B1B491BA30E00E520D1 /* AppDelegate.swift */; };
 		2B71B02921C0EA9602E0CCFB /* SwiftUIHomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0B96BB7FC90627C426842BB /* SwiftUIHomeView.swift */; };
 		30C4BD480D28E18747237AD7 /* SwiftUIDialogResultUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6FE18B7D13A560EDFA6C19CE /* SwiftUIDialogResultUITests.swift */; };
+		F713CD1D5BBA0AC7B330C700 /* SwiftUIScreenResultUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FBA5DAA83E65744B43455B6 /* SwiftUIScreenResultUITests.swift */; };
 		4F8C5D0ADCB992F5382A5D22 /* ExampleNativeRouteHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5C2CCE67E236EC20EF842E5 /* ExampleNativeRouteHandler.swift */; };
 		595664053BCE6664FC1CAF65 /* Routes.g.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0981B49DB861CFCBE4A773F8 /* Routes.g.swift */; };
 		70517C00F3A560C557046291 /* NativeSettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40E81C6D4CC0877C3A6AFBF4 /* NativeSettingsViewController.swift */; };
@@ -48,6 +49,7 @@
 		65023B1AF38F51204CF65351 /* Stores.g.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Stores.g.swift; sourceTree = "<group>"; };
 		665753E5DADF8B4D93CEB9FE /* NativeCounterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeCounterView.swift; sourceTree = "<group>"; };
 		6FE18B7D13A560EDFA6C19CE /* SwiftUIDialogResultUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftUIDialogResultUITests.swift; sourceTree = "<group>"; };
+		4FBA5DAA83E65744B43455B6 /* SwiftUIScreenResultUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftUIScreenResultUITests.swift; sourceTree = "<group>"; };
 		721A6F6538C3175D2E37501A /* RootTabBarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootTabBarController.swift; sourceTree = "<group>"; };
 		89A5DE200A73B05655A9CD62 /* PrewarmToggleUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrewarmToggleUITests.swift; sourceTree = "<group>"; };
 		926C3D981D8F7AB7B3F2E007 /* ExampleApp.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = ExampleApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -206,6 +208,7 @@
 				89A5DE200A73B05655A9CD62 /* PrewarmToggleUITests.swift */,
 				0757CFA6B3A684BF0B2F28CC /* ScreenResultUITests.swift */,
 				6FE18B7D13A560EDFA6C19CE /* SwiftUIDialogResultUITests.swift */,
+				4FBA5DAA83E65744B43455B6 /* SwiftUIScreenResultUITests.swift */,
 				F470375108D27D4F268CE250 /* UITestHelpers.swift */,
 			);
 			path = UITests;
@@ -340,6 +343,7 @@
 				D4C853873919317A6E126B5B /* PrewarmToggleUITests.swift in Sources */,
 				B4E7162F681FC5BF8A30EA5B /* ScreenResultUITests.swift in Sources */,
 				30C4BD480D28E18747237AD7 /* SwiftUIDialogResultUITests.swift in Sources */,
+				F713CD1D5BBA0AC7B330C700 /* SwiftUIScreenResultUITests.swift in Sources */,
 				F1BD52F3ECE40E1FF1C260A5 /* UITestHelpers.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
