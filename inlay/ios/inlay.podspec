@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name             = 'inlay'
-  s.version          = '0.2.0'
+  s.version          = '0.2.1'
   s.summary          = 'Embed Flutter in native iOS and Android apps with type-safe navigation and storage.'
   s.description      = <<-DESC
 Embed Flutter in native iOS and Android apps with type-safe navigation and

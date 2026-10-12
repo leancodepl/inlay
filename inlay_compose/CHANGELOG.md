@@ -1,3 +1,7 @@
+# 0.2.1
+
+- Version bump to stay in lockstep with `inlay` 0.2.1; no changes
+
 # 0.2.0
 
 - Version bump to stay in lockstep with `inlay` 0.2.0; no changes

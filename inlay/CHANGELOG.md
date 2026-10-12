@@ -1,3 +1,7 @@
+# 0.2.1
+
+- iOS: fixed a crash when a screen or dialog with a typed result closes without a value.
+
 # 0.2.0
 
 - Android: fixed a crash when a Flutter screen is restored after the app process is killed.

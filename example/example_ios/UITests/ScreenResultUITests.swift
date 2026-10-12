@@ -32,4 +32,29 @@ final class ScreenResultUITests: XCTestCase {
         )
         XCTAssertTrue(app.staticTexts["true"].waitForExistence(timeout: 5))
     }
+
+    /// Regression test: a Flutter screen with a typed result that pops
+    /// without a value (here: the back button of the Flutter app bar) must
+    /// deliver `nil` to native. The null arrives from Pigeon as `NSNull`;
+    /// before the fix it reached the generated `decodeResult`, whose forced
+    /// cast (`raw as! Int64`) crashed the app.
+    func testCounterPopWithoutResultDeliversNil() {
+        let app = XCUIApplication()
+        app.launch()
+
+        app.tapButton("Open Counter (await result)")
+
+        let back = app.flutterElement(label: "Back")
+        XCTAssertTrue(
+            back.waitForExistence(timeout: 20),
+            "The Flutter counter screen never appeared."
+        )
+        back.tap()
+
+        XCTAssertTrue(
+            app.staticTexts["Counter returned"].waitForExistence(timeout: 20),
+            "Native never received the result. The app probably crashed."
+        )
+        XCTAssertTrue(app.staticTexts["dismissed"].waitForExistence(timeout: 5))
+    }
 }

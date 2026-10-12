@@ -641,6 +641,11 @@ private class InlayNavigatorHostApiImpl: InlayNavigatorHostApi {
     }
 
     func pop(result: Any?) throws {
+        // A Dart `null` inside the Pigeon argument list arrives as `NSNull`.
+        // Deliver it as `nil`, so a screen that pops without a value reaches
+        // `onResult` as "no result" instead of failing the generated
+        // `decodeResult` cast.
+        let result: Any? = result is NSNull ? nil : result
         DispatchQueue.main.async { [weak self] in
             guard let self else { return }
             let vc = self.viewController
