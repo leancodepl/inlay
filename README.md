@@ -7,6 +7,8 @@
 
 An opinionated Flutter add-to-app framework providing **type-safe navigation** and **cross-platform state sharing** for apps that embed Flutter inside a native iOS or Android host.
 
+Inlay is part of [Add2App](https://add2app.leancode.co/), LeanCode's hub for Flutter add-to-app. Read more about Inlay at [add2app.leancode.co/inlay](https://add2app.leancode.co/inlay).
+
 ## Packages
 
 | Package                          | Role                                                                                              |
@@ -156,6 +158,7 @@ On the Flutter side, the generated store can be used directly or combined with t
 - [Navigation](docs/navigation.md) - Route definitions, dialogs & bottom sheets, cross-boundary navigation, go_router & auto_route integration
 - [State Management](docs/state.md) - Stores, native access, optional Cubit integration, cross-engine sync
 - [Testing](docs/testing.md) - Widget-testing screens that navigate and use stores, via `package:inlay/testing.dart` fakes
+- [Inlay on Add2App](https://add2app.leancode.co/inlay) - Project page, part of the wider [Add2App](https://add2app.leancode.co/) initiative for Flutter add-to-app
 
 Each package also has its own README with focused usage instructions, and the [example](example/) folder contains a complete Flutter module plus native iOS and Android host apps exercising every feature.
 

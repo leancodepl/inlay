@@ -5,6 +5,8 @@
 
 An opinionated Flutter add-to-app framework providing **type-safe navigation** and **cross-platform state sharing** for apps that embed Flutter inside a native iOS or Android host.
 
+Inlay is part of [Add2App](https://add2app.leancode.co/), LeanCode's hub for Flutter add-to-app. Read more about Inlay at [add2app.leancode.co/inlay](https://add2app.leancode.co/inlay).
+
 ## Why
 
 Integrating Flutter into an existing native app is painful:
