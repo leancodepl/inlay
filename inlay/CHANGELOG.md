@@ -1,4 +1,4 @@
-# Unreleased
+# 0.2.1
 
 - Android: fixed the TalkBack focus border not showing on Flutter screens embedded with `createFragment` and on Flutter dialogs.
 
