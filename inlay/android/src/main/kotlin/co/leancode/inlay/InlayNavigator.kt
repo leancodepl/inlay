@@ -8,6 +8,7 @@ import co.leancode.inlay.navigator.InlayNavigatorHostApi
 import co.leancode.inlay.navigator.PageSettings
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.android.FlutterFragment
+import io.flutter.embedding.android.RenderMode
 import io.flutter.embedding.android.TransparencyMode
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.embedding.engine.FlutterEngineGroup
@@ -426,6 +427,11 @@ object InlayNavigator {
             .dartEntrypoint(dartEntrypoint)
             .initialRoute(initialRoute)
             .transparencyMode(TransparencyMode.transparent)
+            // A transparent FlutterSurfaceView calls setZOrderOnTop(true) and
+            // covers the window's own surface, hiding TalkBack's focus border
+            // (https://github.com/flutter/flutter/issues/37025). TextureView
+            // draws inside the dialog window, so it stays visible.
+            .renderMode(RenderMode.texture)
             .build<InlayFlutterFragment>()
         fragment.arguments = (fragment.arguments ?: Bundle()).apply {
             writeRouteData(this, page)
@@ -540,6 +546,12 @@ object InlayNavigator {
         )
             .dartEntrypoint(dartEntrypoint)
             .initialRoute(initialRoute)
+            // FlutterFragment defaults to transparent, which makes its
+            // FlutterSurfaceView call setZOrderOnTop(true) and cover TalkBack's
+            // focus border drawn by the host window
+            // (https://github.com/flutter/flutter/issues/37025). Full-screen
+            // pages don't need transparency, and opaque keeps surface rendering.
+            .transparencyMode(TransparencyMode.opaque)
             .build<InlayFlutterFragment>()
         val args = fragment.arguments ?: Bundle().also { fragment.arguments = it }
         writeRouteData(args, page)
